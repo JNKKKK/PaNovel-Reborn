@@ -11,7 +11,6 @@ import cc.aoeiuv020.panovel.ad.AdListHelper
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.settings.ItemAction
 import cc.aoeiuv020.panovel.settings.ListSettings
-import org.jetbrains.anko.AnkoLogger
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -22,7 +21,7 @@ open class NovelListAdapter(
         private val initItem: (NovelViewHolder) -> Unit = {},
         actionDoneListener: (ItemAction, NovelViewHolder) -> Unit = { _, _ -> },
         private val onError: (String, Throwable) -> Unit
-) : androidx.recyclerview.widget.RecyclerView.Adapter<NovelListAdapter.BaseViewHolder>(), AnkoLogger {
+) : androidx.recyclerview.widget.RecyclerView.Adapter<NovelListAdapter.BaseViewHolder>() {
     init {
         super.setHasStableIds(true)
     }

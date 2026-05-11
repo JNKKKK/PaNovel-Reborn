@@ -10,16 +10,15 @@ import cc.aoeiuv020.panovel.databinding.ActivitySiteSettingsBinding
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.show
 import cc.aoeiuv020.panovel.util.tip
+import android.content.Intent
+import android.widget.Toast
 import cc.aoeiuv020.panovel.util.uiInput
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.toast
+import timber.log.Timber
 
-class SiteSettingsActivity : AppCompatActivity(), IView, AnkoLogger {
+class SiteSettingsActivity : AppCompatActivity(), IView {
     companion object {
         fun start(ctx: Context, site: String) {
-            ctx.startActivity<SiteSettingsActivity>("site" to site)
+            ctx.startActivity(Intent(ctx, SiteSettingsActivity::class.java).putExtra("site", site))
         }
     }
 
@@ -39,7 +38,7 @@ class SiteSettingsActivity : AppCompatActivity(), IView, AnkoLogger {
             finish()
             return
         }
-        debug { "receive site: $siteName" }
+        Timber.d("receive site: $siteName")
         title = siteName
 
         presenter = SiteSettingsPresenter(siteName)
@@ -79,11 +78,11 @@ class SiteSettingsActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     fun showError(message: String, e: Throwable) {
-        toast(message + e)
+        Toast.makeText(this, message + e, Toast.LENGTH_SHORT).show()
     }
 
     fun showMessage(message: String) {
-        toast(message)
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

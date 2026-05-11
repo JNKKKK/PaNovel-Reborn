@@ -15,10 +15,10 @@ import cc.aoeiuv020.panovel.util.NotifyLoopProxy
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.intentFor
-import org.jetbrains.anko.runOnUiThread
+import android.content.Intent
+import android.os.Handler
+import android.os.Looper
+import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -32,12 +32,9 @@ class NovelExporter(
         private val charset: Charset,
         private val file: File,
         private val progressCallback: (Int, Int) -> Unit
-) : AnkoLogger {
-    companion object : AnkoLogger {
+)  {
+    companion object {
         const val NAME_FOLDER = "Export"
-
-        override val loggerTag: String
-            get() = "NovelExporter"
 
         fun export(ctx: Context, type: LocalNovelType, charset: Charset, novelManager: NovelManager) {
             val novel = novelManager.novel
@@ -57,7 +54,7 @@ class NovelExporter(
             val file = baseFile.resolve(fileName)
             // 太早了Intent不能用，<-- 我也不知道这在说什么，
             val nb: NotificationCompat.Builder by lazy {
-                val intent = ctx.intentFor<MainActivity>()
+                val intent = Intent(ctx, MainActivity::class.java)
                 val pendingIntent = PendingIntent.getActivity(ctx, 0, intent, 0)
                 val notificationBuilder = NotificationCompat.Builder(ctx, NotificationChannelId.export)
                         .setOnlyAlertOnce(true)
@@ -70,13 +67,14 @@ class NovelExporter(
                 notificationBuilder
             }
             val proxy = NotifyLoopProxy(ctx)
-            ctx.runOnUiThread {
+            val mainHandler = Handler(Looper.getMainLooper())
+            mainHandler.post {
                 nb.setProgress(0, 0, true)
                 proxy.start(nb.build())
             }
             NovelExporter(type, charset, file) { current, total ->
-                debug { "exporting $current/$total" }
-                ctx.runOnUiThread {
+                Timber.d("exporting $current/$total")
+                mainHandler.post {
                     if (current == total) {
                         nb.setContentTitle(ctx.getString(R.string.export_title_complete_placeholder, novel.name))
                         nb.setStyle(NotificationCompat.BigTextStyle().bigText(ctx.getString(R.string.export_complete_big_placeholder, file.path)))

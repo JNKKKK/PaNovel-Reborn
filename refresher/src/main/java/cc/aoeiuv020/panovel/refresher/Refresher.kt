@@ -1,12 +1,7 @@
 package cc.aoeiuv020.panovel.refresher
 
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.jsonpath.get
-import cc.aoeiuv020.jsonpath.jsonPath
-import cc.aoeiuv020.log.debug
-import cc.aoeiuv020.log.error
-import cc.aoeiuv020.log.info
 import cc.aoeiuv020.panovel.api.getNovelContextByName
+import com.google.gson.Gson
 import cc.aoeiuv020.panovel.server.ServerAddress
 import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel
 import cc.aoeiuv020.panovel.server.service.NovelService
@@ -28,12 +23,8 @@ class Refresher(
     private var isRunning = false
     private val vipNovelList = mutableSetOf<Novel>()
     fun start(address: ServerAddress, bookshelfList: MutableSet<String>) {
-        logger.info {
-            config
-        }
-        logger.info {
-            "bookshelfList: $bookshelfList"
-        }
+        logger.info("{}", config)
+        logger.info("bookshelfList: {}", bookshelfList)
         getBookshelf(bookshelfList, config.requireBookshelf)
         isRunning = true
         service = NovelServiceImpl(address)
@@ -41,9 +32,7 @@ class Refresher(
         if (apiUrl != null) {
             service = NovelServiceImpl(ServerAddress.new(apiUrl))
         }
-        logger.info {
-            "server: ${service.baseurl}"
-        }
+        logger.info("server: {}", service.baseurl)
         var lastTime = 0L
         var lastCount = 0
         while (isRunning) {
@@ -65,9 +54,7 @@ class Refresher(
                         it
                     }
                 }
-                logger.info {
-                    "roundTime: $roundTime, targetCount: $targetCount, lastCount: $lastCount"
-                }
+                logger.info("roundTime: {}, targetCount: {}, lastCount: {}", roundTime, targetCount, lastCount)
                 lastCount = 0
                 vipNovelList.also {
                     lastCount += it.size
@@ -85,9 +72,7 @@ class Refresher(
                             refresh(novel)
                         }
             } catch (e: Exception) {
-                logger.error(e) {
-                    "请求需要刷新的小说列表失败，"
-                }
+                logger.error("请求需要刷新的小说列表失败，", e)
                 executor.shutdown()
                 isRunning = false
                 // 有时候出现抛异常却没有停止的情况，原因不明，直接自杀，
@@ -99,9 +84,7 @@ class Refresher(
     private fun getBookshelf(bookshelfList: MutableSet<String>, requireBookshelf: Boolean) {
         val paste = PasteUbuntu()
         bookshelfList.forEach { url ->
-            logger.debug {
-                "正在获取书架 $url"
-            }
+            logger.debug("正在获取书架 {}", url)
             try {
                 val text = if (url.startsWith("file://")) {
                     URL(url).readText()
@@ -111,20 +94,21 @@ class Refresher(
                     }
                     paste.download(url)
                 }
-                val bookListJson = text.toBean<JsonObject>()
+                val gson = Gson()
+                val bookListJson = Gson().fromJson(text, JsonObject::class.java)
                 val version = bookListJson.get("version")?.asJsonPrimitive?.asInt
                 val bookListBean: BookListBean = when (version) {
                     3 -> {
-                        bookListJson.jsonPath.get()
+                        gson.fromJson(bookListJson, BookListBean::class.java)
                     }
                     2 -> {
-                        bookListJson.jsonPath.get<BookListBean2>().let {
+                        gson.fromJson(bookListJson, BookListBean2::class.java).let {
                             BookListBean(it.name, it.list, it.version, UUID.randomUUID().toString())
                         }
                     }
                     1 -> {
                         // 旧版version为null,
-                        val bookListBean1: BookListBean1 = bookListJson.jsonPath.get()
+                        val bookListBean1: BookListBean1 = gson.fromJson(bookListJson, BookListBean1::class.java)
                         BookListBean(bookListBean1.name, bookListBean1.list.map {
                             // 旧版的extra为完整地址，直接拿来，就算写进数据库了，刷新详情页后也会被新版的bookId覆盖，
                             NovelMinimal(site = it.site, author = it.author, name = it.name, detail = it.requester.extra)
@@ -133,9 +117,7 @@ class Refresher(
                     else -> throw IllegalStateException("APP版本太低")
                 }
                 bookListBean.list.forEach {
-                    logger.info {
-                        "获取到书架小说 $it"
-                    }
+                    logger.info("获取到书架小说 {}", it)
                     val novel = Novel().apply {
                         site = it.site
                         author = it.author
@@ -146,9 +128,7 @@ class Refresher(
                     vipNovelList.add(novel)
                 }
             } catch (e: Exception) {
-                logger.error(e) {
-                    "获取书架失败 $url"
-                }
+                logger.error("获取书架失败 {}", url, e)
                 if (requireBookshelf) {
                     throw e
                 }
@@ -173,24 +153,20 @@ class Refresher(
 
     private fun refreshActual(novel: Novel) {
         if (System.currentTimeMillis() - (novel.checkUpdateTime?.time ?: 0) < config.minTime) {
-            logger.info {
-                "skip <${novel.run { "$site.$author.$name.$detail" }}>"
-            }
+            logger.info("skip <{}.{}.{}.{}>", novel.site, novel.author, novel.name, novel.detail)
             // 避免频繁刷新，
             return
         }
-        logger.info {
-            "refresh <${novel.run { "$site.$author.$name.$detail" }}>"
-        }
+        logger.info("refresh <{}.{}.{}.{}>", novel.site, novel.author, novel.name, novel.detail)
         if (config.disableSites.contains(novel.site)) {
             // 有些网站可以选择跳过，可能连不上之类的，超时一直等就不爽了，
-            logger.info { "skip <${novel.run { "$site.$author.$name.$detail" }}>" }
+            logger.info("skip <{}.{}.{}.{}>", novel.site, novel.author, novel.name, novel.detail)
             return
         }
         try {
             val context = getNovelContextByName(novel.site)
             if (context.hide || !context.upkeep) {
-                logger.info { "skip <${novel.run { "$site.$author.$name.$detail" }}>" }
+                logger.info("skip <{}.{}.{}.{}>", novel.site, novel.author, novel.name, novel.detail)
                 return
             }
             val chapters = context.getNovelChaptersAsc(novel.detail)
@@ -204,9 +180,7 @@ class Refresher(
                 service.touch(novel)
             }
         } catch (e: Exception) {
-            logger.error(e) {
-                "刷新失败，<${novel.run { "$site.$author.$name.$detail" }}>"
-            }
+            logger.error("刷新失败，<{}.{}.{}.{}>", novel.site, novel.author, novel.name, novel.detail, e)
         }
     }
 

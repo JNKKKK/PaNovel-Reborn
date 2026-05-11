@@ -1,5 +1,11 @@
 dependencies {
     implementation project(':baseJar')
     implementation 'net.sourceforge.jchardet:jchardet:1.0'
+    implementation('io.documentnode:epub4j-core:4.2.1') {
+        exclude group: 'xmlpull'
+        exclude group: 'org.slf4j'
+        exclude group: 'net.sf.kxml'
+        exclude group: 'xpp3'
+    }
     implementation 'org.jsoup:jsoup:' + jsoup_version
 }

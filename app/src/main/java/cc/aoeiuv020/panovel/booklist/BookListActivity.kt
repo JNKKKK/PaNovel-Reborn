@@ -6,8 +6,6 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.gson.toJson
 import cc.aoeiuv020.panovel.App
 import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
@@ -20,20 +18,20 @@ import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.settings.ServerSettings
 import cc.aoeiuv020.panovel.util.getStringExtra
 import cc.aoeiuv020.panovel.databinding.ActivityBookListBinding
+import android.content.Intent
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog as AndroidXAlertDialog
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
-import org.jetbrains.anko.*
 
 /**
  *
  * Created by AoEiuV020 on 2017.11.22-14:49:22.
  */
-class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
+class BookListActivity : AppCompatActivity(), IView {
     companion object {
         fun start(context: Context, bookListId: Long) {
-            // 统一转成json字符串，拿的时候不需要给默认值，
-            // 拿不到就直接退出，
-            context.startActivity<BookListActivity>("bookListId" to bookListId.toJson(App.gson))
+            context.startActivity(Intent(context, BookListActivity::class.java).putExtra("bookListId", App.gson.toJson(bookListId)))
         }
     }
 
@@ -58,16 +56,18 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
             presenter.remove(vh.novelManager)
             this@BookListActivity.novelListAdapter.remove(vh.layoutPosition)
         })
-        selector(getString(R.string.action), list.unzip().first.map { getString(it) }) { _, i ->
-            list[i].second.invoke()
-        }
+        AndroidXAlertDialog.Builder(this)
+            .setTitle(getString(R.string.action))
+            .setItems(list.unzip().first.map { getString(it) }.toTypedArray()) { _, i ->
+                list[i].second.invoke()
+            }.show()
         return true
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         // 貌似没必要，
-        outState.putString("bookListId", bookListId.toJson(App.gson))
+        outState.putString("bookListId", App.gson.toJson(bookListId))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,22 +78,22 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         bookListId = getStringExtra("bookListId", savedInstanceState)
-                ?.toBean(App.gson)
+                ?.let { App.gson.fromJson(it, Long::class.java) }
                 ?: run {
             Reporter.unreachable()
-            toast("不存在，")
+            Toast.makeText(this, "不存在，", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        binding.rvNovel.layoutManager = if (ListSettings.gridView) {
-            androidx.recyclerview.widget.GridLayoutManager(ctx, if (ListSettings.largeView) 3 else 5)
+        binding.includeNovelList.rvNovel.layoutManager = if (ListSettings.gridView) {
+            androidx.recyclerview.widget.GridLayoutManager(this, if (ListSettings.largeView) 3 else 5)
         } else {
-            androidx.recyclerview.widget.LinearLayoutManager(ctx)
+            androidx.recyclerview.widget.LinearLayoutManager(this)
         }
         presenter = BookListActivityPresenter(bookListId)
-        binding.rvNovel.adapter = novelListAdapter
-        binding.srlRefresh.setOnRefreshListener {
+        binding.includeNovelList.rvNovel.adapter = novelListAdapter
+        binding.includeNovelList.srlRefresh.setOnRefreshListener {
             forceRefresh()
         }
 
@@ -129,7 +129,7 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun refresh() {
-        binding.srlRefresh.isRefreshing = true
+        binding.includeNovelList.srlRefresh.isRefreshing = true
         presenter.refresh()
     }
 
@@ -146,12 +146,12 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (ServerSettings.askUpdate) {
             presenter.askUpdate(list)
         } else {
-            binding.srlRefresh.isRefreshing = false
+            binding.includeNovelList.srlRefresh.isRefreshing = false
         }
     }
 
     fun showAskUpdateResult(hasUpdateList: List<Long>) {
-        binding.srlRefresh.isRefreshing = false
+        binding.includeNovelList.srlRefresh.isRefreshing = false
         // 就算是空列表也要传进去，更新一下刷新时间，
         // 空列表可能是因为连不上服务器，
         novelListAdapter.hasUpdate(hasUpdateList)
@@ -160,7 +160,7 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
     @Suppress("UNUSED_PARAMETER")
     fun askUpdateError(message: String, e: Throwable) {
         // 询问服务器更新出错不展示，
-        binding.srlRefresh.isRefreshing = false
+        binding.includeNovelList.srlRefresh.isRefreshing = false
     }
 
     fun selectToAdd(list: List<NovelManager>, nameArray: Array<String>, containsArray: BooleanArray) {
@@ -189,17 +189,19 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
         }, R.string.history to {
             presenter.addFromHistory()
         })
-        selector(getString(R.string.add_from), list.unzip().first.map { getString(it) }) { _, i ->
-            list[i].second.invoke()
-        }
+        AndroidXAlertDialog.Builder(this)
+            .setTitle(getString(R.string.add_from))
+            .setItems(list.unzip().first.map { getString(it) }.toTypedArray()) { _, i ->
+                list[i].second.invoke()
+            }.show()
     }
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(binding.rvNovel, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.includeNovelList.rvNovel, "", Snackbar.LENGTH_SHORT)
     }
 
     fun showError(message: String, e: Throwable) {
-        binding.srlRefresh.isRefreshing = false
+        binding.includeNovelList.srlRefresh.isRefreshing = false
         snack.setText(message + e.message)
         snack.show()
     }

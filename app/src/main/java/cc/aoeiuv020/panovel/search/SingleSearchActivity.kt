@@ -3,6 +3,7 @@ package cc.aoeiuv020.panovel.search
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -17,18 +18,17 @@ import cc.aoeiuv020.panovel.databinding.ActivitySingleSearchBinding
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.onActivityDestroy
 import cc.aoeiuv020.panovel.util.safelyShow
-import org.jetbrains.anko.*
-
+import timber.log.Timber
 /**
  * 负责单个网站的搜索功能，
  * 还有登录也在这里，
  */
-class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
+class SingleSearchActivity : AppCompatActivity(), IView {
     private lateinit var binding: ActivitySingleSearchBinding
 
     companion object {
         fun start(ctx: Context, site: String) {
-            ctx.startActivity<SingleSearchActivity>("site" to site)
+            this@SingleSearchActivity.startActivity(Intent(this@SingleSearchActivity, SingleSearchActivity::class.java).putExtra("site", site))
         }
     }
 
@@ -47,7 +47,7 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
             finish()
             return
         }
-        debug { "receive site: $siteName" }
+        Timber.d("receive site: $siteName")
         title = siteName
 
         binding.srlRefresh.isRefreshing = true
@@ -73,7 +73,7 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
                 javaScriptEnabled = true
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
                     @Suppress("DEPRECATION")
-                    databasePath = ctx.cacheDir.resolve("webView").path
+                    databasePath = this@SingleSearchActivity.cacheDir.resolve("webView").path
                 }
                 databaseEnabled = true
                 domStorageEnabled = true
@@ -95,19 +95,17 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     override fun onNewIntent(intent: Intent) {
-        debug {
-            "onNewIntent ${intent.data}"
-        }
+        Timber.d("onNewIntent ${intent.data}")
         // 以防万一，从别的浏览器跳到这里时不要显示下拉刷新中，
         binding.srlRefresh.isRefreshing = false
         binding.wvSite.loadUrl(intent.data.toString())
     }
 
-    private inner class MyWebViewClient : WebViewClient(), AnkoLogger {
+    private inner class MyWebViewClient : WebViewClient() {
         // 过时代替方法使用要api>=21,
         @Suppress("OverridingDeprecatedMember")
         override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
-            debug { "shouldOverrideUrlLoading $url" }
+            Timber.d("shouldOverrideUrlLoading $url")
             if (url == null || url.startsWith("http")) {
                 return false
             }
@@ -120,14 +118,14 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
                 if (url.startsWith("wtloginmqq://")) {
                     // 把schemacallback破坏掉，否则有可能会自动判断浏览器然后选择性的跳回调，直接跳到chrome,
                     val newUrl = url.replace("schemacallback", "s")
-                    browse(newUrl)
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(newUrl)))
                 } else {
-                    browse(url)
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                 }
             } catch (e: Exception) {
                 val message = "解析地址($url)失败，"
                 Reporter.post(message, e)
-                browse(url)
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
             }
         }
     }
@@ -145,12 +143,11 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     fun showRemoveCookiesDone() {
-        alert(
-                title = getString(R.string.success),
-                message = ctx.getString(R.string.message_cookies_removed)
-        ) {
-            okButton { }
-        }.safelyShow()
+        androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(getString(R.string.success))
+                .setMessage(getString(R.string.message_cookies_removed))
+                .setPositiveButton(android.R.string.ok, null)
+                .create().safelyShow()
     }
 
     fun getCurrentUrl(): String? = binding.wvSite.url
@@ -172,7 +169,7 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     fun openNovelDetail(novel: Novel) {
-        NovelDetailActivity.start(ctx, novel)
+        NovelDetailActivity.start(this, novel)
     }
 
     fun showError(message: String, e: Throwable) {
@@ -180,12 +177,11 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
             // 太丑了，
             return
         }
-        alert(
-                title = ctx.getString(R.string.error),
-                message = message + e.message
-        ) {
-            okButton { }
-        }.safelyShow()
+        androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(getString(R.string.error))
+                .setMessage(message + e.message)
+                .setPositiveButton(android.R.string.ok, null)
+                .create().safelyShow()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -208,8 +204,8 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.search -> FuzzySearchActivity.startSingleSite(ctx, siteName)
-            R.id.browse -> getCurrentUrl()?.let { browse(it) }
+            R.id.search -> FuzzySearchActivity.startSingleSite(this, siteName)
+            R.id.browse -> getCurrentUrl()?.let { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
             R.id.open -> open()
             R.id.close -> finish()
             R.id.removeCookies -> removeCookies()

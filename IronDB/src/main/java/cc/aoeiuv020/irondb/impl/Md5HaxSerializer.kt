@@ -1,8 +1,7 @@
 package cc.aoeiuv020.irondb.impl
 
-import cc.aoeiuv020.encrypt.hex
-import cc.aoeiuv020.encrypt.md5
 import cc.aoeiuv020.irondb.KeySerializer
+import java.security.MessageDigest
 
 /**
  * 慎用，多级使用md5进行序列化可能导致路径过长，
@@ -12,6 +11,7 @@ import cc.aoeiuv020.irondb.KeySerializer
  */
 class Md5HaxSerializer : KeySerializer {
     override fun serialize(from: String): String {
-        return from.md5().hex()
+        val bytes = MessageDigest.getInstance("MD5").digest(from.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

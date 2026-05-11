@@ -13,11 +13,9 @@ import cc.aoeiuv020.panovel.text.NovelTextNavigation.Direction.*
 import cc.aoeiuv020.panovel.util.*
 import cc.aoeiuv020.reader.AnimationMode
 import cc.aoeiuv020.reader.ReaderConfigName
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.debug
+import timber.log.Timber
 
-class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigation: View) : AnkoLogger {
+class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigation: View) {
     private val mPanelDefault: View = navigation.findViewById(R.id.panelDefault)
     private val mPanelSettings: View = navigation.findViewById(R.id.panelSettings)
     private val mPanelTypesetting: View = navigation.findViewById(R.id.panelTypesetting)
@@ -99,7 +97,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             val tvBrightness = mPanelSettings.findViewById<TextView>(R.id.tvBrightness)
 
             val messageSize = ReaderSettings.messageSize
-            debug { "load textSite = $messageSize" }
+            Timber.d("load textSite = $messageSize")
             messageSizeTextView.text = view.getString(R.string.text_size_placeholders, messageSize)
             messageSizeSeekBar.progress = messageSize - 12
             messageSizeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -119,7 +117,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             })
 
             val textSize = ReaderSettings.textSize
-            debug { "load textSite = $textSize" }
+            Timber.d("load textSite = $textSize")
             textSizeTextView.text = view.getString(R.string.text_size_placeholders, textSize)
             textSizeSeekBar.progress = textSize - 12
             textSizeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -139,14 +137,15 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             })
 
             tvFont.setOnClickListener {
-                view.alert(R.string.select_font) {
-                    positiveButton(android.R.string.yes) {
+                AlertDialog.Builder(view)
+                    .setTitle(R.string.select_font)
+                    .setPositiveButton(android.R.string.yes) { _, _ ->
                         view.requestFont()
                     }
-                    negativeButton(R.string.set_default) {
+                    .setNegativeButton(R.string.set_default) { _, _ ->
                         view.resetFont()
                     }
-                }.safelyShow()
+                    .create().safelyShow()
             }
 
             tvTypesetting.setOnClickListener {
@@ -329,9 +328,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
     }
 
     private fun initLayoutMargins(llMargins: LinearLayout, margins: Margins, name: ReaderConfigName) {
-        debug {
-            "$name: $margins"
-        }
+        Timber.d("$name: $margins")
         val cbDisplay = llMargins.findViewById<CheckBox>(R.id.cbDisplay)
         cbDisplay.setOnCheckedChangeListener(null)
         cbDisplay.isChecked = margins.enabled

@@ -1,6 +1,6 @@
 package cc.aoeiuv020.irondb.impl
 
-import cc.aoeiuv020.gson.type
+import com.google.gson.reflect.TypeToken
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -14,9 +14,9 @@ class GsonSerializerTest {
     fun dataClassTest() {
         val student = Student(id = 10L, name = "AoEiuV020", age = 23)
         val json = """{"id":10,"name":"AoEiuV020","age":23}"""
-        val string = serializer.serialize(student, type<Student>())
+        val string = serializer.serialize(student, object : TypeToken<Student>() {}.type)
         assertEquals(json, string)
-        val obj: Student = serializer.deserialize(string, type<Student>())
+        val obj: Student = serializer.deserialize(string, object : TypeToken<Student>() {}.type)
         assertEquals(student, obj)
     }
 
@@ -27,9 +27,9 @@ class GsonSerializerTest {
                 Student(name = "name", age = -1)
         )
         val json = """[{"id":10,"name":"AoEiuV020","age":23},{"name":"name","age":-1}]"""
-        val string = serializer.serialize(list, type<List<Student>>())
+        val string = serializer.serialize(list, object : TypeToken<List<Student>>() {}.type)
         assertEquals(json, string)
-        val obj: List<Student> = serializer.deserialize(string, type<List<Student>>())
+        val obj: List<Student> = serializer.deserialize(string, object : TypeToken<List<Student>>() {}.type)
         assertEquals(list, obj)
     }
 

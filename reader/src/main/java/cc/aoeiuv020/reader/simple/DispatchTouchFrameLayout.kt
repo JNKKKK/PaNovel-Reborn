@@ -6,13 +6,12 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
-import org.jetbrains.anko.AnkoLogger
 
 /**
  *
  * Created by AoEiuV020 on 2017.11.24-19:54:53.
  */
-internal class DispatchTouchFrameLayout : FrameLayout, AnkoLogger {
+internal class DispatchTouchFrameLayout : FrameLayout {
     constructor(context: Context)
             : super(context)
 

@@ -5,30 +5,29 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.VisibleForTesting
-import cc.aoeiuv020.anull.notNull
 import cc.aoeiuv020.base.jar.ownLinesString
-import cc.aoeiuv020.jsonpath.get
-import cc.aoeiuv020.jsonpath.jsonPath
-import cc.aoeiuv020.okhttp.OkHttpUtils
-import cc.aoeiuv020.okhttp.string
 import cc.aoeiuv020.panovel.BuildConfig
+import com.google.gson.JsonParser
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.*
 import cc.aoeiuv020.regex.compilePattern
 import cc.aoeiuv020.regex.matches
 import cc.aoeiuv020.regex.pick
-import org.jetbrains.anko.*
+import kotlinx.coroutines.*
 import org.jsoup.Jsoup
 import java.io.BufferedReader
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import timber.log.Timber
 
 /**
  *
  * Created by AoEiuV020 on 2018.03.25-04:00:29.
  */
-object Check : Pref, AnkoLogger {
+object Check : Pref {
     override val name: String
         get() = "Check"
     private var cachedVersionName: String by Delegates.string("0")
@@ -37,17 +36,25 @@ object Check : Pref, AnkoLogger {
     private const val COOLAPK_PAGE_URL = "https://www.coolapk.com/apk/cc.aoeiuv020.panovel"
     private const val COOLAPK_MARKET_PACKAGE_NAME = "com.coolapk.market"
     private var knownVersionName: String by Delegates.string("0")
+
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
     private fun getNewestVersionName(): String {
         return try {
             getCoolapkNewestVersionName()
         } catch (e: Exception) {
             Reporter.post("coolapk检查新版本失败", e)
-            OkHttpUtils.get(LATEST_RELEASE_GITHUB).string().jsonPath.get("tag_name")
+            OkHttpClient().newCall(Request.Builder().url(LATEST_RELEASE_GITHUB).build())
+                .execute().use { response ->
+                    val json = response.body?.string() ?: ""
+                    val obj = JsonParser.parseString(json).asJsonObject
+                    obj.get("tag_name")?.asString ?: ""
+                }
         }
     }
 
     private fun getCoolapkNewestVersionName(): String {
-        return Jsoup.connect(COOLAPK_PAGE_URL).get().selectFirst("span.list_app_info").notNull()
+        return Jsoup.connect(COOLAPK_PAGE_URL).get().selectFirst("span.list_app_info")!!
             .text()
             .trim().also { versionName ->
                 if (!versionName.matches("\\d*(\\.\\d*)*")) {
@@ -58,8 +65,8 @@ object Check : Pref, AnkoLogger {
 
     private fun getCoolapkChangeLog(): String {
         return Jsoup.connect(COOLAPK_PAGE_URL).get()
-            .selectFirst("body > div > div:nth-child(2) > div.app_left > div.apk_left_two > div > div:nth-child(2) > p.apk_left_title_info")
-            .notNull().ownLinesString()
+            .selectFirst("body > div > div:nth-child(2) > div.app_left > div.apk_left_two > div > div:nth-child(2) > p.apk_left_title_info")!!
+            .ownLinesString()
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -101,65 +108,68 @@ object Check : Pref, AnkoLogger {
      * @param tip 无更新或者更新失败是否提示，
      */
     fun asyncCheckVersion(ctx: Context, tip: Boolean = false) {
-        ctx.doAsync({ e ->
-            val message = "检测更新失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            if (tip) {
-                ctx.runOnUiThread {
-                    ctx.toast(ctx.getString(R.string.tip_update_failed))
-                }
-            }
-        }) {
-            val currentVersionName = VersionUtil.getAppVersionName(ctx)
-            val newestVersionName = getNewestVersionName()
-            info {
-                "checkVersion $currentVersionName/$newestVersionName"
-            }
-            val hasUpdate = VersionUtil.compare(newestVersionName, currentVersionName) > 0
-                    && VersionUtil.compare(newestVersionName, knownVersionName) > 0
-            val changeLog = when {
-                // 有更新，网上获取更新日志，截取当前版本到网上最新的日志，
-                hasUpdate -> {
-                    getChangeLog(currentVersionName)
-                }
-                // 已经更新，截取更新部分日志，从上次保存的版本到最新的日志，
-                VersionUtil.compare(currentVersionName, cachedVersionName) > 0 -> {
-                    getChangeLogFromAssert(ctx, cachedVersionName)
-                }
-                // 没有更新也不是刚更新完，直接返回，
-                else -> {
-                    if (tip) {
-                        uiThread { ctx ->
-                            ctx.toast(ctx.getString(R.string.tip_no_new_version))
+        scope.launch {
+            try {
+                data class CheckResult(val currentVersionName: String, val newestVersionName: String, val hasUpdate: Boolean, val changeLog: String?)
+                val result = withContext(Dispatchers.IO) {
+                    val currentVersionName = VersionUtil.getAppVersionName(ctx)
+                    val newestVersionName = getNewestVersionName()
+                    Timber.i("checkVersion $currentVersionName/$newestVersionName")
+                    val hasUpdate = VersionUtil.compare(newestVersionName, currentVersionName) > 0
+                            && VersionUtil.compare(newestVersionName, knownVersionName) > 0
+                    val changeLog: String? = when {
+                        // 有更新，网上获取更新日志，截取当前版本到网上最新的日志，
+                        hasUpdate -> {
+                            getChangeLog(currentVersionName)
                         }
+                        // 已经更新，截取更新部分日志，从上次保存的版本到最新的日志，
+                        VersionUtil.compare(currentVersionName, cachedVersionName) > 0 -> {
+                            getChangeLogFromAssert(ctx, cachedVersionName)
+                        }
+                        // 没有更新也不是刚更新完，直接返回，
+                        else -> null
                     }
-                    return@doAsync
+                    CheckResult(currentVersionName, newestVersionName, hasUpdate, changeLog)
                 }
-            }
-            // 缓存当前版本，以便更新后对比，
-            cachedVersionName = currentVersionName
-            uiThread { ctx ->
+                val currentVersionName = result.currentVersionName
+                val newestVersionName = result.newestVersionName
+                val hasUpdate = result.hasUpdate
+                val changeLog = result.changeLog
+                if (changeLog == null) {
+                    if (tip) {
+                        android.widget.Toast.makeText(ctx, ctx.getString(R.string.tip_no_new_version), android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
+                }
+                // 缓存当前版本，以便更新后对比，
+                cachedVersionName = currentVersionName
                 if (hasUpdate) {
-                    ctx.alert {
-                        title = "有更新"
-                        message = changeLog
-                        neutralPressed("忽略") {
+                    androidx.appcompat.app.AlertDialog.Builder(ctx)
+                        .setTitle("有更新")
+                        .setMessage(changeLog)
+                        .setNeutralButton("忽略") { _, _ ->
                             knownVersionName = newestVersionName
                         }
-                        positiveButton("酷安") {
+                        .setPositiveButton("酷安") { _, _ ->
                             startCoolapk(ctx)
                         }
-                        negativeButton("Github") {
-                            ctx.browse(RELEASE_GITHUB)
+                        .setNegativeButton("Github") { _, _ ->
+                            ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_GITHUB)))
                         }
-                    }.safelyShow()
+                        .create().safelyShow()
                 } else {
-                    ctx.alert {
-                        title = "已更新"
-                        message = changeLog
-                        yesButton { }
-                    }.safelyShow()
+                    androidx.appcompat.app.AlertDialog.Builder(ctx)
+                        .setTitle("已更新")
+                        .setMessage(changeLog)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .create().safelyShow()
+                }
+            } catch (e: Exception) {
+                val message = "检测更新失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                if (tip) {
+                    android.widget.Toast.makeText(ctx, ctx.getString(R.string.tip_update_failed), android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -175,8 +185,8 @@ object Check : Pref, AnkoLogger {
         try {
             ctx.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            info { "没安装酷安app," }
-            ctx.browse(RELEASE_COOLAPK)
+            Timber.i("没安装酷安app,")
+            ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_COOLAPK)))
         }
     }
 
@@ -191,7 +201,7 @@ object Check : Pref, AnkoLogger {
      * @return 忽略或者通过都返回true,
      */
     private fun checkSignature(ctx: Context): Boolean {
-        info { "checkSignature " + BuildConfig.SIGNATURE }
+        Timber.i("checkSignature " + BuildConfig.SIGNATURE)
         if (TimeUnit.MILLISECONDS.toDays(
                 System.currentTimeMillis() - ctx.packageManager.getPackageInfo(
                     ctx.packageName,
@@ -211,33 +221,34 @@ object Check : Pref, AnkoLogger {
         }
         val apkSign = signature.takeIf(String::isNotEmpty)
             ?: SignatureUtil.getAppSignature(ctx).also { signature = it }
-        info { "apkSign = $apkSign" }
+        Timber.i("apkSign = $apkSign")
         return BuildConfig.SIGNATURE.equals(apkSign, ignoreCase = true)
     }
 
     fun asyncCheckSignature(ctx: Context) {
-        ctx.doAsync({ e ->
-            val message = "检查签名出错"
-            error(message, e)
-            Reporter.post(message, e)
-        }) {
-            if (checkSignature(ctx)) {
-                return@doAsync
-            }
-            uiThread { ctx ->
-                ctx.alert {
-                    title = "签名不正确"
-                    message = "你可能用了假app,"
-                    neutralPressed("忽略") {
+        scope.launch {
+            try {
+                val passed = withContext(Dispatchers.IO) { checkSignature(ctx) }
+                if (passed) {
+                    return@launch
+                }
+                androidx.appcompat.app.AlertDialog.Builder(ctx)
+                    .setTitle("签名不正确")
+                    .setMessage("你可能用了假app,")
+                    .setNeutralButton("忽略") { _, _ ->
                         ignoreSignatureCheck = true
                     }
-                    positiveButton("酷安") {
+                    .setPositiveButton("酷安") { _, _ ->
                         startCoolapk(ctx)
                     }
-                    negativeButton("Github") {
-                        ctx.browse(RELEASE_GITHUB)
+                    .setNegativeButton("Github") { _, _ ->
+                        ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_GITHUB)))
                     }
-                }.safelyShow()
+                    .create().safelyShow()
+            } catch (e: Exception) {
+                val message = "检查签名出错"
+                Timber.e(e, message)
+                Reporter.post(message, e)
             }
         }
     }

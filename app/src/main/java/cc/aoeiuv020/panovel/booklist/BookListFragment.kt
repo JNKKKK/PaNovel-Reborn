@@ -18,16 +18,13 @@ import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.panovel.util.showKeyboard
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.selector
-import org.jetbrains.anko.yesButton
+import androidx.appcompat.app.AlertDialog
 
 /**
  *
  * Created by AoEiuV020 on 2017.11.22-14:07:56.
  */
-class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
+class BookListFragment : androidx.fragment.app.Fragment(), IView {
     private var _binding: NovelItemListBinding? = null
     private val binding get() = _binding!!
 
@@ -44,11 +41,11 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
                     R.string.share to { shareBookList(vh.bookList) },
                     R.string.add_bookshelf to { addBookshelf(vh.bookList) },
                     R.string.remove_bookshelf to { removeBookshelf(vh.bookList) })
-            requireContext().selector(requireContext().getString(R.string.action), list.unzip().first.map {
-                requireContext().getString(it)
-            }) { _, i ->
-                list[i].second.invoke()
-            }
+            AlertDialog.Builder(requireContext())
+                .setTitle(requireContext().getString(R.string.action))
+                .setItems(list.unzip().first.map { requireContext().getString(it) }.toTypedArray()) { _, i ->
+                    list[i].second.invoke()
+                }.show()
             return true
         }
     }
@@ -86,45 +83,41 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
     }
 
     private fun copy(bookList: BookList) {
-        requireContext().alert {
-            titleResource = R.string.copy
-            val layout = View.inflate(context, R.layout.dialog_editor, null)
-            customView = layout
-            val etName = layout.findViewById<EditText>(R.id.editText)
-            etName.setText(bookList.name)
-            etName.setSelection(0, etName.text.length)
-            etName.hint = bookList.name
-            yesButton {
+        val layout = View.inflate(requireContext(), R.layout.dialog_editor, null)
+        val etName = layout.findViewById<EditText>(R.id.editText)
+        etName.setText(bookList.name)
+        etName.setSelection(0, etName.text.length)
+        etName.hint = bookList.name
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.copy)
+            .setView(layout)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val name = etName.text.toString()
                 if (name.isNotEmpty()) {
                     presenter.copyBookList(bookList, name)
-                } else {
-                    // 改名为空的话直接无视，懒得报错了，
                 }
             }
-            etName.post { etName.showKeyboard() }
-        }.safelyShow()
+            .create().safelyShow()
+        etName.post { etName.showKeyboard() }
     }
 
     private fun rename(bookList: BookList) {
-        requireContext().alert {
-            titleResource = R.string.rename
-            val layout = View.inflate(context, R.layout.dialog_editor, null)
-            customView = layout
-            val etName = layout.findViewById<EditText>(R.id.editText)
-            etName.setText(bookList.name)
-            etName.setSelection(0, etName.text.length)
-            etName.hint = bookList.name
-            yesButton {
+        val layout = View.inflate(requireContext(), R.layout.dialog_editor, null)
+        val etName = layout.findViewById<EditText>(R.id.editText)
+        etName.setText(bookList.name)
+        etName.setSelection(0, etName.text.length)
+        etName.hint = bookList.name
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.rename)
+            .setView(layout)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val name = etName.text.toString()
                 if (name.isNotEmpty()) {
                     presenter.renameBookList(bookList, name)
-                } else {
-                    // 改名为空的话直接无视，懒得报错了，
                 }
             }
-            etName.post { etName.showKeyboard() }
-        }.safelyShow()
+            .create().safelyShow()
+        etName.post { etName.showKeyboard() }
     }
 
     fun shareBookList(bookList: BookList) {
@@ -183,19 +176,20 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
     }
 
     fun newBookList() {
-        activity.notNullOrReport().alert {
-            titleResource = R.string.add_book_list
-            val layout = View.inflate(context, R.layout.dialog_editor, null)
-            customView = layout
-            val etName = layout.findViewById<EditText>(R.id.editText)
-            yesButton {
+        val ctx = activity.notNullOrReport()
+        val layout = View.inflate(ctx, R.layout.dialog_editor, null)
+        val etName = layout.findViewById<EditText>(R.id.editText)
+        AlertDialog.Builder(ctx)
+            .setTitle(R.string.add_book_list)
+            .setView(layout)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val name = etName.text.toString()
                 if (name.isNotEmpty()) {
                     presenter.newBookList(etName.text.toString())
                 }
             }
-            etName.post { etName.showKeyboard() }
-        }.safelyShow()
+            .create().safelyShow()
+        etName.post { etName.showKeyboard() }
     }
 
     fun showComplete(message: String) {

@@ -12,9 +12,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import cc.aoeiuv020.panovel.BuildConfig
 import cc.aoeiuv020.panovel.R
+import android.content.Intent
 import cc.aoeiuv020.panovel.main.MainActivity
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.intentFor
 import java.util.concurrent.TimeUnit
 
 /**
@@ -88,7 +87,7 @@ class NotifyLoopProxy(
         private val id: Int = (Math.random() * Int.MAX_VALUE).toInt(),
         // 最多delay毫秒一个通知，
         private val delay: Long = 300L
-) : AnkoLogger {
+) {
     companion object {
         val DEFAULT_CANCEL_DELAY: Long = TimeUnit.SECONDS.toMillis(5)
     }
@@ -200,7 +199,7 @@ class NotifyLoopProxy(
 }
 
 fun Context.notify(id: Int, text: String? = null, title: String? = null, icon: Int = R.mipmap.ic_launcher_foreground, time: Long? = null, bigText: String? = null, channelId: String = NotificationChannelId.default) {
-    val intent = intentFor<MainActivity>()
+    val intent = Intent(this, MainActivity::class.java)
     val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
 
     val nb = NotificationCompat.Builder(this, channelId)

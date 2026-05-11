@@ -1,17 +1,18 @@
 package cc.aoeiuv020.panovel.backup.impl
 
 import android.net.Uri
-import cc.aoeiuv020.gson.toBean
+import cc.aoeiuv020.panovel.App
 import cc.aoeiuv020.panovel.backup.BackupOption
+import com.google.gson.reflect.TypeToken
 import cc.aoeiuv020.panovel.backup.BackupOption.*
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 import cc.aoeiuv020.panovel.data.entity.NovelWithProgress
 import cc.aoeiuv020.panovel.settings.*
 import cc.aoeiuv020.panovel.util.Pref
-import cc.aoeiuv020.string.divide
+
 import com.google.gson.JsonElement
-import org.jetbrains.anko.debug
+import timber.log.Timber
 import java.io.File
 
 /**
@@ -19,7 +20,7 @@ import java.io.File
  */
 class BackupV2 : DefaultBackup() {
     override fun import(file: File, option: BackupOption): Int {
-        debug { "import $option from $file" }
+        Timber.d("import $option from $file")
         return when (option) {
             Bookshelf -> importBookshelf(file)
             BookList -> importBookList(file)
@@ -57,7 +58,7 @@ class BackupV2 : DefaultBackup() {
     private fun importPref(pref: Pref, file: File): Int {
         val editor = pref.sharedPreferences.edit()
         var count = 0
-        file.readText().toBean<Map<String, JsonElement>>().forEach { (key, value) ->
+        App.gson.fromJson<Map<String, JsonElement>>(file.readText(), object : TypeToken<Map<String, JsonElement>>() {}.type).forEach { (key, value) ->
             when (key) {
                 // 枚举，保存字符串，
                 "animationMode" -> editor.putString(key, value.asString)
@@ -132,14 +133,14 @@ class BackupV2 : DefaultBackup() {
     }
 
     private fun importBookList(folder: File): Int = folder.listFiles().sumBy { file ->
-        val name = file.name.divide('|').second
-        val novelList = file.readText().toBean<List<NovelMinimal>>()
+        val name = file.name.substringAfter('|', "")
+        val novelList: List<NovelMinimal> = App.gson.fromJson(file.readText(), object : TypeToken<List<NovelMinimal>>() {}.type)
         DataManager.importBookList(name, novelList)
         novelList.size
     }
 
     private fun importBookshelf(file: File): Int {
-        val list = file.readText().toBean<List<NovelWithProgress>>()
+        val list: List<NovelWithProgress> = App.gson.fromJson(file.readText(), object : TypeToken<List<NovelWithProgress>>() {}.type)
         DataManager.importBookshelfWithProgress(list)
         return list.size
     }

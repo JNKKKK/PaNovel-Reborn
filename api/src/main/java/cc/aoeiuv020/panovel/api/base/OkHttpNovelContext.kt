@@ -1,11 +1,5 @@
 package cc.aoeiuv020.panovel.api.base
 
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.log.debug
-import cc.aoeiuv020.log.error
-import cc.aoeiuv020.log.info
-import cc.aoeiuv020.okhttp.OkHttpUtils
-import cc.aoeiuv020.okhttp.sslAllowAll
 import cc.aoeiuv020.panovel.api.LoggerInputStream
 import cc.aoeiuv020.panovel.api.NovelContext
 import okhttp3.*
@@ -13,11 +7,32 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
 import java.io.InputStream
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 /**
  * Created by AoEiuV020 on 2018.06.01-20:43:49.
  */
 abstract class OkHttpNovelContext : NovelContext() {
+    companion object {
+        val sharedClient: OkHttpClient = OkHttpClient()
+
+        fun OkHttpClient.Builder.sslAllowAll(): OkHttpClient.Builder {
+            val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
+                override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
+                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+            })
+            val sslContext = SSLContext.getInstance("TLS")
+            sslContext.init(null, trustAllCerts, SecureRandom())
+            return sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
+                .hostnameVerifier { _, _ -> true }
+        }
+    }
+
     protected val defaultUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36";
     protected val defaultUserAgentMobile = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Mobile Safari/537.36"
     protected val defaultHeaders: MutableMap<String, String> by lazy {
@@ -34,7 +49,7 @@ abstract class OkHttpNovelContext : NovelContext() {
     // 子类可以继承，只在第一次使用client时使用一次，
     protected open val clientBuilder: OkHttpClient.Builder
         // 每次都生成新的builder，以免一个网站加的设置影响到其他网站，
-        get() = OkHttpUtils.client.newBuilder()
+        get() = sharedClient.newBuilder()
 /*
                 .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("localhost", 8080)))
 */
@@ -50,15 +65,15 @@ abstract class OkHttpNovelContext : NovelContext() {
     private val cookieJar
         get() = object : CookieJar {
             override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-                logger.debug { "save cookies $cookies" }
+                logger.debug("save cookies {}", cookies)
                 putCookies(cookies)
             }
 
             override fun loadForRequest(url: HttpUrl): MutableList<Cookie> {
                 return cookies.values.toMutableList().let {
-                    logger.debug { "load cookies $it" }
+                    logger.debug("load cookies {}", it)
                     cookieFilter(url, it).also {
-                        logger.debug { "after filter cookies $it" }
+                        logger.debug("after filter cookies {}", it)
                     }
                 }
             }
@@ -72,7 +87,7 @@ abstract class OkHttpNovelContext : NovelContext() {
         return cookies
     }
 
-    protected fun Response.requestHeaders(): Headers = networkResponse.notNull().request.headers
+    protected fun Response.requestHeaders(): Headers = networkResponse!!.request.headers
 
     /**
      * okhttp有时候需要传入httpUrl，但是其实具体是什么地址都可以，
@@ -97,7 +112,7 @@ abstract class OkHttpNovelContext : NovelContext() {
     protected fun <T> Response.inputStream(
             listener: ((Long, Long) -> Unit)? = null,
             block: (InputStream) -> T
-    ): T = body.notNull().use {
+    ): T = body!!.use {
         val maxSize = it.contentLength()
         LoggerInputStream(it.byteStream(), maxSize, listener).use(block)
     }
@@ -130,7 +145,7 @@ abstract class OkHttpNovelContext : NovelContext() {
             // 可能误伤，比如网站自己换域名，
             // TODO: 日志要支持发行版上传bugly,
             // 目前这样如果后面解析失败，上传失败日志时会带上这条日志，
-            logger.error { "网络被重定向，<${call.request().url}> -> <${response.url()}>" }
+            logger.error("网络被重定向，<{}> -> <{}>", call.request().url, response.url())
 //            throw IOException("网络被重定向，检查网络是否可用，")
         }
         return response
@@ -138,23 +153,23 @@ abstract class OkHttpNovelContext : NovelContext() {
 
     protected fun responseBody(call: Call): ResponseBody {
         // 不可能为空，execute得到的response一定有body,
-        return response(call).body.notNull()
+        return response(call).body!!
     }
 
     private inner class LogInterceptor : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
-            logger.info { "connect ${request.url}" }
-            logger.debug {
+            logger.info("connect {}", request.url)
+            if (logger.isDebugEnabled) {
                 val buffer = Buffer()
                 request.body?.writeTo(buffer)
-                "body ${buffer.readUtf8()}"
+                logger.debug("body {}", buffer.readUtf8())
             }
             val response = chain.proceed(request)
-            logger.debug { "response ${response.request.url}" }
+            logger.debug("response {}", response.request.url)
             // 应该没有不是网络请求的情况，但是不了解okhttp的缓存，但还是不要在这里用可能抛异常的拓展方法requestHeaders，
-            logger.debug { "request.headers ${response.networkResponse?.request?.headers}" }
-            logger.debug { "response.headers ${response.headers}" }
+            logger.debug("request.headers {}", response.networkResponse?.request?.headers)
+            logger.debug("response.headers {}", response.headers)
             return response
         }
     }

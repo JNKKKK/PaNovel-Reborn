@@ -14,8 +14,7 @@ import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import okhttp3.Cookie
 import okhttp3.HttpUrl
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
+import timber.log.Timber
 import java.util.*
 import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel as ServerNovel
 
@@ -25,7 +24,7 @@ import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel as ServerNovel
  *
  * Created by AoEiuV020 on 2018.04.28-16:53:14.
  */
-object DataManager : AnkoLogger {
+object DataManager {
     lateinit var app: AppDatabaseManager
     lateinit var api: ApiManager
     lateinit var cookie: CookieManager
@@ -170,7 +169,7 @@ object DataManager : AnkoLogger {
         // 高版本的设置cookie的回调乱七八糟的，用不上，
         context.cookies.values.forEach { okhttpCookie ->
             val cookieString = okhttpCookie.toString()
-            debug { "push cookie: <$cookieString>" }
+            Timber.d("push cookie: <$cookieString>")
             // webView传入cookie一次只能一条，取出一次所有，
             // cookieString只有一条cookie, 可能包含domain, path之类，分号;分隔，webView这个可以识别，
             cookie.putCookie(context.site.baseUrl, cookieString)
@@ -190,7 +189,7 @@ object DataManager : AnkoLogger {
         val httpUrl = HttpUrl.parse(context.site.baseUrl).notNullOrReport()
         // webView传入cookie一次只能一条，取出一次所有，
         cookie.getCookies(context.site.baseUrl)?.split(";")?.mapNotNull { cookiePair ->
-            debug { "pull cookie: <$cookiePair>" }
+            Timber.d("pull cookie: <$cookiePair>")
             // 取出来的cookiePair只有name=value，Cookie.parse一定能通过，也因此可能有超时信息拿不出来的问题，
             Cookie.parse(httpUrl, cookiePair)?.let { cookie ->
                 cookie.name() to cookie
@@ -288,7 +287,7 @@ object DataManager : AnkoLogger {
      * 小说导入书架，包含进度，
      */
     fun importBookshelfWithProgress(list: List<NovelWithProgress>) = app.db.runInTransaction {
-        debug { "$list" }
+        Timber.d("$list")
         val novelList = list.mapNotNull {
             // 查询或插入，得到小说对象，再更新进度，
             val novel = app.queryOrNewNovel(NovelMinimal(it))
@@ -319,7 +318,7 @@ object DataManager : AnkoLogger {
      * 小说导入书架，不包含进度，
      */
     fun importBookshelf(list: List<NovelMinimal>) = app.db.runInTransaction {
-        debug { "$list" }
+        Timber.d("$list")
         val novelList = list.mapNotNull {
             // 查询或插入，得到小说对象，再更新进度，
             val novel = app.queryOrNewNovel(it)
@@ -348,7 +347,7 @@ object DataManager : AnkoLogger {
      * 小说导入进度，
      */
     fun importNovelWithProgress(list: Sequence<NovelWithProgressAndPinnedTime>): Int = app.db.runInTransaction<Int> {
-        debug { "$list" }
+        Timber.d("$list")
         var count = 0
         list.forEach {
             // 查询或插入，得到小说对象，再更新进度，
@@ -423,9 +422,7 @@ object DataManager : AnkoLogger {
         // 导入时已经解析了一遍章节列表，缓存起来，不能白解析了，
         // 统一转换成api模块的章节格式再存，
         cache.saveChapters(novel, chapterList)
-        debug {
-            "importLocalNovel result: $novel"
-        }
+        Timber.d("importLocalNovel result: $novel")
         return novel
     }
 
@@ -433,7 +430,7 @@ object DataManager : AnkoLogger {
      * 返回有更新的小说的id,
      */
     fun askUpdate(list: List<NovelManager>): List<Long> {
-        debug { "askUpdate ${list.map { it.novel.bookId }}" }
+        Timber.d("askUpdate ${list.map { it.novel.bookId }}")
         // 用无视服务器端返回的顺序，方便改成只返回部分数据，
         // 连接不上服务器时返回emptyMap，
         val resultMap: Map<Long, QueryResponse> = server.askUpdate(list.mapNotNull {
@@ -446,10 +443,10 @@ object DataManager : AnkoLogger {
             val result = resultMap[novel.nId] ?: return@mapNotNull null
             if (result.chaptersCount > novel.chaptersCount) {
                 // 只对比章节数，如果更大就是有更新，返回，最后通知刷新列表，开始刷新小说，
-                debug { "${novel.bookId} has update ${result.chaptersCount} > ${novel.chaptersCount}" }
+                Timber.d("${novel.bookId} has update ${result.chaptersCount} > ${novel.chaptersCount}")
                 novel.nId
             } else {
-                debug { "${novel.bookId} no update ${result.chaptersCount} <= ${novel.chaptersCount}" }
+                Timber.d("${novel.bookId} no update ${result.chaptersCount} <= ${novel.chaptersCount}")
                 // 如果没更新，就保存服务器上的更新时间，如果更大的话，
                 novel.apply {
                     // 不更新receiveUpdateTime，不准，有时别人比较晚收到同一个更新然后推上去被拿到，
@@ -462,7 +459,7 @@ object DataManager : AnkoLogger {
 
     @WorkerThread
     fun downloadAll() {
-        debug { "downloadAll called" }
+        Timber.d("downloadAll called")
         download.downloadAll(listBookshelf())
     }
 

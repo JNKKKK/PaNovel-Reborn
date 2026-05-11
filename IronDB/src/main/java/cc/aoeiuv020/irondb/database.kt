@@ -1,6 +1,6 @@
 package cc.aoeiuv020.irondb
 
-import cc.aoeiuv020.gson.type
+import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 
 /**
@@ -37,10 +37,10 @@ interface Database {
  * 这里不是必须的，
  */
 @Suppress("unused")
-inline fun <reified T> Database.write(key: String, value: T) = write(key, value, type<T>())
+inline fun <reified T> Database.write(key: String, value: T) = write(key, value, object : TypeToken<T>() {}.type)
 
 /**
  * 通过gson的TypeToken得到T的真实类型，
  */
 @Suppress("unused")
-inline fun <reified T> Database.read(key: String): T? = read(key, type<T>())
+inline fun <reified T> Database.read(key: String): T? = read(key, object : TypeToken<T>() {}.type)

@@ -52,14 +52,14 @@ import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerInd
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerTitleView
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.indicators.LinePagerIndicator
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.ColorTransitionPagerTitleView
-import org.jetbrains.anko.*
-
-
+import timber.log.Timber
+import kotlinx.coroutines.*
+import androidx.lifecycle.lifecycleScope
 /**
  *
  * Created by AoEiuV020 on 2017.10.15-15:53:19.
  */
-class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
+class MainActivity : AppCompatActivity(), MigrationView {
 
     private lateinit var binding: ActivityMainBinding
     lateinit var progressDialog: ProgressDialog
@@ -75,12 +75,12 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
         override fun onOtherCase(str: String) {
             progressDialog.dismiss()
             // 打开的不是网址，就直接精确搜索，
-            FuzzySearchActivity.start(ctx, str)
+            FuzzySearchActivity.start(this@MainActivity, str)
         }
 
         override fun onNovelOpened(novel: Novel) {
             progressDialog.dismiss()
-            NovelDetailActivity.start(ctx, novel)
+            NovelDetailActivity.start(this@MainActivity, novel)
         }
 
         override fun onLocalNovelImported(novel: Novel) {
@@ -112,22 +112,18 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
     }
 
     override fun showDowngrade(from: VersionName, to: VersionName) {
-        debug {
-            "showDowngrade <${from.name} to ${to.name}>"
-        }
-        ctx.alert {
+        Timber.d("showDowngrade <${from.name} to ${to.name}>")
+        this@MainActivity.alert {
             title = getString(R.string.warning)
             message = getString(R.string.downgrade_warning_placeholder, from.name, to.name)
-            okButton { }
+            setPositiveButton(android.R.string.ok, null)
         }.safelyShow()
     }
 
     override fun showUpgrading(from: VersionName, migration: Migration) {
         val to = migration.to
-        debug {
-            "showUpgrading <${from.name} to ${to.name}>"
-        }
-        (migratingDialog ?: ProgressDialog(ctx).also { migratingDialog = it }).apply {
+        Timber.d("showUpgrading <${from.name} to ${to.name}>")
+        (migratingDialog ?: ProgressDialog(this@MainActivity).also { migratingDialog = it }).apply {
             setTitle(getString(R.string.migrating_title))
             setMessage(getString(R.string.migrating_message_placeholder, from.name, to.name, migration.message))
             safelyShow()
@@ -135,9 +131,7 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
     }
 
     override fun showMigrateComplete(from: VersionName, to: VersionName) {
-        debug {
-            "showMigrateComplete,"
-        }
+        Timber.d("showMigrateComplete,")
         migratingDialog?.dismiss()
         migratingDialog = null
 
@@ -148,16 +142,14 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
 
     override fun showMigrateError(from: VersionName, migration: Migration) {
         val to = migration.to
-        debug {
-            "showMigrateError <${from.name} to ${to.name}>"
-        }
+        Timber.d("showMigrateError <${from.name} to ${to.name}>")
         migratingDialog?.dismiss()
         migratingDialog = null
-        ctx.alert {
+        this@MainActivity.alert {
             title = getString(R.string.migrate_error_title)
             message = getString(R.string.migrate_error_message_placeholder, from.name, to.name, migration.message)
-            okButton { }
-            neutralPressed(getString(R.string.ignore)) {
+            setPositiveButton(android.R.string.ok, null)
+            setNeutralButton(getString(R.string.ignore)) { _, _ ->
                 migrationPresenter.ignoreMigration(migration)
             }
         }.safelyShow()
@@ -189,21 +181,24 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
     }
 
     private fun checkEmpty() {
-        doAsync({ t ->
-            Reporter.unreachable(t)
-        }) {
-            if (DataManager.isEmpty()) {
-                uiThread { ctx ->
-                    AlertDialog.Builder(ctx)
-                            .setMessage(getString(R.string.tip_data_empty))
-                            .setPositiveButton(R.string.sImport) { _, _ ->
-                                BackupActivity.start(ctx)
-                            }
-                            .setNeutralButton(R.string.search) { _, _ ->
-                                FuzzySearchActivity.start(ctx, "异世界")
-                            }
-                            .show()
+        lifecycleScope.launch {
+            try {
+                val isEmpty = withContext(Dispatchers.IO) {
+                    DataManager.isEmpty()
                 }
+                if (isEmpty) {
+                    AlertDialog.Builder(this@MainActivity)
+                        .setMessage(getString(R.string.tip_data_empty))
+                        .setPositiveButton(R.string.sImport) { _, _ ->
+                            BackupActivity.start(this@MainActivity)
+                        }
+                        .setNeutralButton(R.string.search) { _, _ ->
+                            FuzzySearchActivity.start(this@MainActivity, "异世界")
+                        }
+                        .show()
+                }
+            } catch (t: Exception) {
+                Reporter.unreachable(t)
             }
         }
     }
@@ -304,7 +299,7 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
 
     private fun showExplain() {
         alert(assets.open("Explain.txt").reader().readText(), getString(R.string.explain)) {
-            yesButton { }
+            setPositiveButton(android.R.string.ok, null)
         }.safelyShow()
     }
 
@@ -326,13 +321,13 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
         customView = layout
         val etName = layout.findViewById<android.widget.EditText>(R.id.editText)
         etName.hint = getString(R.string.main_open_hint)
-        yesButton {
+        setPositiveButton(android.R.string.ok) { _, _ ->
             val url = etName.text.toString()
             if (url.isNotEmpty()) {
                 OpenManager.open(this@MainActivity, url, openListener)
             }
         }
-        neutralPressed(R.string.local_novel) {
+        setNeutralButton(R.string.local_novel) { _, _ ->
             // 调文件管理器选择小说，
             val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -345,27 +340,33 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
     }.safelyShow()
 
     private fun subscript() {
-        doAsync({ e ->
-            val message = "订阅书架的小说失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            showError(message, e)
-        }) {
-            // 有检索书架列表，所以必须异步，
-            DataManager.resetSubscript()
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    // 有检索书架列表，所以必须异步，
+                    DataManager.resetSubscript()
+                }
+            } catch (e: Exception) {
+                val message = "订阅书架的小说失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                showError(message, e)
+            }
         }
     }
 
     private fun downloadAll() {
-        ctx.doAsync({ e ->
-            val message = "全部下载失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            ctx.runOnUiThread {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DataManager.downloadAll()
+                }
+            } catch (e: Exception) {
+                val message = "全部下载失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 showError(message, e)
             }
-        }) {
-            DataManager.downloadAll()
         }
     }
 

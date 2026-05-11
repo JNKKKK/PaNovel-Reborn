@@ -3,12 +3,11 @@ package cc.aoeiuv020.panovel.ad
 import android.app.Application
 import android.os.Build
 import cc.aoeiuv020.panovel.settings.AdSettings
-import org.jetbrains.anko.AnkoLogger
 
 /**
  * Created by AoEiuV020 on 2021.04.25-23:45:31.
  */
-object AdHelper : AnkoLogger {
+object AdHelper {
     fun init(context: Application) {
     }
 

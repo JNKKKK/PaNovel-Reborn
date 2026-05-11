@@ -26,7 +26,6 @@ import android.os.Parcelable
 import android.preference.Preference
 import android.util.AttributeSet
 import android.view.View
-import cc.aoeiuv020.anull.notNull
 import cc.aoeiuv020.filepicker.controller.DialogSelectionListener
 import cc.aoeiuv020.filepicker.model.DialogConfigs
 import cc.aoeiuv020.filepicker.model.DialogProperties
@@ -58,7 +57,7 @@ class FilePickerPreference : Preference, DialogSelectionListener, Preference.OnP
     }
 
     override fun onGetDefaultValue(a: TypedArray, index: Int): Any? {
-        return a.getString(index).notNull().replace("\${applicationId}", context.packageName)
+        return a.getString(index)!!.replace("\${applicationId}", context.packageName)
                 .replace("\${applicationName}", context.getString(context.applicationInfo.labelRes))
                 .replace("\${sdcard}", Environment.getExternalStorageDirectory().absolutePath)
     }

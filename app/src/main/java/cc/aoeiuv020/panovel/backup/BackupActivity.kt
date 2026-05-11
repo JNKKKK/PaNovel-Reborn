@@ -23,16 +23,15 @@ import cc.aoeiuv020.panovel.util.confirm
 import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
-import org.jetbrains.anko.*
-
-
-class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
+import timber.log.Timber
+class BackupActivity : AppCompatActivity(), IView {
     private lateinit var binding: ActivityExportBinding
 
     companion object {
         fun start(ctx: Context) {
-            ctx.startActivity<BackupActivity>()
+            ctx.startActivity(Intent(ctx, BackupActivity::class.java))
         }
     }
 
@@ -94,9 +93,7 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
         repeat(binding.rgPath.childCount) { index ->
             binding.rgPath.getChildAt(index).setOnClickListener { v ->
                 val backupHelper = presenter.getHelper(v.id) ?: return@setOnClickListener
-                debug {
-                    "backup click ${backupHelper.type}"
-                }
+                Timber.d("backup click ${backupHelper.type}")
                 startConfig(backupHelper, index)
             }
         }
@@ -189,18 +186,20 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
 
     fun showImportSuccess(result: String) {
         progressDialog.dismiss()
-        alert(
-                message = result,
-                title = "导入完成"
-        ).safelyShow()
+        AlertDialog.Builder(this)
+                .setTitle("导入完成")
+                .setMessage(result)
+                .setPositiveButton(android.R.string.ok, null)
+                .create().safelyShow()
     }
 
     fun showExportSuccess(result: String) {
         progressDialog.dismiss()
-        alert(
-                message = result,
-                title = "导出完成"
-        ).safelyShow()
+        AlertDialog.Builder(this)
+                .setTitle("导出完成")
+                .setMessage(result)
+                .setPositiveButton(android.R.string.ok, null)
+                .create().safelyShow()
     }
 
     fun showDefaultPath(defaultOldUri: String, defaultNewUri: String) {
@@ -237,7 +236,7 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
     }
 
     fun showBackupHint(radioButtonId: Int, test: String) {
-        binding.rgPath.find<RadioButton>(radioButtonId).text = test
+        binding.rgPath.findViewById<RadioButton>(radioButtonId).text = test
     }
 
     fun startConfig(backupHelper: BackupHelper) {
@@ -250,10 +249,8 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
     }
 
     private fun startConfig(backupHelper: BackupHelper, index: Int) {
-        debug {
-            "startConfig ${backupHelper.type}"
-        }
-        startActivityForResult(Intent(ctx, backupHelper.configActivity()), 1000 + index)
+        Timber.d("startConfig ${backupHelper.type}")
+        startActivityForResult(Intent(this, backupHelper.configActivity()), 1000 + index)
     }
 
 }

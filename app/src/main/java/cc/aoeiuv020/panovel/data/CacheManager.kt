@@ -9,8 +9,8 @@ import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.report.Reporter
+import android.widget.Toast
 import cc.aoeiuv020.panovel.settings.LocationSettings
-import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 
@@ -35,7 +35,7 @@ class CacheManager(ctx: Context) {
         Iron.db(File(LocationSettings.cacheLocation))
     } catch (e: Exception) {
         Reporter.post("初始化缓存目录<${LocationSettings.cacheLocation}>失败，", e)
-        ctx.toast(ctx.getString(R.string.tip_init_cache_failed_place_holder, LocationSettings.cacheLocation))
+        Toast.makeText(ctx, ctx.getString(R.string.tip_init_cache_failed_place_holder, LocationSettings.cacheLocation), Toast.LENGTH_SHORT).show()
         // 失败一次就改成默认的，以免反复失败，
         LocationSettings.cacheLocation = ctx.cacheDir.resolve(NAME_FOLDER).absolutePath
         Iron.db(File(LocationSettings.cacheLocation))

@@ -1,6 +1,5 @@
 package cc.aoeiuv020.panovel.api.base
 
-import cc.aoeiuv020.anull.notNull
 import cc.aoeiuv020.base.jar.ownTextList
 import cc.aoeiuv020.base.jar.ownTextListSplitWhitespace
 import cc.aoeiuv020.regex.pick
@@ -121,13 +120,13 @@ abstract class JsoupNovelContext : OkHttpNovelContext() {
     }
 
     protected fun Element.requireElement(query: String, name: String = TAG_ELEMENT): Element = try {
-        select(query).first().notNull(query)
+        select(query).first()!!
     } catch (e: Exception) {
         throw IllegalStateException("解析[$name]($query)失败，", e)
     }
 
     protected inline fun <T> Element.requireElement(query: String, name: String = TAG_ELEMENT, block: (Element) -> T): T = try {
-        select(query).first().notNull(query).let(block)
+        select(query).first()!!.let(block)
     } catch (e: Exception) {
         throw IllegalStateException("解析[$name]($query)失败，", e)
     }

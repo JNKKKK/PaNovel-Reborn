@@ -9,10 +9,7 @@ import android.widget.TextView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.error
-import org.jetbrains.anko.find
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -30,19 +27,23 @@ class TestAdListHelper :
         Executors.newCachedThreadPool()
     }
 
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
     @SuppressLint("SimpleDateFormat")
     private val sdf = SimpleDateFormat("HH:mm:ss.SSS")
 
     override fun realRequestAd(requestAdCount: Int) {
-        doAsync({ t ->
-            error("请求广告异常", t)
-        }, adService) {
-            val data = List(requestAdCount) {
-                Thread.sleep((200..600).random().toLong())
-                sdf.format(Date())
-            }
-            uiThread {
+        scope.launch {
+            try {
+                val data = withContext(Dispatchers.IO) {
+                    List(requestAdCount) {
+                        Thread.sleep((200..600).random().toLong())
+                        sdf.format(Date())
+                    }
+                }
                 onRequestAdResult(data)
+            } catch (e: Exception) {
+                timber.log.Timber.e(e, "请求广告异常")
             }
         }
     }
@@ -60,6 +61,7 @@ class TestAdListHelper :
     }
 
     override fun onAdDestroy() {
+        scope.cancel()
         adList.forEach {
             it.isClosed = true
             it.text = null
@@ -78,8 +80,8 @@ class TestAdListHelper :
     }
 
     class TestAdViewHolder(itemView: View) : AdViewHolder<TestAdItem>(itemView) {
-        private val rlContainer: FrameLayout = itemView.find(R.id.rlContainer)
-        private val tvText: TextView = itemView.find(R.id.tvText)
+        private val rlContainer: FrameLayout = itemView.findViewById(R.id.rlContainer)
+        private val tvText: TextView = itemView.findViewById(R.id.tvText)
 
         override fun bind(item: TestAdItem) {
             if (item.isClosed || !item.isAdInit()) {

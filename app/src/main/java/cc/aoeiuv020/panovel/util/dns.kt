@@ -1,9 +1,9 @@
 package cc.aoeiuv020.panovel.util
 
 import android.content.Context
-import cc.aoeiuv020.gson.toJson
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.server.common.toBean
+import com.google.gson.Gson
 import org.xbill.DNS.*
 import org.xbill.DNS.config.AndroidResolverConfigProvider
 import java.net.URLDecoder
@@ -54,7 +54,7 @@ object DnsUtils {
      * txt记录解析成对象，
      */
     inline fun <reified T : Any> txtToBean(host: String): T {
-        return parseTxt(host).toJson().toBean()
+        return Gson().toJson(parseTxt(host)).toBean()
     }
 
 }

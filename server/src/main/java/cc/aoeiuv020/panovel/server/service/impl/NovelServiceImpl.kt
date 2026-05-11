@@ -1,14 +1,10 @@
 package cc.aoeiuv020.panovel.server.service.impl
 
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.gson.type
-import cc.aoeiuv020.log.debug
-import cc.aoeiuv020.log.info
-import cc.aoeiuv020.okhttp.OkHttpUtils
 import cc.aoeiuv020.panovel.server.ServerAddress
 import cc.aoeiuv020.panovel.server.common.bookId
 import cc.aoeiuv020.panovel.server.common.toBean
 import cc.aoeiuv020.panovel.server.common.toJson
+import cc.aoeiuv020.panovel.server.common.type
 import cc.aoeiuv020.panovel.server.dal.model.*
 import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel
 import cc.aoeiuv020.panovel.server.service.NovelService
@@ -28,7 +24,7 @@ import java.util.concurrent.TimeUnit
 class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService {
     override val baseurl get() = serverAddress.baseUrl
     private val logger: Logger = LoggerFactory.getLogger(NovelServiceImpl::class.java.simpleName)
-    private val client: OkHttpClient = OkHttpUtils.client.newBuilder()
+    private val client: OkHttpClient = OkHttpClient.Builder()
             .addInterceptor(LogInterceptor())
             // 超时设置短一些，连不上就放弃，不是很重要，
             .connectTimeout(3, TimeUnit.SECONDS)
@@ -39,17 +35,17 @@ class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService 
     private inner class LogInterceptor : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
-            logger.info { "connect ${request.url}" }
-            logger.debug {
+            logger.info("connect {}", request.url)
+            if (logger.isDebugEnabled) {
                 val buffer = Buffer()
                 request.body?.writeTo(buffer)
-                "body ${buffer.readUtf8()}"
+                logger.debug("body {}", buffer.readUtf8())
             }
             val response = chain.proceed(request)
-            logger.debug { "response ${response.request.url}" }
+            logger.debug("response {}", response.request.url)
             // 应该没有不是网络请求的情况，但是不了解okhttp的缓存，但还是不要在这里用可能抛异常的拓展方法requestHeaders，
-            logger.debug { "request.headers ${response.networkResponse?.request?.headers}" }
-            logger.debug { "response.headers ${response.headers}" }
+            logger.debug("request.headers {}", response.networkResponse?.request?.headers)
+            logger.debug("response.headers {}", response.headers)
             return response
         }
     }
@@ -67,7 +63,7 @@ class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService 
                 .build()
         val call = client.newCall(request)
         // .string()会关闭body,
-        val response: MobResponse = call.execute().body.notNull().string().notNull()
+        val response: MobResponse = call.execute().body!!.string()!!
                 .toBean()
         if (!response.isSuccess()) {
             // 只能说可能是上传的参数不对，
@@ -77,37 +73,37 @@ class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService 
     }
 
     override fun uploadUpdate(novel: Novel): Boolean {
-        logger.debug { "uploadUpdate <${novel.run { "$site.$author.$name" }}>" }
+        logger.debug("uploadUpdate <{}.{}.{}>", novel.site, novel.author, novel.name)
         return post(serverAddress.updateUploadUrl, novel)
     }
 
     override fun needRefreshNovelList(count: Int): List<Novel> {
-        logger.debug { "needRefreshNovelList count = $count" }
+        logger.debug("needRefreshNovelList count = {}", count)
         return post(serverAddress.needRefreshNovelListUrl, count)
     }
 
     override fun queryList(novelMap: Map<Long, Novel>): Map<Long, QueryResponse> {
-        logger.debug { "queryList ${novelMap.map { "${it.key}=<${it.value.run { "$site.$author.$name" }}>" }}" }
+        logger.debug("queryList {}", novelMap.map { "${it.key}=<${it.value.run { "$site.$author.$name" }}>" })
         return post(serverAddress.queryListUrl, novelMap)
     }
 
     override fun touch(novel: Novel): Boolean {
-        logger.debug { "touch ${novel.bookId}" }
+        logger.debug("touch {}", novel.bookId)
         return post(serverAddress.touchUrl, novel)
     }
 
     override fun minVersion(): String {
-        logger.debug { "minVersion" }
+        logger.debug("minVersion")
         return post(serverAddress.minVersionUrl, Any())
     }
 
     override fun config(): Config {
-        logger.debug { "config" }
+        logger.debug("config")
         return post(serverAddress.config, Any())
     }
 
     override fun message(): Message {
-        logger.debug { "message" }
+        logger.debug("message")
         return post(serverAddress.message, Any())
     }
 }

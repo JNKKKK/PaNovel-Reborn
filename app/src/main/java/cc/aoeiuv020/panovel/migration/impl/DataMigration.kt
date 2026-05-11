@@ -2,26 +2,25 @@ package cc.aoeiuv020.panovel.migration.impl
 
 import android.content.Context
 import android.net.Uri
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.jsonpath.get
-import cc.aoeiuv020.jsonpath.jsonPath
+import com.google.gson.Gson
+import com.google.gson.JsonParser
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 import cc.aoeiuv020.panovel.data.entity.NovelWithProgress
 import cc.aoeiuv020.panovel.migration.Migration
 import cc.aoeiuv020.panovel.settings.*
 import cc.aoeiuv020.panovel.util.VersionName
-import cc.aoeiuv020.string.divide
+
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.error
+import timber.log.Timber
 import java.io.File
 
 /**
  * Created by AoEiuV020 on 2018.05.30-19:21:52.
  */
-class DataMigration : Migration(), AnkoLogger {
+class DataMigration : Migration() {
+    private val gson: Gson = Gson()
     override val to: VersionName = VersionName("2.2.2")
     override val message: String = "书架列表，书单列表，设置，"
 
@@ -46,7 +45,7 @@ class DataMigration : Migration(), AnkoLogger {
         )
         base.listFiles()?.forEach { file ->
             val setter = map[file.name] ?: return@forEach
-            file.readText().toBean<JsonElement>().let(setter)
+            gson.fromJson(file.readText(), JsonElement::class.java).let(setter)
         }
     }
 
@@ -84,9 +83,9 @@ class DataMigration : Migration(), AnkoLogger {
             "animationSpeed" to { value -> ReaderSettings.animationSpeed = value.asFloat },
             "centerPercent" to { value -> ReaderSettings.centerPercent = value.asFloat },
             "dateFormat" to { value -> ReaderSettings.dateFormat = value.asString },
-            "animationMode" to { value -> ReaderSettings.animationMode = value.asString.toBean() },
+            "animationMode" to { value -> ReaderSettings.animationMode = gson.fromJson(value.asString, cc.aoeiuv020.reader.AnimationMode::class.java) },
             "shareExpiration" to { value ->
-                OtherSettings.shareExpiration = value.asString.toBean()
+                OtherSettings.shareExpiration = gson.fromJson(value.asString, cc.aoeiuv020.panovel.share.Expiration::class.java)
             }
         )
         val marginsMap = mapOf(
@@ -100,7 +99,7 @@ class DataMigration : Migration(), AnkoLogger {
         list.forEach { file ->
             val setter = map[file.name] ?: return@forEach
             if (file.isFile) {
-                file.readText().toBean<JsonElement>().let(setter)
+                gson.fromJson(file.readText(), JsonElement::class.java).let(setter)
             } else if (file.isDirectory) {
                 val margins = marginsMap[file.name] ?: return@forEach
                 importMargins(file, margins)
@@ -115,32 +114,52 @@ class DataMigration : Migration(), AnkoLogger {
         }
     }
 
+    /**
+     * Helper to get a string field from a JsonObject, stripping "$." prefix from path.
+     */
+    private fun jsonField(obj: com.google.gson.JsonObject, path: String): String {
+        val key = if (path.startsWith("$.")) path.substring(2) else path
+        val value = obj.get(key) ?: return ""
+        return if (value.isJsonPrimitive) value.asString else value.toString()
+    }
+
+    /**
+     * Helper to get a typed field from a JsonObject, stripping "$." prefix from path.
+     */
+    private fun jsonFieldElement(obj: com.google.gson.JsonObject, path: String): JsonElement {
+        val key = if (path.startsWith("$.")) path.substring(2) else path
+        return obj.get(key) ?: com.google.gson.JsonNull.INSTANCE
+    }
+
     // 旧版requester有两种情况，一个对象包含extra或者竖线|分隔类名和extra,
     private fun getDetailFromRequester(requester: JsonElement): String =
             if (requester.isJsonObject) {
-                requester.jsonPath.get("$.extra")
+                val obj = requester.asJsonObject
+                val value = obj.get("extra")
+                if (value == null || value.isJsonNull) "" else if (value.isJsonPrimitive) value.asString else value.toString()
             } else {
-                requester.asString.divide('|').second
+                requester.asString.substringAfter('|', "")
             }
 
     private fun importBookshelf(base: File) {
         val progress = base.resolve("Progress")
         val list = base.resolve("Bookshelf").listFiles()?.map {
-            val novel = it.readText().jsonPath.run {
-                NovelWithProgress(site = get("$.site"),
-                        author = get("$.author"),
-                        name = get("$.name"),
-                        detail = getDetailFromRequester(get("$.requester")))
-            }
+            val obj = JsonParser.parseString(it.readText()).asJsonObject
+            val novel = NovelWithProgress(
+                    site = jsonField(obj, "$.site"),
+                    author = jsonField(obj, "$.author"),
+                    name = jsonField(obj, "$.name"),
+                    detail = getDetailFromRequester(jsonFieldElement(obj, "$.requester")))
             try {
                 progress.resolve(novel.run { "$name.$author.$site" })
-                        .takeIf { it.exists() }
-                        ?.readText()?.jsonPath?.run {
-                    novel.readAtChapterIndex = get("chapter")
-                    novel.readAtTextIndex = get("text")
-                }
+                        .takeIf { f -> f.exists() }
+                        ?.let { f ->
+                            val progressObj = JsonParser.parseString(f.readText()).asJsonObject
+                            novel.readAtChapterIndex = jsonField(progressObj, "chapter").toIntOrNull() ?: 0
+                            novel.readAtTextIndex = jsonField(progressObj, "text").toIntOrNull() ?: 0
+                        }
             } catch (e: Exception) {
-                error("旧版书架中的小说<${novel.run { "$name.$author.$site" }}>阅读进度读取失败,", e)
+                Timber.e(e, "旧版书架中的小说<${novel.run { "$name.$author.$site" }}>阅读进度读取失败,")
                 // 进度次要，异常不抛出去，
             }
             novel
@@ -150,18 +169,18 @@ class DataMigration : Migration(), AnkoLogger {
 
     private fun importBookList(base: File) {
         base.resolve("BookList").listFiles()?.forEach {
-            it.readText().jsonPath.run {
-                val name = get<String>("$.name")
-                val list = get<JsonArray>("$.list").map {
-                    it.jsonPath.run {
-                        NovelMinimal(site = get("$.site"),
-                                author = get("$.author"),
-                                name = get("$.name"),
-                                detail = getDetailFromRequester(get("$.requester")))
-                    }
-                }
-                DataManager.importBookList(name, list)
+            val obj = JsonParser.parseString(it.readText()).asJsonObject
+            val name = jsonField(obj, "$.name")
+            val listArray = obj.getAsJsonArray("list")
+            val list = listArray.map { element ->
+                val itemObj = element.asJsonObject
+                NovelMinimal(
+                        site = jsonField(itemObj, "$.site"),
+                        author = jsonField(itemObj, "$.author"),
+                        name = jsonField(itemObj, "$.name"),
+                        detail = getDetailFromRequester(jsonFieldElement(itemObj, "$.requester")))
             }
+            DataManager.importBookList(name, list)
         }
     }
 }

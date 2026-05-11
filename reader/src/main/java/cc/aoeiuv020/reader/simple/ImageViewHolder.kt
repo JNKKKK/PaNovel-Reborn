@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import cc.aoeiuv020.reader.*
-import org.jetbrains.anko.dip
 
 internal class ImageViewHolder(
         itemView: View,
@@ -32,7 +31,7 @@ internal class ImageViewHolder(
                     setMargins((prAdapter.mLeftSpacing.toFloat() / 100 * itemView.width).toInt(),
                             topMargin,
                             (prAdapter.mRightSpacing.toFloat() / 100 * itemView.width).toInt(),
-                            ctx.dip(prAdapter.mParagraphSpacing))
+                            (prAdapter.mParagraphSpacing * ctx.resources.displayMetrics.density).toInt())
                 }
             }
 

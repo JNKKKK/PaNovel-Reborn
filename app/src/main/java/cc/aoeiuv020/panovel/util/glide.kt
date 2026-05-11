@@ -12,9 +12,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.info
+import timber.log.Timber
 import java.io.InputStream
 import java.net.URL
 
@@ -24,13 +22,13 @@ import java.net.URL
  */
 @Suppress("DEPRECATION")
 @Deprecated("glide说这种用法过时了，")
-class JarGlideModule : com.bumptech.glide.module.GlideModule, AnkoLogger {
+class JarGlideModule : com.bumptech.glide.module.GlideModule {
     override fun applyOptions(context: Context, builder: GlideBuilder) {
         // Do nothing.
     }
 
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
-        info { "Glide registerComponents: JarGlideModule" }
+        Timber.i("Glide registerComponents: JarGlideModule")
         registry.prepend(GlideUrl::class.java, InputStream::class.java, JarFactory())
     }
 }
@@ -39,7 +37,7 @@ class JarGlideModule : com.bumptech.glide.module.GlideModule, AnkoLogger {
 @GlideModule
 class JarLibraryGlideModule : LibraryGlideModule(), AnkoLogger {
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
-        info { "Glide registerComponents: JarGlideModule" }
+        Timber.i("Glide registerComponents: JarGlideModule")
         registry.append(String::class.java, InputStream::class.java, JarFactory())
     }
 }
@@ -55,9 +53,9 @@ private class JarFactory : ModelLoaderFactory<GlideUrl, InputStream> {
     }
 }
 
-private class JarLoader : ModelLoader<GlideUrl, InputStream>, AnkoLogger {
+private class JarLoader : ModelLoader<GlideUrl, InputStream> {
     override fun buildLoadData(model: GlideUrl, width: Int, height: Int, options: Options?): ModelLoader.LoadData<InputStream>? {
-        debug { "load $model" }
+        Timber.d("load $model")
         return ModelLoader.LoadData(model, UrlStreamFetcher(model.toURL()))
     }
 
@@ -72,7 +70,7 @@ private class JarLoader : ModelLoader<GlideUrl, InputStream>, AnkoLogger {
 
 private class UrlStreamFetcher(
         private val model: URL
-) : DataFetcher<InputStream>, AnkoLogger {
+) : DataFetcher<InputStream> {
     private lateinit var inputStream: InputStream
     override fun getDataClass(): Class<InputStream> {
         return InputStream::class.java
@@ -95,7 +93,7 @@ private class UrlStreamFetcher(
     }
 
     override fun loadData(priority: Priority?, callback: DataFetcher.DataCallback<in InputStream>) {
-        debug { "open $model" }
+        Timber.d("open $model")
         try {
             inputStream = model.openStream()
         } catch (e: Exception) {

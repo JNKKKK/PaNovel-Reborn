@@ -14,8 +14,7 @@ import cc.aoeiuv020.panovel.local.Previewer
 import cc.aoeiuv020.panovel.util.noCover
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.regex.pick
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
+import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 import java.net.URLDecoder
@@ -29,7 +28,7 @@ import java.nio.charset.UnsupportedCharsetException
  */
 class LocalManager(
         private val ctx: Context
-) : AnkoLogger {
+) {
 
     // 所有临时文件都保存在/data/data/cc.aoeiuv020.panovel/cache/local
     // 为了线程安全搞的，但貌似并不需要，一次只会导入一本，
@@ -41,9 +40,7 @@ class LocalManager(
     fun importLocalNovel(input: InputStream, uri: String,
                          requestInput: (ImportRequireValue, String) -> String?
     ): Pair<Novel, List<NovelChapter>> {
-        debug {
-            "importLocalNovel from: $uri"
-        }
+        Timber.d("importLocalNovel from: $uri")
         // 锁住临时文件，一次只能导入一本小说，
         return cache.file(KEY_TEMP_FILE).use { file ->
             file.outputStream().use { output ->
@@ -70,9 +67,7 @@ class LocalManager(
         val actualType = LocalNovelType.values().firstOrNull {
             it.suffix == actualTypeSuffix
         } ?: interrupt(ctx.getString(R.string.tip_no_file_type))
-        debug {
-            "importLocalNovel file type: ${actualType.suffix}"
-        }
+        Timber.d("importLocalNovel file type: ${actualType.suffix}")
         val actualCharset: Charset? = if (actualType == LocalNovelType.TEXT
                 || actualType == LocalNovelType.EPUB) {
             // 纯文本小说和epub电子书都需要指定编码，
@@ -85,9 +80,7 @@ class LocalManager(
                     interrupt(ctx.getString(R.string.tip_not_support_charset, it))
                 }
             } ?: interrupt(ctx.getString(R.string.tip_no_charset))
-            debug {
-                "importLocalNovel file charset: $actualCharset"
-            }
+            Timber.d("importLocalNovel file charset: $actualCharset")
             actualCharset
         } else {
             null
@@ -96,9 +89,7 @@ class LocalManager(
         // 一次性得到可能能得到的作者名，小说名，简介，
         val info = previewer.parse(actualType, actualCharset)
 
-        debug {
-            "importLocalNovel parse: <${info.name}-${info.author}${actualType.suffix}, ${info.image}, ${info.introduction}, ${info.chapters.size}>"
-        }
+        Timber.d("importLocalNovel parse: <${info.name}-${info.author}${actualType.suffix}, ${info.image}, ${info.introduction}, ${info.chapters.size}>")
         val suffix = actualType.suffix
         val defaultName = try {
             // Uri先解码，因为可能系统文件管理器给的uri中文件路径是经过encode的，

@@ -8,17 +8,16 @@ import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Site
+import android.content.Intent
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import cc.aoeiuv020.panovel.databinding.ActivitySiteChooseBinding
-import org.jetbrains.anko.ctx
-import org.jetbrains.anko.selector
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.toast
 import java.util.*
 
 class SiteChooseActivity : AppCompatActivity(), IView {
     companion object {
         fun start(ctx: Context) {
-            ctx.startActivity<SiteChooseActivity>()
+            ctx.startActivity(Intent(ctx, SiteChooseActivity::class.java))
         }
     }
 
@@ -31,7 +30,7 @@ class SiteChooseActivity : AppCompatActivity(), IView {
         }
 
         override fun onSiteSelect(site: Site) {
-            SingleSearchActivity.start(ctx, site.name)
+            SingleSearchActivity.start(this@SiteChooseActivity, site.name)
         }
 
         override fun onItemLongClick(vh: SiteListAdapter.ViewHolder): Boolean {
@@ -55,14 +54,16 @@ class SiteChooseActivity : AppCompatActivity(), IView {
                         presenter.cancelPinned(vh.site)
                     }
             )
-            selector(title = getString(R.string.select), items = actions.map { getString(it.first) }) { _, i ->
-                actions[i].second()
-            }
+            AlertDialog.Builder(this@SiteChooseActivity)
+                .setTitle(getString(R.string.select))
+                .setItems(actions.map { getString(it.first) }.toTypedArray()) { _, i ->
+                    actions[i].second()
+                }.show()
             return true
         }
 
         override fun onSettingsClick(site: Site) {
-            SiteSettingsActivity.start(ctx, site.name)
+            SiteSettingsActivity.start(this@SiteChooseActivity, site.name)
         }
     }
 
@@ -98,13 +99,13 @@ class SiteChooseActivity : AppCompatActivity(), IView {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.search -> FuzzySearchActivity.start(ctx)
+            R.id.search -> FuzzySearchActivity.start(this)
             else -> return super.onOptionsItemSelected(item)
         }
         return true
     }
 
     fun showError(message: String, e: Throwable) {
-        toast(message + e)
+        Toast.makeText(this, message + e, Toast.LENGTH_SHORT).show()
     }
 }

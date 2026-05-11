@@ -11,13 +11,12 @@ import cc.aoeiuv020.panovel.main.Check
 import cc.aoeiuv020.panovel.server.ServerManager
 import cc.aoeiuv020.panovel.util.VersionUtil
 import cc.aoeiuv020.panovel.util.notNullOrReport
+import android.content.Intent
+import android.net.Uri
+import androidx.appcompat.app.AlertDialog
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.regex.compilePattern
 import cc.aoeiuv020.regex.pick
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.browse
-import org.jetbrains.anko.email
-import org.jetbrains.anko.yesButton
 
 /**
  *
@@ -37,19 +36,20 @@ class AboutFragment : Fragment() {
         val currentVersionName = VersionUtil.getAppVersionName(requireActivity())
         binding.tvVersion.text = currentVersionName
         binding.tvEmail.setOnClickListener {
-            email(binding.tvEmail.text.toString(),
-                    "${requireActivity().getString(R.string.feedback)}[${requireActivity().getString(R.string.app_name)}]$currentVersionName")
+            val addr = binding.tvEmail.text.toString()
+            val subject = "${requireActivity().getString(R.string.feedback)}[${requireActivity().getString(R.string.app_name)}]$currentVersionName"
+            startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$addr")).putExtra(Intent.EXTRA_SUBJECT, subject))
         }
         // 可能没有连接上服务器，就用固定的群号，
         val number = ServerManager.config?.qqGroup ?: binding.tvGroup.text.toString()
         val qqClick = View.OnClickListener {
             val urlQQ = "mqqwpa://im/chat?chat_type=group&uin=${number}&version=1"
-            browse(urlQQ)
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(urlQQ)))
         }
         binding.llGroup.setOnClickListener(qqClick)
         binding.tvGroup.setOnClickListener(qqClick)
         val telegramClick = View.OnClickListener {
-            browse("https://t.me/${binding.tvTelegram.text}")
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/${binding.tvTelegram.text}")))
         }
         binding.llTelegram.setOnClickListener(telegramClick)
         binding.tvTelegram.setOnClickListener(telegramClick)
@@ -67,13 +67,13 @@ class AboutFragment : Fragment() {
                             null
                         }
                     }.unzip()
-            requireActivity().alert {
-                title = requireActivity().getString(R.string.library)
-                items(nameList) { _, i ->
-                    requireActivity().browse(linkList[i])
+            AlertDialog.Builder(requireActivity())
+                .setTitle(requireActivity().getString(R.string.library))
+                .setItems(nameList.toTypedArray()) { _, i ->
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(linkList[i])))
                 }
-                yesButton { it.dismiss() }
-            }.safelyShow()
+                .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
+                .create().safelyShow()
         }
 
         binding.tvUpdate.setOnClickListener {

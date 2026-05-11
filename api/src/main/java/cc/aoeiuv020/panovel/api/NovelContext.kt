@@ -1,11 +1,9 @@
 package cc.aoeiuv020.panovel.api
 
-import cc.aoeiuv020.gson.GsonUtils
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.gson.toJson
-import cc.aoeiuv020.log.debug
 import cc.aoeiuv020.panovel.api.site.*
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import okhttp3.Cookie
 import okhttp3.Headers
 import org.slf4j.Logger
@@ -22,32 +20,13 @@ import java.net.URL
 abstract class NovelContext {
     companion object {
         fun getAllSite(): List<NovelContext> = listOf(
-            Piaotian(), Biquge(), Liudatxt(), Qidian(), Sfacg(),
-            Snwx(), Syxs(), Yssm(), Qlwx(), Byzw(),
+            MockSite()
+        )
 
-            Fenghuaju(), Yllxs(), Mianhuatang(), Gxwztv(), Ymoxuan(),
-            Qingkan(), Ggdown(), Biqugebook(), Guanshuwang(), Jdxs520(),
-
-            Lread(), Wenxuemi(), Yipinxia(), N360dxs(), N7dsw(),
-            Aileleba(), Gulizw(), N73xs(), Siluke(), Wukong(),
-
-            Exiaoshuo(), Dajiadu(), Liewen(), Qingkan5(), Bqg5200(),
-            Lewen123(), Zaidudu(), Shangshu(), Haxds(), X23us(),
-
-            Zhuishu(), N2kzw(), Shu8(), N52ranwen(), Kuxiaoshuo(),
-            Zzdxsw(), Zhuaji(), Uctxt(), Lnovel(), Yidm(),
-
-            Manhuagui(), SiFang(), Qinxiaoshuo(), N9txs(), N168kanshu(),
-            Yunduwu(), N123du(), Biqugese(), Biqugezhh(), Shoudashu(),
-
-            Kssw(), Biquge5200(), N69shu(), Kenshuzw(), Wukong0(),
-            Ttkan()
-        ).asReversed()
-
-        const val sitesVersion = 12
+        const val sitesVersion = 13
 
         // 用于存取cookie,
-        private val gson: Gson = GsonUtils.gsonBuilder
+        private val gson: Gson = GsonBuilder()
             .disableHtmlEscaping()
             .setPrettyPrinting()
             .create()
@@ -108,7 +87,7 @@ abstract class NovelContext {
         @Synchronized
         get() = _cookies ?: (cookiesFile?.let { file ->
             try {
-                file.readText().toBean<Map<String, Cookie>>(gson)
+                gson.fromJson<Map<String, Cookie>>(file.readText(), object : TypeToken<Map<String, Cookie>>() {}.type)
             } catch (e: Exception) {
                 // 读取失败说明文件损坏，直接删除，下次保存，
                 file.delete()
@@ -119,14 +98,12 @@ abstract class NovelContext {
         }
         @Synchronized
         private set(value) {
-            logger.debug {
-                "setCookies $value"
-            }
+            logger.debug("setCookies {}", value)
             if (value == _cookies) {
                 return
             }
             _cookies = value
-            cookiesFile?.writeText(value.toJson(gson))
+            cookiesFile?.writeText(gson.toJson(value))
         }
 
     private val headersFile: File?
@@ -139,7 +116,7 @@ abstract class NovelContext {
         @Synchronized
         get() = _headers ?: (headersFile?.let { file ->
             try {
-                file.readText().toBean<Map<String, String>>(gson)
+                gson.fromJson<Map<String, String>>(file.readText(), object : TypeToken<Map<String, String>>() {}.type)
             } catch (e: Exception) {
                 // 读取失败说明文件损坏，直接删除，下次保存，
                 file.delete()
@@ -150,14 +127,12 @@ abstract class NovelContext {
         }
         @Synchronized
         private set(value) {
-            logger.debug {
-                "setheaders $value"
-            }
+            logger.debug("setheaders {}", value)
             if (value == _headers) {
                 return
             }
             _headers = value
-            headersFile?.writeText(value.toJson(gson))
+            headersFile?.writeText(gson.toJson(value))
         }
 
     /**
@@ -180,7 +155,7 @@ abstract class NovelContext {
         @Synchronized
         get() = _charset ?: (charsetFile?.let { file ->
             try {
-                file.readText().toBean<String>(gson)
+                gson.fromJson(file.readText(), String::class.java)
             } catch (e: Exception) {
                 // 读取失败说明文件损坏，直接删除，下次保存，
                 file.delete()
@@ -191,15 +166,13 @@ abstract class NovelContext {
         }
         @Synchronized
         set(value) {
-            logger.debug {
-                "set charset $value"
-            }
+            logger.debug("set charset {}", value)
             if (value == _charset) {
                 return
             }
             if (!value.isNullOrBlank()) {
                 _charset = value
-                charsetFile?.writeText(value.toJson(gson))
+                charsetFile?.writeText(gson.toJson(value))
             } else {
                 _charset = null
                 charsetFile?.delete()

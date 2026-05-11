@@ -1,7 +1,5 @@
 package cc.aoeiuv020.panovel.api.site
 
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.jsonpath.JsonPathUtils
 import cc.aoeiuv020.panovel.api.*
 import org.junit.Assert.*
 import java.io.File
@@ -27,7 +25,6 @@ abstract class BaseNovelContextText(clazz: KClass<out NovelContext>) {
     init {
         ProxyUtils.proxy()
         System.setProperty("org.slf4j.simpleLogger.log.${clazz.java.simpleName}", "trace")
-        JsonPathUtils.initGson()
         NovelContext.cache(cacheDir)
         NovelContext.files(filesDir)
     }
@@ -130,7 +127,7 @@ abstract class BaseNovelContextText(clazz: KClass<out NovelContext>) {
                           lastLine: String,
                           size: Int, count: Int = 3): List<String>? {
         if (site.hide || !enabled) return null
-        val list = content(extra).notNull()
+        val list = content(extra)!!
         println(list.size)
         list.take(count).forEach {
             println(it)

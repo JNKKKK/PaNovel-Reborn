@@ -16,17 +16,15 @@ import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.getStringExtra
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.widget.SearchView
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.ctx
-import org.jetbrains.anko.startActivity
+import android.content.Intent
 
 
-class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
+class FuzzySearchActivity : AppCompatActivity(), IView {
     private lateinit var binding: ActivityFuzzySearchBinding
 
     companion object {
         fun start(ctx: Context) {
-            ctx.startActivity<FuzzySearchActivity>()
+            ctx.startActivity(Intent(ctx, FuzzySearchActivity::class.java))
         }
 
         fun start(ctx: Context, novel: Novel) {
@@ -36,17 +34,17 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
 
         fun start(ctx: Context, name: String) {
             // 模糊搜索，fuzzy search,
-            ctx.startActivity<FuzzySearchActivity>("name" to name)
+            ctx.startActivity(Intent(ctx, FuzzySearchActivity::class.java).putExtra("name", name))
         }
 
         fun start(ctx: Context, name: String, author: String) {
             // 精确搜索，refine search,
-            ctx.startActivity<FuzzySearchActivity>("name" to name, "author" to author)
+            ctx.startActivity(Intent(ctx, FuzzySearchActivity::class.java).putExtra("name", name).putExtra("author", author))
         }
 
         fun startSingleSite(ctx: Context, site: String) {
             // 单个网站模糊搜索，fuzzy search,
-            ctx.startActivity<FuzzySearchActivity>("site" to site)
+            ctx.startActivity(Intent(ctx, FuzzySearchActivity::class.java).putExtra("site", site))
         }
     }
 
@@ -77,9 +75,9 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
         })
 
         binding.rvNovel.layoutManager = if (ListSettings.gridView) {
-            androidx.recyclerview.widget.GridLayoutManager(ctx, if (ListSettings.largeView) 3 else 5)
+            androidx.recyclerview.widget.GridLayoutManager(this, if (ListSettings.largeView) 3 else 5)
         } else {
-            androidx.recyclerview.widget.LinearLayoutManager(ctx)
+            androidx.recyclerview.widget.LinearLayoutManager(this)
         }
         presenter = FuzzySearchPresenter()
         presenter.attach(this)

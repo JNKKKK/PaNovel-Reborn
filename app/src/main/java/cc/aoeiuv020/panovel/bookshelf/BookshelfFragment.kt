@@ -15,13 +15,12 @@ import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.settings.ServerSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
-import org.jetbrains.anko.AnkoLogger
 
 /**
  *
  * Created by AoEiuV020 on 2017.10.15-17:22:28.
  */
-class BookshelfFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
+class BookshelfFragment : androidx.fragment.app.Fragment(), IView {
     private var _binding: NovelItemListBinding? = null
     private val binding get() = _binding!!
 

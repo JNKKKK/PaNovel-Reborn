@@ -6,14 +6,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.preference.PreferenceFragment
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.gson.GsonUtils
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.gson.toJson
 import cc.aoeiuv020.panovel.App
 import com.google.gson.Gson
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
+import timber.log.Timber
 import java.io.File
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -131,7 +126,7 @@ class UriDelegate(
             }
         } else {
             file.outputStream().use { output ->
-                App.ctx.contentResolver.openInputStream(value).notNull().use { input ->
+                App.ctx.contentResolver.openInputStream(value)!!.use { input ->
                     input.copyTo(output)
                 }
                 output.flush()
@@ -152,17 +147,17 @@ class UriDelegate(
  */
 sealed class PrefDelegate<T>(
         private val key: kotlin.String?
-) : ReadWriteProperty<Pref, T>, AnkoLogger {
+) : ReadWriteProperty<Pref, T> {
     final override fun getValue(thisRef: Pref, property: KProperty<*>): T {
         val realKey = key ?: property.name
         return getValue(thisRef.sharedPreferences, realKey).also {
-            debug { "${property.name} > $it" }
+            Timber.d("${property.name} > $it")
         }
     }
 
     final override fun setValue(thisRef: Pref, property: KProperty<*>, value: T) {
         val realKey = key ?: property.name
-        debug { "$realKey < $value" }
+        Timber.d("$realKey < $value")
         thisRef.sharedPreferences
                 .edit()
                 .also { setValue(it, realKey, value) }
@@ -177,7 +172,7 @@ sealed class PrefDelegate<T>(
             key: kotlin.String?
     ) : PrefDelegate<kotlin.String>(key) {
         override fun getValue(sp: SharedPreferences, key: kotlin.String): kotlin.String {
-            return sp.getString(key, default).notNull()
+            return sp.getString(key, default)!!
         }
 
         override fun setValue(editor: SharedPreferences.Editor, key: kotlin.String, value: kotlin.String) {
@@ -243,18 +238,18 @@ sealed class PrefDelegate<T>(
             private val type: Class<T>
     ) : PrefDelegate<T>(key) {
         companion object {
-            val gson: Gson = GsonUtils.gson
+            val gson: Gson = Gson()
 
             inline fun <reified T : kotlin.Enum<*>> new(default: T, key: kotlin.String? = null) = Enum(default, key, T::class.java)
         }
 
         override fun getValue(sp: SharedPreferences, key: kotlin.String): T {
             // 没有引号的字符串gson也可以解析的，
-            return sp.getString(key, null)?.toBean(gson, type) ?: default
+            return sp.getString(key, null)?.let { gson.fromJson(it, type) } ?: default
         }
 
         override fun setValue(editor: SharedPreferences.Editor, key: kotlin.String, value: T) {
-            // 不能用gson转String, 会带上引号“，
+            // 不能用gson转String, 会带上引号”，
             editor.putString(key, value.toString())
         }
     }
@@ -270,17 +265,17 @@ sealed class PrefDelegate<T>(
             private val type: Class<T>
     ) : PrefDelegate<T>(key) {
         companion object {
-            val gson: Gson = GsonUtils.gson
+            val gson: Gson = Gson()
 
             inline fun <reified T : kotlin.Any> new(default: T, key: kotlin.String? = null) = Any(default, key, T::class.java)
         }
 
         override fun getValue(sp: SharedPreferences, key: kotlin.String): T {
-            return sp.getString(key, null)?.toBean(gson, type) ?: default
+            return sp.getString(key, null)?.let { gson.fromJson(it, type) } ?: default
         }
 
         override fun setValue(editor: SharedPreferences.Editor, key: kotlin.String, value: T) {
-            editor.putString(key, value.toJson(gson))
+            editor.putString(key, gson.toJson(value))
         }
     }
 }

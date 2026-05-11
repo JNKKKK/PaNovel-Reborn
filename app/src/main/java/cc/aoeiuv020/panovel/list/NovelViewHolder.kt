@@ -17,9 +17,7 @@ import cc.aoeiuv020.panovel.text.CheckableImageView
 import cc.aoeiuv020.panovel.util.noCover
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.dip
+import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -32,7 +30,7 @@ class NovelViewHolder(itemView: View,
                       initItem: (NovelViewHolder) -> Unit = {},
                       actionDoneListener: (ItemAction, NovelViewHolder) -> Unit = { _, _ -> },
                       onError: (String, Throwable) -> Unit
-) : NovelListAdapter.BaseViewHolder(itemView), AnkoLogger {
+) : NovelListAdapter.BaseViewHolder(itemView) {
     private val itemListener = DefaultNovelItemActionListener(actionDoneListener, onError)
 
     // 所有View可空，准备支持不同布局，小的布局可能大部分View都没有，
@@ -125,13 +123,13 @@ class NovelViewHolder(itemView: View,
             itemListener.onStarChanged(this, it.isChecked)
         }
         refreshingDot?.setDotColor(dotColor)
-        refreshingDot?.setDotSize(ctx.dip(dotSize))
+        refreshingDot?.setDotSize((dotSize * ctx.resources.displayMetrics.density).toInt())
 
         initItem(this)
     }
 
     fun apply(novelManager: NovelManager, refreshTime: Date) {
-        debug { "apply <${novelManager.novel.run { "$site.$author.$name.$checkUpdateTime" }}>, refreshTime = $refreshTime" }
+        Timber.d("apply <${novelManager.novel.run { "$site.$author.$name.$checkUpdateTime" }}>, refreshTime = $refreshTime")
         show(novelManager)
 
         when {
@@ -181,15 +179,13 @@ class NovelViewHolder(itemView: View,
             // 判断阅读进度章节小于最后一章，
             this.novel.chaptersCount - 1 > this.novel.readAtChapterIndex
         }
-        debug {
-            "show hasNew: $hasNew"
-        }
+        Timber.d("show hasNew: $hasNew")
         refreshingDot?.refreshed(hasNew)
     }
 
     @UiThread
     private fun refreshing() {
-        debug { "refreshing ${name?.text}" }
+        Timber.d("refreshing ${name?.text}")
         // 显示正在刷新，
         refreshingDot?.refreshing()
     }
@@ -200,7 +196,7 @@ class NovelViewHolder(itemView: View,
      */
     @UiThread
     fun refresh() {
-        debug { "refresh ${name?.text}" }
+        Timber.d("refresh ${name?.text}")
         refreshing()
         refreshingNovelSet.add(novel.nId)
         itemListener.refreshChapters(this)
@@ -212,10 +208,8 @@ class NovelViewHolder(itemView: View,
     @UiThread
     fun refreshed(novelManager: NovelManager) {
         val novel = novelManager.novel
-        debug { "refreshed <${novel.run { "$site.$author.$name" }}>" }
-        debug {
-            "bind <${this.novel.run { "$site.$author.$name" }}>"
-        }
+        Timber.d("refreshed <${novel.run { "$site.$author.$name" }}>")
+        Timber.d("bind <${this.novel.run { "$site.$author.$name" }}>")
         refreshingNovelSet.remove(novel.nId)
         if (novel.nId == this.novel.nId) {
             // 显示刷新结果，

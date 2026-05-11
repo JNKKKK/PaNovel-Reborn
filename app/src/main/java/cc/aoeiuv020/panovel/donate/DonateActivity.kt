@@ -6,9 +6,8 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.databinding.ActivityDonateBinding
+import android.content.Intent
 import cc.aoeiuv020.panovel.settings.AdSettings
-import org.jetbrains.anko.ctx
-import org.jetbrains.anko.startActivity
 import java.util.concurrent.TimeUnit
 
 
@@ -17,7 +16,7 @@ class DonateActivity : AppCompatActivity() {
 
     companion object {
         fun start(context: Context) {
-            context.startActivity<DonateActivity>()
+            context.startActivity(Intent(context, DonateActivity::class.java))
         }
     }
 
@@ -29,15 +28,15 @@ class DonateActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         binding.lPaypal.setOnClickListener {
-            Donate.paypal.pay(ctx)
+            Donate.paypal.pay(this)
         }
 
         binding.lAlipay.setOnClickListener {
-            Donate.alipay.pay(ctx)
+            Donate.alipay.pay(this)
         }
 
         binding.lWeChatPay.setOnClickListener {
-            Donate.weChatPay.pay(ctx)
+            Donate.weChatPay.pay(this)
         }
 
         binding.tvDonateExplain.text = assets.open("Donate.txt").reader().readText()

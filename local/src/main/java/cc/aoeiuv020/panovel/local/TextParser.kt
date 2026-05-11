@@ -2,8 +2,6 @@ package cc.aoeiuv020.panovel.local
 
 import cc.aoeiuv020.base.jar.io.BufferedRandomAccessFile
 import cc.aoeiuv020.base.jar.io.readLines
-import cc.aoeiuv020.log.debug
-import cc.aoeiuv020.string.divide
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -23,9 +21,8 @@ class TextParser(
 
     override fun getNovelContent(chapter: LocalNovelChapter): List<String> {
         val extra = chapter.extra
-        val (beginPos, endPos) = extra.divide('/').let {
-            it.first.toLong() to it.second.toLong()
-        }
+        val beginPos = extra.substringBefore('/').toLong()
+        val endPos = extra.substringAfter('/', "").toLong()
         return BufferedRandomAccessFile(file, "r").use { raf ->
             // map去掉段首空格，顺便转成随机访问的ArrayList,
             raf.readLines(beginPos, endPos, charset.name()).map {
@@ -54,9 +51,7 @@ class TextParser(
             file.inputStream().reader(charset).buffered().forEachLine { line ->
                 raf.skipLine()
                 if (false == line.firstOrNull()?.isWhitespace()) {
-                    logger.debug {
-                        "add chapter: chapterName=$chapterName, extra=$beginPos/$endPos"
-                    }
+                    logger.debug("add chapter: chapterName={}, extra={}/{}", chapterName, beginPos, endPos)
                     // 行开头不是空格的都当成章节名，事后再过滤小说信息和广告，
                     // 第一个章节之前的内容存为0,
                     // 可能空内容，允许，卷名也单独一章空列表，
@@ -152,9 +147,8 @@ class TextParser(
             // 封面这个不是知轩藏书有的格式，自己app导出的有，
                 it.name.startsWith("封面：") -> image = it.name.removePrefix("封面：")
                 it.name == "内容简介" -> {
-                    val (beginPos, endPos) = it.extra.divide('/').let {
-                        it.first.toLong() to it.second.toLong()
-                    }
+                    val beginPos = it.extra.substringBefore('/').toLong()
+                    val endPos = it.extra.substringAfter('/', "").toLong()
                     BufferedRandomAccessFile(file, "r").use { raf ->
                         introduction = raf.readLines(beginPos, endPos, charset.name()).joinToString("\n") {
                             it.trim()

@@ -3,14 +3,14 @@ package cc.aoeiuv020.panovel.download
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
-import org.jetbrains.anko.startActivity
 
 class DownloadActivity : AppCompatActivity(), IView {
     companion object {
         fun start(ctx: Context) {
-            ctx.startActivity<DownloadActivity>()
+            ctx.startActivity(Intent(ctx, DownloadActivity::class.java))
         }
     }
 

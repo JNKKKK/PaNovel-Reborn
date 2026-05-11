@@ -7,10 +7,8 @@ import cc.aoeiuv020.panovel.local.LocalNovelProvider
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.DownloadSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.error
+import kotlinx.coroutines.*
+import timber.log.Timber
 import java.net.URL
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -31,7 +29,7 @@ class NovelManager(
         // server可空，本地小说不传入server，相关方法也都不调用，
         private val server: ServerManager?,
         private val dnmLocal: ThreadLocal<DownloadingNotificationManager>
-) : AnkoLogger {
+) {
 
     fun pinned() = app.pinned(novel)
 
@@ -127,12 +125,14 @@ class NovelManager(
             DataManager.download.download(this, cachedSize, list.size - cachedSize)
         }
         // 这里异步，不影响刷新结果返回的时间，
-        doAsync({ e ->
-            val message = "上传<${novel.bookId}>刷新结果失败,"
-            Reporter.post(message, e)
-            error(message, e)
-        }) {
-            server?.touchUpdate(novel)
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                server?.touchUpdate(novel)
+            } catch (e: Exception) {
+                val message = "上传<${novel.bookId}>刷新结果失败,"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+            }
         }
         return list
     }
@@ -162,7 +162,7 @@ class NovelManager(
      * 确保小说详情存在，
      */
     private fun requireDetail() {
-        debug { "requireNovelDetail $novel" }
+        Timber.d("requireNovelDetail $novel")
         // chapters非空表示已经获取过小说详情了，
         if (novel.chapters != null) {
             return

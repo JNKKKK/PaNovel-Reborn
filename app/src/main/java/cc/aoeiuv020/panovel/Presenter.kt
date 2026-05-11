@@ -1,24 +1,27 @@
 package cc.aoeiuv020.panovel
 
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.verbose
+import kotlinx.coroutines.*
+import timber.log.Timber
 
 /**
  * mvp的presenter,
  * Created by AoEiuV020 on 2017.10.11-15:32:17.
  */
-abstract class Presenter<T : IView> : AnkoLogger {
+abstract class Presenter<T : IView> {
+    protected val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
     var view: T? = null
         private set
 
     fun attach(view: IView) {
-        verbose { "$this attach $view" }
+        Timber.v("$this attach $view")
         @Suppress("UNCHECKED_CAST")
         this.view = view as? T
     }
 
     fun detach() {
-        verbose { "$this detach $view" }
+        Timber.v("$this detach $view")
+        scope.cancel()
         view = null
     }
 

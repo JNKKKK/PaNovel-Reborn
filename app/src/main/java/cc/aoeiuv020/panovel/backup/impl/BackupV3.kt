@@ -1,8 +1,9 @@
 package cc.aoeiuv020.panovel.backup.impl
 
 import android.net.Uri
-import cc.aoeiuv020.gson.toBean
+import cc.aoeiuv020.panovel.App
 import cc.aoeiuv020.panovel.backup.BackupOption
+import com.google.gson.reflect.TypeToken
 import cc.aoeiuv020.panovel.backup.BackupOption.*
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.NovelMinimal
@@ -12,7 +13,7 @@ import cc.aoeiuv020.panovel.share.Share
 import cc.aoeiuv020.panovel.util.Pref
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import com.google.gson.JsonElement
-import org.jetbrains.anko.debug
+import timber.log.Timber
 import java.io.File
 import java.util.*
 
@@ -21,7 +22,7 @@ import java.util.*
  */
 class BackupV3 : DefaultBackup() {
     override fun import(file: File, option: BackupOption): Int {
-        debug { "import $option from $file" }
+        Timber.d("import $option from $file")
         return when (option) {
             Bookshelf -> importBookshelf(file)
             BookList -> importBookList(file)
@@ -79,7 +80,7 @@ class BackupV3 : DefaultBackup() {
     private fun importPref(pref: Pref, file: File): Int {
         val editor = pref.sharedPreferences.edit()
         var count = 0
-        file.readText().toBean<Map<String, JsonElement>>().forEach { (key, value) ->
+        App.gson.fromJson<Map<String, JsonElement>>(file.readText(), object : TypeToken<Map<String, JsonElement>>() {}.type).forEach { (key, value) ->
             when (key) {
                 // 枚举，保存字符串，
                 "animationMode" -> editor.putString(key, value.asString)
@@ -167,7 +168,7 @@ class BackupV3 : DefaultBackup() {
     }
 
     private fun importBookshelf(file: File): Int {
-        val list = file.readText().toBean<List<NovelMinimal>>()
+        val list: List<NovelMinimal> = App.gson.fromJson(file.readText(), object : TypeToken<List<NovelMinimal>>() {}.type)
         DataManager.importBookshelf(list)
         return list.size
     }

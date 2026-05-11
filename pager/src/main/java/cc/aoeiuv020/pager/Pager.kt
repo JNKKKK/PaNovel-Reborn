@@ -10,9 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import cc.aoeiuv020.pager.animation.*
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.verbose
+import timber.log.Timber
 
 /**
  * 自定义翻页动画视图，
@@ -21,7 +19,7 @@ import org.jetbrains.anko.verbose
  *
  * Created by AoEiuV020 on 2017.12.02-17:58:54.
  */
-class Pager : View, PageAnimation.OnPageChangeListener, AnkoLogger {
+class Pager : View, PageAnimation.OnPageChangeListener {
     constructor(context: Context)
             : super(context)
 
@@ -99,21 +97,21 @@ class Pager : View, PageAnimation.OnPageChangeListener, AnkoLogger {
     }
 
     override fun hasPrev(): Boolean {
-        debug { "prev" }
+        Timber.d("prev")
         direction = PagerDirection.PREV
         actionListener?.onPagePrev()
         return drawer.scrollToPrev()
     }
 
     override fun hasNext(): Boolean {
-        debug { "next" }
+        Timber.d("next")
         direction = PagerDirection.NEXT
         actionListener?.onPageNext()
         return drawer.scrollToNext()
     }
 
     override fun pageCancel() {
-        debug { "cancel" }
+        Timber.d("cancel")
         when (direction) {
             PagerDirection.NEXT -> drawer.scrollToPrev()
             PagerDirection.PREV -> drawer.scrollToNext()
@@ -124,7 +122,7 @@ class Pager : View, PageAnimation.OnPageChangeListener, AnkoLogger {
 
     fun refresh() {
         mAnim?.refresh()
-                ?: debug { "anim == null" }
+                ?: Timber.d("anim == null")
     }
 
     /**
@@ -158,7 +156,7 @@ class Pager : View, PageAnimation.OnPageChangeListener, AnkoLogger {
     }
 
     override fun onDraw(canvas: Canvas) {
-        verbose { "onDraw" }
+        Timber.v("onDraw")
         mAnim?.draw(canvas)
     }
 
@@ -196,9 +194,7 @@ class Pager : View, PageAnimation.OnPageChangeListener, AnkoLogger {
     }
 
     private fun click(x: Float, y: Float) {
-        debug {
-            "<$fullScreenClickNextPage, $x, $y>"
-        }
+        Timber.d("<$fullScreenClickNextPage, $x, $y>")
         when {
             centerRect.contains(x.toInt(), y.toInt()) -> // 如果点击中心部分，回调退出全屏，
                 actionListener?.onCenterClick()

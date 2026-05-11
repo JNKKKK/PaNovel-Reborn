@@ -6,8 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import cc.aoeiuv020.reader.R
 import cc.aoeiuv020.reader.setHeight
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.dip
+import timber.log.Timber
 
 internal class TextViewHolder internal constructor(
         itemView: View,
@@ -17,9 +16,9 @@ internal class TextViewHolder internal constructor(
     private val divider: View = itemView.findViewById(R.id.divider)
     private val textView: TextView = itemView.findViewById(R.id.textView)
     fun setText(string: String) {
-        divider.setHeight(ctx.dip(prAdapter.mLineSpacing) + ctx.dip(prAdapter.mParagraphSpacing))
+        divider.setHeight((prAdapter.mLineSpacing * ctx.resources.displayMetrics.density).toInt() + (prAdapter.mParagraphSpacing * ctx.resources.displayMetrics.density).toInt())
         textView.apply {
-            prAdapter.debug { "initMargin <${prAdapter.mLeftSpacing}, ${prAdapter.mRightSpacing}>" }
+            Timber.d("initMargin <${prAdapter.mLeftSpacing}, ${prAdapter.mRightSpacing}>")
             text = string
             typeface = if (layoutPosition == 0) {
                 prAdapter.reader.config.titleFont
@@ -31,7 +30,7 @@ internal class TextViewHolder internal constructor(
                 requestLayout()
             }
             setTextColor(prAdapter.mTextColor)
-            setLineSpacing(context.dip(prAdapter.mLineSpacing).toFloat(), 1.toFloat())
+            setLineSpacing((prAdapter.mLineSpacing * context.resources.displayMetrics.density).toInt().toFloat(), 1.toFloat())
             post {
                 layoutParams = (layoutParams as ViewGroup.MarginLayoutParams).apply {
                     setMargins((prAdapter.mLeftSpacing.toFloat() / 100 * itemView.width).toInt(),

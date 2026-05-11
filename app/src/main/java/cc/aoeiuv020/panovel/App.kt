@@ -6,8 +6,7 @@ import android.content.Context
 import android.os.Process
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
-import cc.aoeiuv020.gson.GsonUtils
-import cc.aoeiuv020.jsonpath.JsonPathUtils
+import com.google.gson.GsonBuilder
 import cc.aoeiuv020.panovel.ad.AdHelper
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
@@ -17,7 +16,6 @@ import cc.aoeiuv020.ssl.TLSSocketFactory
 import cc.aoeiuv020.ssl.TrustManagerUtils
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
-import org.jetbrains.anko.AnkoLogger
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 import kotlin.properties.Delegates
@@ -28,7 +26,7 @@ import kotlin.properties.Delegates
  * Created by AoEiuV020 on 2017.10.03-17:04:22.
  */
 @Suppress("MemberVisibilityCanPrivate")
-class App : MultiDexApplication(), AnkoLogger {
+class App : MultiDexApplication() {
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var ctx: Context
@@ -41,7 +39,7 @@ class App : MultiDexApplication(), AnkoLogger {
         /**
          * 用于app不同页面传递数据时的序列化，
          */
-        val gson: Gson = GsonUtils.gsonBuilder
+        val gson: Gson = GsonBuilder()
             .disableHtmlEscaping()
             .setPrettyPrinting()
             .create()
@@ -79,10 +77,10 @@ class App : MultiDexApplication(), AnkoLogger {
     }
 
     /**
-     * 初始化要放在用到JsonPath之前，
+     * JSON initialization - no longer needed after removing custom JsonPathUtils.
      */
     private fun initJson() {
-        JsonPathUtils.initGson()
+        // No-op: custom JsonPathUtils removed, using Gson directly.
     }
 
     /**

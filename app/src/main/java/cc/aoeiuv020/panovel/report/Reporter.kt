@@ -7,8 +7,7 @@ import cc.aoeiuv020.panovel.BuildConfig
 import cc.aoeiuv020.panovel.api.NoInternetException
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import com.tencent.bugly.crashreport.CrashReport
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.error
+import timber.log.Timber
 import java.net.UnknownHostException
 
 /**
@@ -17,7 +16,7 @@ import java.net.UnknownHostException
  *
  * Created by AoEiuV020 on 2018.05.17-18:04:30.
  */
-object Reporter : AnkoLogger {
+object Reporter {
     @SuppressLint("HardwareIds")
     fun init(ctx: Context) {
         // 第三个参数为SDK调试模式开关，
@@ -51,7 +50,7 @@ object Reporter : AnkoLogger {
 
     fun post(message: String) {
         val e = IllegalStateException(message)
-        error(message, e)
+        Timber.e(e, message)
         postException(e)
     }
 
@@ -60,7 +59,7 @@ object Reporter : AnkoLogger {
     }
 
     fun post(message: String, e: Throwable) {
-        error(message, e)
+        Timber.e(e, message)
         postException(IllegalStateException(message, e))
     }
 

@@ -7,9 +7,8 @@ import cc.aoeiuv020.panovel.qrcode.QrCodeManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.share.Share
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.error
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.*
+import timber.log.Timber
 
 /**
  *
@@ -21,139 +20,139 @@ class BookListFragmentPresenter : Presenter<BookListFragment>() {
     }
 
     private fun requestBookListList() {
-        view?.doAsync({ e ->
-            val message = "查询书单列表失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            view?.activity?.runOnUiThread {
-                view?.showError(message, e)
-            }
-        }) {
-            val list = DataManager.allBookList()
-            uiThread {
+        scope.launch {
+            try {
+                val list = withContext(Dispatchers.IO) {
+                    DataManager.allBookList()
+                }
                 view?.showBookListList(list)
+            } catch (e: Exception) {
+                val message = "查询书单列表失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                view?.showError(message, e)
             }
         }
     }
 
     fun shareBookList(bookList: BookList) {
         view?.showUploading()
-        view?.doAsync({ e ->
-            val message = "上传书单失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            view?.activity?.runOnUiThread {
-                view?.showError(message, e)
-            }
-        }) {
-            val url = Share.shareBookList(bookList, OtherSettings.shareExpiration)
-            val qrCode = QrCodeManager.generate(url)
-            uiThread {
+        scope.launch {
+            try {
+                val (url, qrCode) = withContext(Dispatchers.IO) {
+                    val url = Share.shareBookList(bookList, OtherSettings.shareExpiration)
+                    val qrCode = QrCodeManager.generate(url)
+                    Pair(url, qrCode)
+                }
                 view?.showSharedUrl(url, qrCode)
+            } catch (e: Exception) {
+                val message = "上传书单失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                view?.showError(message, e)
             }
         }
     }
 
     fun renameBookList(bookList: BookList, newName: String) {
-        view?.doAsync({ e ->
-            val message = "书单重命名失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            view?.activity?.runOnUiThread {
-                view?.showError(message, e)
-            }
-        }) {
-            DataManager.renameBookList(bookList, newName)
-            uiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DataManager.renameBookList(bookList, newName)
+                }
                 // 干脆整个刷新，没必要找麻烦，
                 view?.refresh()
+            } catch (e: Exception) {
+                val message = "书单重命名失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                view?.showError(message, e)
             }
         }
     }
 
     fun copyBookList(bookList: BookList, newName: String) {
-        view?.doAsync({ e ->
-            val message = "书单重命名失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            view?.activity?.runOnUiThread {
-                view?.showError(message, e)
-            }
-        }) {
-            DataManager.copyBookList(bookList, newName)
-            uiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DataManager.copyBookList(bookList, newName)
+                }
                 // 干脆整个刷新，没必要找麻烦，
                 view?.refresh()
+            } catch (e: Exception) {
+                val message = "书单复制失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                view?.showError(message, e)
             }
         }
     }
 
     fun remove(bookList: BookList) {
-        view?.doAsync({ e ->
-            val message = "删除书单失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            view?.activity?.runOnUiThread {
-                view?.showError(message, e)
-            }
-        }) {
-            DataManager.removeBookList(bookList)
-            uiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DataManager.removeBookList(bookList)
+                }
                 // 干脆整个刷新，没必要找麻烦，
                 view?.refresh()
+            } catch (e: Exception) {
+                val message = "删除书单失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                view?.showError(message, e)
             }
         }
     }
 
     fun newBookList(name: String) {
-        view?.doAsync({ e ->
-            val message = "添加书单失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            view?.activity?.runOnUiThread {
-                view?.showError(message, e)
-            }
-        }) {
-            DataManager.newBookList(name)
-            uiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DataManager.newBookList(name)
+                }
                 // 干脆整个刷新，没必要找麻烦，
                 view?.refresh()
+            } catch (e: Exception) {
+                val message = "添加书单失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                view?.showError(message, e)
             }
         }
     }
 
     fun removeBookshelf(bookList: BookList) {
         view?.showRemoving()
-        doAsync({ e ->
-            val message = "从书架移出书单中的小说失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            view?.activity?.runOnUiThread {
-                view?.showError(message, e)
-            }
-        }) {
-            DataManager.removeFromBookshelf(bookList)
-            uiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DataManager.removeFromBookshelf(bookList)
+                }
                 view?.showRemoveBookshelfComplete()
+            } catch (e: Exception) {
+                val message = "从书架移出书单中的小说失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                view?.showError(message, e)
             }
         }
     }
 
     fun addBookshelf(bookList: BookList) {
         view?.showAdding()
-        doAsync({ e ->
-            val message = "加入书单中的小说到书架失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            view?.activity?.runOnUiThread {
-                view?.showError(message, e)
-            }
-        }) {
-            DataManager.addToBookshelf(bookList)
-            uiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DataManager.addToBookshelf(bookList)
+                }
                 view?.showAddBookshelfComplete()
+            } catch (e: Exception) {
+                val message = "加入书单中的小说到书架失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                view?.showError(message, e)
             }
         }
     }
-
 }

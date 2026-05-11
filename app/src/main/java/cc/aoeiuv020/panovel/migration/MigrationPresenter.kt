@@ -10,8 +10,9 @@ import cc.aoeiuv020.panovel.util.Delegates
 import cc.aoeiuv020.panovel.util.Pref
 import cc.aoeiuv020.panovel.util.VersionName
 import cc.aoeiuv020.panovel.util.VersionUtil
-import org.jetbrains.anko.*
 import kotlin.reflect.KClass
+import timber.log.Timber
+import kotlinx.coroutines.*
 
 /**
  * mvp模式，
@@ -22,7 +23,7 @@ import kotlin.reflect.KClass
  */
 class MigrationPresenter(
     override val ctx: Context
-) : Presenter<MigrationView>(), Pref, AnkoLogger {
+) : Presenter<MigrationView>(), Pref {
     // sp file is App.ctx.packageName + "_$name"
     override val name: String = "Migration"
 
@@ -53,103 +54,108 @@ class MigrationPresenter(
     )
 
     fun start() {
-        debug { "start," }
+        Timber.d("start,")
         var cachedVersionName = VersionName(cachedVersion)
         val currentVersionName = VersionName(currentVersion)
-        view?.doAsync({ e ->
-            val message = if (e is MigrateException) {
-                "迁移旧版数据失败，从<${cachedVersionName.name}>到<${e.migration.to.name}>"
-            } else {
-                "未知错误，"
-            }
-            Reporter.post(message, e)
-            error(message, e)
-            ctx.runOnUiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    // 网站列表的迁移单独处理不影响版本号，直接同步最新支持的所有网站到数据库，
+                    // 由于操作了数据库，同时会触发room版本迁移，
+                    val sitesMigration = SitesMigration()
+                    if (NovelContext.sitesVersion > SiteSettings.cachedVersion) {
+                        withContext(Dispatchers.Main) {
+                            view?.showUpgrading(from = cachedVersionName, migration = sitesMigration)
+                        }
+                        sitesMigration.migrate(ctx, cachedVersionName)
+                        SiteSettings.cachedVersion = NovelContext.sitesVersion
+                    }
+                    when {
+                        cachedVersionName == currentVersionName -> {
+                            // 版本没变就直接返回，
+                            withContext(Dispatchers.Main) {
+                                view?.showMigrateComplete(from = currentVersionName, to = currentVersionName)
+                            }
+                        }
+                        cachedVersionName > currentVersionName -> {
+                            // 降级就记录一下现在的版本，防止反复显示降级，同时下次升级时能正常迁移降级后生成的数据，
+                            cachedVersion = currentVersion
+                            withContext(Dispatchers.Main) {
+                                view?.showDowngrade(from = cachedVersionName, to = currentVersionName)
+                                view?.showMigrateComplete(from = cachedVersionName, to = currentVersionName)
+                            }
+                        }
+                        cachedVersionName < currentVersionName -> {
+                            Timber.d("migrate start <${cachedVersionName.name} to ${currentVersionName.name}>")
+                            // 缓存一开始的版本，迁移完成后展示，
+                            val beginVersionName = cachedVersionName
+                            list.dropWhile { (versionName, _) ->
+                                // 缓存的版本如果大于等于这个Migration的版本，就跳过这个Migration,
+                                cachedVersionName >= VersionName(versionName)
+                            }.forEach { (versionName, migrations) ->
+                                // 遍历所有剩下的Migration分段升级，
+                                // ui线程拿到这个cachedVersionName时可能已经变了，所以来个临时变量，虽然无所谓，
+                                val from = cachedVersionName
+                                migrations.forEach { clazz ->
+                                    // 反射拿对象，免得加载不需要的migration,
+                                    val migration = clazz.java.newInstance()
+                                    withContext(Dispatchers.Main) {
+                                        view?.showUpgrading(from = from, migration = migration)
+                                    }
+                                    Timber.d("migrate $cachedVersionName to ${migration.to}")
+                                    try {
+                                        migration.migrate(ctx, cachedVersionName)
+                                    } catch (e: Exception) {
+                                        if (e is MigrateException) {
+                                            throw e
+                                        } else {
+                                            throw MigrateException(migration = migration, cause = e)
+                                        }
+                                    }
+                                }
+                                // 每个阶段分别保存升级后的版本，
+                                cachedVersionName = VersionName(versionName)
+                                cachedVersion = cachedVersionName.name
+                            }
+                            // 最后缓存当前版本，
+                            cachedVersionName = currentVersionName
+                            cachedVersion = cachedVersionName.name
+                            withContext(Dispatchers.Main) {
+                                view?.showMigrateComplete(from = beginVersionName, to = currentVersionName)
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                val message = if (e is MigrateException) {
+                    "迁移旧版数据失败，从<${cachedVersionName.name}>到<${e.migration.to.name}>"
+                } else {
+                    "未知错误，"
+                }
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 if (e is MigrateException) {
                     view?.showMigrateError(from = cachedVersionName, migration = e.migration)
                 } else {
                     view?.showError(message, e)
                 }
             }
-        }) {
-            // 网站列表的迁移单独处理不影响版本号，直接同步最新支持的所有网站到数据库，
-            // 由于操作了数据库，同时会触发room版本迁移，
-            val sitesMigration = SitesMigration()
-            if (NovelContext.sitesVersion > SiteSettings.cachedVersion) {
-                uiThread {
-                    view?.showUpgrading(from = cachedVersionName, migration = sitesMigration)
-                }
-                sitesMigration.migrate(ctx, cachedVersionName)
-                SiteSettings.cachedVersion = NovelContext.sitesVersion
-            }
-            when {
-                cachedVersionName == currentVersionName -> uiThread {
-                    // 版本没变就直接返回，
-                    view?.showMigrateComplete(from = currentVersionName, to = currentVersionName)
-                }
-                cachedVersionName > currentVersionName -> uiThread {
-                    // 降级就记录一下现在的版本，防止反复显示降级，同时下次升级时能正常迁移降级后生成的数据，
-                    cachedVersion = currentVersion
-                    view?.showDowngrade(from = cachedVersionName, to = currentVersionName)
-                    view?.showMigrateComplete(from = cachedVersionName, to = currentVersionName)
-                }
-                cachedVersionName < currentVersionName -> {
-                    debug {
-                        "migrate start <${cachedVersionName.name} to ${currentVersionName.name}>"
-                    }
-                    // 缓存一开始的版本，迁移完成后展示，
-                    val beginVersionName = cachedVersionName
-                    list.dropWhile { (versionName, _) ->
-                        // 缓存的版本如果大于等于这个Migration的版本，就跳过这个Migration,
-                        cachedVersionName >= VersionName(versionName)
-                    }.forEach { (versionName, migrations) ->
-                        // 遍历所有剩下的Migration分段升级，
-                        // ui线程拿到这个cachedVersionName时可能已经变了，所以来个临时变量，虽然无所谓，
-                        val from = cachedVersionName
-                        migrations.forEach { clazz ->
-                            // 反射拿对象，免得加载不需要的migration,
-                            val migration = clazz.java.newInstance()
-                            uiThread {
-                                view?.showUpgrading(from = from, migration = migration)
-                            }
-                            debug { "migrate $cachedVersionName to ${migration.to}" }
-                            try {
-                                migration.migrate(ctx, cachedVersionName)
-                            } catch (e: Exception) {
-                                if (e is MigrateException) {
-                                    throw e
-                                } else {
-                                    throw MigrateException(migration = migration, cause = e)
-                                }
-                            }
-
-                        }
-                        // 每个阶段分别保存升级后的版本，
-                        cachedVersionName = VersionName(versionName)
-                        cachedVersion = cachedVersionName.name
-                    }
-                    // 最后缓存当前版本，
-                    cachedVersionName = currentVersionName
-                    cachedVersion = cachedVersionName.name
-                    uiThread {
-                        view?.showMigrateComplete(from = beginVersionName, to = currentVersionName)
-                    }
-                }
-            }
         }
     }
 
     fun ignoreMigration(migration: Migration) {
-        debug { "ignoreMigration $migration" }
-        view?.doAsync({ e ->
-            val message = "sp保存出错，"
-            Reporter.post(message, e)
-            error(message, e)
-            ctx.runOnUiThread {
+        Timber.d("ignoreMigration $migration")
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    cachedVersion = migration.to.name
+                }
+            } catch (e: Exception) {
+                val message = "sp保存出错，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 view?.showError(message, e)
             }
-        }) {
-            cachedVersion = migration.to.name
         }
     }
 }

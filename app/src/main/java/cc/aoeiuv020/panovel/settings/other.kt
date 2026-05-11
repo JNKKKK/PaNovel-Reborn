@@ -24,10 +24,6 @@ object OtherSettings : Pref {
     var shareExpiration: Expiration by Delegates.enum(Expiration.NONE)
     var reportCrash: Boolean by Delegates.boolean(true)
 
-    /**
-     * 起点数据页打开小说是否要跳到起点app，
-     */
-    var jumpQidian: Boolean by Delegates.boolean(true)
 
     var chapterColorDefault: Int by Delegates.int(0xff000000.toInt())
 
@@ -52,11 +48,5 @@ object OtherSettings : Pref {
     // 主页菜单扫一扫开关，
     var scan: Boolean by Delegates.boolean(false)
 
-    // 起点数据开关，
-    var qidianshuju: Boolean by Delegates.boolean(false)
-    // 书品网开关，
-    var sp7: Boolean by Delegates.boolean(false)
-    // 起点图网开关，
-    var qidiantu: Boolean by Delegates.boolean(false)
 
 }

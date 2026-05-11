@@ -13,13 +13,10 @@ import android.preference.PreferenceFragment
 import android.preference.TwoStatePreference
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
-import cc.aoeiuv020.anull.notNull
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.util.Pref
 import cc.aoeiuv020.panovel.util.attach
-import org.jetbrains.anko.act
-import org.jetbrains.anko.ctx
 
 
 /**
@@ -65,17 +62,17 @@ class LocationPreferenceFragment : BasePreferenceFragment(LocationSettings, R.xm
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
             // 缓存目录修改立即生效，
-            "cacheLocation" -> DataManager.resetCacheLocation(activity.notNull())
+            "cacheLocation" -> DataManager.resetCacheLocation(activity!!)
         }
     }
 
     private fun requestPermissions() {
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager())) {
             val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-            intent.data = Uri.parse("package:${ctx.packageName}")
+            intent.data = Uri.parse("package:${activity!!.packageName}")
             startActivityForResult(intent, 1)
         } else {
-            ActivityCompat.requestPermissions(act, arrayOf(
+            ActivityCompat.requestPermissions(activity!!, arrayOf(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
             ), 1)

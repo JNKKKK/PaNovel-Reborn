@@ -13,8 +13,7 @@ import cc.aoeiuv020.panovel.databinding.ActivityNovelTextBinding
 import cc.aoeiuv020.panovel.settings.ReaderSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
+import timber.log.Timber
 
 /**
  * 全屏Activity，绝大部分代码是自动生成的，
@@ -22,7 +21,7 @@ import org.jetbrains.anko.debug
  * Created by AoEiuV020 on 2017.09.15-17:38.
  */
 @Suppress("MemberVisibilityCanPrivate", "unused")
-abstract class NovelTextBaseFullScreenActivity : AppCompatActivity(), AnkoLogger {
+abstract class NovelTextBaseFullScreenActivity : AppCompatActivity() {
     protected lateinit var binding: ActivityNovelTextBinding
     private val mHideHandler = Handler()
     @SuppressLint("InlinedApi")
@@ -115,13 +114,13 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity(), AnkoLogger
     }
 
     fun hide() {
-        debug { "hide" }
+        Timber.d("hide")
         binding.fullscreenContentControls.visibility = View.GONE
         fullScreen()
     }
 
     protected open fun show() {
-        debug { "show" }
+        Timber.d("show")
         if (ReaderSettings.fullScreen) {
             binding.flContent.systemUiVisibility =
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or

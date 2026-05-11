@@ -26,12 +26,7 @@
         android:title="@string/source"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/qidiantu"
-        android:title="@string/qidiantu"
-        app:showAsAction="never" />
-
-    <item
+<item
         android:id="@+id/subscript"
         android:title="@string/subscript"
         android:visible="false"

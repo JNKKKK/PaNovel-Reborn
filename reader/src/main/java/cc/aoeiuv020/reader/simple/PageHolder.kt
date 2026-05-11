@@ -7,10 +7,11 @@ import android.widget.ProgressBar
 import cc.aoeiuv020.reader.R
 import cc.aoeiuv020.reader.hide
 import cc.aoeiuv020.reader.show
-import org.jetbrains.anko.*
+import kotlinx.coroutines.*
+import timber.log.Timber
 import kotlin.properties.Delegates
 
-internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
+internal class PageHolder(private val reader: SimpleReader) {
     private val ctx = reader.ctx as Activity
     private val requester = reader.requester
     val itemView: View = View.inflate(ctx, R.layout.simple_view_pager_item, null)
@@ -21,6 +22,7 @@ internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
     val ntrAdapter = PageRecyclerAdapter(reader)
     private var textProgress: Int? = null
     private var index: Int by Delegates.notNull()
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     init {
         textRecyclerView.layoutManager = layoutManager
@@ -46,19 +48,22 @@ internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
         progressBar.show()
         ntrAdapter.clear()
         ntrAdapter.setChapterName(chapter)
-        doAsync({ e ->
-            val message = "获取小说文本失败，"
-            error(message, e)
-            showError(message, e)
-        }, reader.ioExecutorService) {
-            val novelText = requester.requestChapter(index, refresh)
-            uiThread {
+        scope.launch {
+            try {
+                val novelText = withContext(reader.ioExecutorService.asCoroutineDispatcher()) {
+                    requester.requestChapter(index, refresh)
+                }
                 showText(novelText)
+            } catch (e: Exception) {
+                val message = "获取小说文本失败，"
+                Timber.e(e, message)
+                showError(message, e)
             }
         }
     }
 
     fun destroy() {
+        scope.cancel()
     }
 
     fun refresh() {
@@ -95,14 +100,14 @@ internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
     }
 
     fun setTextProgress(textProgress: Int) {
-        debug { "setTextProgress $textProgress" }
+        Timber.d("setTextProgress $textProgress")
         this.textProgress = textProgress
         textRecyclerView.scrollToPosition(textProgress)
     }
 
     fun getTextProgress(): Int {
         return layoutManager.findLastVisibleItemPosition().also {
-            debug { "getTextProgress $it" }
+            Timber.d("getTextProgress $it")
         }
     }
 

@@ -2,15 +2,13 @@ package cc.aoeiuv020.panovel.backup.impl
 
 import cc.aoeiuv020.panovel.backup.BackupOption
 import cc.aoeiuv020.panovel.backup.IBackup
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.error
+import timber.log.Timber
 import java.io.File
 
 /**
  * Created by AoEiuV020 on 2018.05.11-20:27:17.
  */
-abstract class DefaultBackup : IBackup, AnkoLogger {
+abstract class DefaultBackup : IBackup {
 
     /**
      * @return 返回选项对应的名字和文件名，
@@ -24,9 +22,7 @@ abstract class DefaultBackup : IBackup, AnkoLogger {
 
     @Synchronized
     override fun import(base: File, options: Set<BackupOption>): String {
-        debug {
-            "import from $base\n enable $options"
-        }
+        Timber.d("import from $base\n enable $options")
         val sb = StringBuilder()
         options.forEach { option ->
             val name = getOptionName(option)
@@ -35,7 +31,7 @@ abstract class DefaultBackup : IBackup, AnkoLogger {
                 sb.appendln("成功导入$name: <$count>条，")
             } catch (e: Exception) {
                 // 其中一项出异常时继续其他项，
-                error("读取[$name]失败，", e)
+                Timber.e(e, "读取[$name]失败，")
             }
         }
         return sb.toString()
@@ -45,9 +41,7 @@ abstract class DefaultBackup : IBackup, AnkoLogger {
 
     @Synchronized
     override fun export(base: File, options: Set<BackupOption>): String {
-        debug {
-            "export to $base\n enable $options"
-        }
+        Timber.d("export to $base\n enable $options")
         val sb = StringBuilder()
         options.forEach { option ->
             val name = getOptionName(option)
@@ -56,7 +50,7 @@ abstract class DefaultBackup : IBackup, AnkoLogger {
                 sb.appendln("成功导出$name: <$count>条，")
             } catch (e: Exception) {
                 // 其中一项出异常时继续其他项，
-                error("写入[$name]失败，", e)
+                Timber.e(e, "写入[$name]失败，")
             }
         }
         return sb.toString()

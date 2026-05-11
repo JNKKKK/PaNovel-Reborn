@@ -46,4 +46,5 @@ dependencies {
         exclude group: 'com.squareup.okhttp3'
     }
     implementation 'dnsjava:dnsjava:3.3.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
 }

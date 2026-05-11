@@ -2,12 +2,10 @@ package cc.aoeiuv020.panovel.local
 
 import cc.aoeiuv020.base.jar.findAll
 import cc.aoeiuv020.base.jar.textList
-import cc.aoeiuv020.log.debug
 import cc.aoeiuv020.regex.pick
-import net.sf.jazzlib.ZipFile
-import nl.siegmann.epublib.domain.Book
-import nl.siegmann.epublib.domain.TOCReference
-import nl.siegmann.epublib.epub.EpubReader
+import io.documentnode.epub4j.domain.Book
+import io.documentnode.epub4j.domain.TOCReference
+import io.documentnode.epub4j.epub.EpubReader
 import org.jsoup.Jsoup
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -38,11 +36,7 @@ class EpubParser(
         // epub也需要指定编码，
         val requester: String = charset.name()
 
-        val zipFile = ZipFile(file)
-        // 这个编码好像没什么用，epublib库里到处都是写死的utf8,
-        val book: Book = EpubReader().readEpubLazy(zipFile, charset.name())
-        // 马上就可以关闭了，
-        zipFile.close()
+        val book: Book = file.inputStream().use { EpubReader().readEpub(it) }
 
         val opfUrl = URL(rootUrl, book.opfResource.href)
 
@@ -93,9 +87,7 @@ class EpubParser(
                 // 目录href记录的是相对opf文件的路径，
                 // 我要的是相对根目录的路径，
                 val extra = getPath(opfUrl, href)
-                logger.debug {
-                    "add chapter: name=$title, extra=$extra"
-                }
+                logger.debug("add chapter: name={}, extra={}", title, extra)
                 chapters.add(LocalNovelChapter(name = title, extra = extra))
             }
             toc.children.forEach(::addToc)
@@ -125,7 +117,7 @@ class EpubParser(
     override fun getNovelContent(chapter: LocalNovelChapter): List<String> {
         val extra = chapter.extra
         val chapterUrl = URL(rootUrl, extra)
-        logger.debug { "getContent: $chapterUrl" }
+        logger.debug("getContent: {}", chapterUrl)
         return chapterUrl.openStream().use { input ->
             // 本章地址作为baseUri, 才能正确得到引用的资源，比如图片，
             // ![img](jar:file:/home/aoeiuv/tmp/panovel/epub/打工吧！魔王大人17.epub!/OPS/images/17-007.jpg)
@@ -139,7 +131,7 @@ class EpubParser(
     override fun getImage(extra: String): URL {
         // api19模拟器上测试发现文件路径会重复出现，电脑和高版本安卓没有出现，
         return URL(rootUrl, extra.removePrefix(rootUrl.toString())).also {
-            logger.debug { "getImage <$extra> -> <$it>" }
+            logger.debug("getImage <{}> -> <{}>", extra, it)
         }
     }
 

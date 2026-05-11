@@ -8,27 +8,22 @@ import android.content.Context
 import android.os.Build
 import android.webkit.CookieManager
 import android.webkit.CookieSyncManager
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
+import timber.log.Timber
 
 /**
  * Created by AoEiuV020 on 2018.05.23-20:25:48.
  */
-class CookieManager(@Suppress("UNUSED_PARAMETER") ctx: Context) : AnkoLogger {
+class CookieManager(@Suppress("UNUSED_PARAMETER") ctx: Context) {
     private val cookieManager = CookieManager.getInstance()
 
     fun putCookie(domain: String, cookiePair: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cookieManager.setCookie(domain, cookiePair) {
-                debug {
-                    "cookie has been set $it, <$${DataManager.cookie}>"
-                }
+                Timber.d("cookie has been set $it, <$${DataManager.cookie}>")
             }
         } else {
             cookieManager.setCookie(domain, cookiePair)
-            debug {
-                "cookie has been set, <$${DataManager.cookie}>"
-            }
+            Timber.d("cookie has been set, <$${DataManager.cookie}>")
         }
 
     }

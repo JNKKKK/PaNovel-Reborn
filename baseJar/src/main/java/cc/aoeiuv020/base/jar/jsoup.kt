@@ -2,12 +2,11 @@
 
 package cc.aoeiuv020.base.jar
 
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.okhttp.OkHttpUtils
-import cc.aoeiuv020.okhttp.charset
-import cc.aoeiuv020.okhttp.url
 import cc.aoeiuv020.regex.compileRegex
 import okhttp3.Call
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -23,16 +22,24 @@ import java.util.*
  * Created by AoEiuV020 on 2018.06.10-15:56:52.
  */
 
+private val jsoupClient: OkHttpClient = OkHttpClient()
+
+private fun Response.charset(): String? = body?.contentType()?.charset()?.name()
+private fun Response.url(): String = request.url.toString()
+
 fun jsoupParse(call: Call): Document {
     val response = call.execute()
-    return response.body.notNull().use {
+    return response.body!!.use {
         it.byteStream().use { input ->
             Jsoup.parse(input, response.charset(), response.url())
         }
     }
 }
 
-fun jsoupConnect(url: String): Document = jsoupParse(OkHttpUtils.get(url))
+fun jsoupConnect(url: String): Document {
+    val request = Request.Builder().url(url).build()
+    return jsoupParse(jsoupClient.newCall(request))
+}
 
 fun Element.findAll(predicate: (Element) -> Boolean): List<Element> {
     val list = LinkedList<Element>()

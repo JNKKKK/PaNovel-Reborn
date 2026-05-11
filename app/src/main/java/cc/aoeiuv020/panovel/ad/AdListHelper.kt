@@ -15,15 +15,14 @@ import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.settings.AdSettings
 import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
+import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
 
 /**
  * Created by AoEiuV020 on 2021.04.26-02:23:16.
  */
-abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.AdViewHolder<IT>> : AnkoLogger {
+abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.AdViewHolder<IT>> {
     companion object {
         const val AD_COUNT = 5
     }
@@ -89,7 +88,7 @@ abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.
     }
 
     private fun requestAd() {
-        debug { "requestAd loadedAdCount=$loadedAdCount" }
+        Timber.d("requestAd loadedAdCount=$loadedAdCount")
         if (!nativeAdEnabled || requesting || isDestroy || isNoAd) {
             return
         }
@@ -101,11 +100,11 @@ abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.
         // 一次请求只有5条，以免太久，
         val requestAdCount = min(getNeedAdCount() - loadedAdCount, AD_COUNT)
         if (requestAdCount <= 0) {
-            debug { "requestAd: count=$requestAdCount" }
+            Timber.d("requestAd: count=$requestAdCount")
             requesting = false
             return
         }
-        debug { "requestAd: count=$requestAdCount" }
+        Timber.d("requestAd: count=$requestAdCount")
         requestStartTime = System.currentTimeMillis()
         realRequestAd(requestAdCount)
     }
@@ -120,7 +119,7 @@ abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.
      * 异步加载广告完成后调用这个方法，
      */
     protected fun onRequestAdResult(data: List<AD>) {
-        debug { "requestAd: cost=${System.currentTimeMillis() - requestStartTime}" }
+        Timber.d("requestAd: cost=${System.currentTimeMillis() - requestStartTime}")
         // 以防万一adList不够用，
         val addCount = (loadedAdCount + data.size) - adList.size
         if (addCount > 0) {
@@ -156,10 +155,10 @@ abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.
                 ?: (recyclerView.layoutManager as? GridLayoutManager)?.findLastVisibleItemPosition()
                 ?: throw IllegalStateException("未知layoutManager")
         if (firstVisibleItemPosition == RecyclerView.NO_POSITION || lastVisibleItemPosition == RecyclerView.NO_POSITION) {
-            debug { "updateAdView 但是没数据" }
+            Timber.d("updateAdView 但是没数据")
             return
         }
-        debug { "updateAdView $firstVisibleItemPosition-$lastVisibleItemPosition" }
+        Timber.d("updateAdView $firstVisibleItemPosition-$lastVisibleItemPosition")
         (firstVisibleItemPosition..lastVisibleItemPosition).forEach { position ->
             if (isAd(position)) {
                 recyclerView.adapter.notNullOrReport().notifyItemChanged(position)
@@ -173,7 +172,7 @@ abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.
 
     @CallSuper
     open fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        debug { "onAttachedToRecyclerView" }
+        Timber.d("onAttachedToRecyclerView")
         this.recyclerView = recyclerView
         (recyclerView.layoutManager as? GridLayoutManager)?.run {
             spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -188,13 +187,13 @@ abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.
         }
         recyclerView.adapter.notNullOrReport().registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() {
-                debug { "onChanged" }
+                Timber.d("onChanged")
                 // 数据量有变化时检查是否需要添加广告，
                 requestAd()
             }
 
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                debug { "onItemRangeInserted" }
+                Timber.d("onItemRangeInserted")
                 // 数据量有变化时检查是否需要添加广告，
                 requestAd()
             }
@@ -209,7 +208,7 @@ abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.
     }
 
     fun onDestroy() {
-        debug { "onDestroy" }
+        Timber.d("onDestroy")
         if (isDestroy) {
             return
         }

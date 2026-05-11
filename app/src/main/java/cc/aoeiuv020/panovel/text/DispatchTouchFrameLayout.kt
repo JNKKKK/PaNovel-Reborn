@@ -4,14 +4,13 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.FrameLayout
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.verbose
+import timber.log.Timber
 
 /**
  *
  * Created by AoEiuV020 on 2017.11.24-19:54:53.
  */
-class DispatchTouchFrameLayout : FrameLayout, AnkoLogger {
+class DispatchTouchFrameLayout : FrameLayout {
     constructor(context: Context)
             : super(context)
 
@@ -25,7 +24,7 @@ class DispatchTouchFrameLayout : FrameLayout, AnkoLogger {
 
     private var previousAction: Int = MotionEvent.ACTION_UP
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        verbose { event }
+        Timber.v("$event")
         if (previousAction == MotionEvent.ACTION_DOWN
                 && event.action == MotionEvent.ACTION_UP) {
             activity?.toggle()

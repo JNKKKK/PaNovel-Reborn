@@ -1,10 +1,8 @@
 package cc.aoeiuv020.panovel.backup.impl
 
 import android.net.Uri
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.gson.toJson
 import cc.aoeiuv020.panovel.App
+import com.google.gson.reflect.TypeToken
 import cc.aoeiuv020.panovel.backup.BackupOption
 import cc.aoeiuv020.panovel.backup.BackupOption.*
 import cc.aoeiuv020.panovel.data.DataManager
@@ -15,13 +13,13 @@ import cc.aoeiuv020.panovel.share.Share
 import cc.aoeiuv020.panovel.util.Pref
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import com.google.gson.JsonElement
-import org.jetbrains.anko.debug
+import timber.log.Timber
 import java.io.File
 import java.util.*
 
 class BackupV4 : DefaultBackup() {
     override fun import(file: File, option: BackupOption): Int {
-        debug { "import $option from $file" }
+        Timber.d("import $option from $file")
         return when (option) {
             Bookshelf -> importBookshelf(file)
             BookList -> importBookList(file)
@@ -81,7 +79,7 @@ class BackupV4 : DefaultBackup() {
     private fun importPref(pref: Pref, file: File): Int {
         val editor = pref.sharedPreferences.edit()
         var count = 0
-        file.readText().toBean<Map<String, JsonElement>>().forEach { (key, value) ->
+        App.gson.fromJson<Map<String, JsonElement>>(file.readText(), object : TypeToken<Map<String, JsonElement>>() {}.type).forEach { (key, value) ->
             when (key) {
                 // 枚举，保存字符串，
                 "animationMode" -> editor.putString(key, value.asString)
@@ -173,13 +171,13 @@ class BackupV4 : DefaultBackup() {
         }
 
     private fun importBookshelf(file: File): Int {
-        val list = file.readText().toBean<List<NovelMinimal>>()
+        val list: List<NovelMinimal> = App.gson.fromJson(file.readText(), object : TypeToken<List<NovelMinimal>>() {}.type)
         DataManager.importBookshelf(list)
         return list.size
     }
 
     override fun export(file: File, option: BackupOption): Int {
-        debug { "export $option to $file" }
+        Timber.d("export $option to $file")
         return when (option) {
             Bookshelf -> exportBookshelf(file)
             BookList -> exportBookList(file)
@@ -220,7 +218,7 @@ class BackupV4 : DefaultBackup() {
         val list = DataManager.listBookshelf().map {
             NovelMinimal(it.novel)
         }
-        file.writeText(list.toJson())
+        file.writeText(App.gson.toJson(list))
         return list.size
     }
 
@@ -255,14 +253,14 @@ class BackupV4 : DefaultBackup() {
         ).sumBy { pref ->
             // 直接从sp读map, 不受几个Settings混淆影响，
             pref.sharedPreferences.all.also {
-                folder.resolve(pref.name).writeText(it.toJson())
+                folder.resolve(pref.name).writeText(App.gson.toJson(it))
             }.size
         }
         // 导出背景图片，
         val backgroundImage = ReaderSettings.backgroundImage
         if (backgroundImage != null) {
             folder.resolve("backgroundImage").outputStream().use { output ->
-                App.ctx.contentResolver.openInputStream(backgroundImage).notNull().use { input ->
+                App.ctx.contentResolver.openInputStream(backgroundImage)!!.use { input ->
                     input.copyTo(output)
                 }
                 output.flush()
@@ -273,7 +271,7 @@ class BackupV4 : DefaultBackup() {
         val lastBackgroundImage = ReaderSettings.lastBackgroundImage
         if (lastBackgroundImage != null) {
             folder.resolve("lastBackgroundImage").outputStream().use { output ->
-                App.ctx.contentResolver.openInputStream(lastBackgroundImage).notNull()
+                App.ctx.contentResolver.openInputStream(lastBackgroundImage)!!
                     .use { input ->
                         input.copyTo(output)
                     }
@@ -285,7 +283,7 @@ class BackupV4 : DefaultBackup() {
         val font = ReaderSettings.font
         if (font != null) {
             folder.resolve("font").outputStream().use { output ->
-                App.ctx.contentResolver.openInputStream(font).notNull().use { input ->
+                App.ctx.contentResolver.openInputStream(font)!!.use { input ->
                     input.copyTo(output)
                 }
                 output.flush()

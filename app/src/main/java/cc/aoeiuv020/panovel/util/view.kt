@@ -28,7 +28,6 @@ import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.report.Reporter
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
-import org.jetbrains.anko.*
 import java.util.concurrent.TimeUnit
 
 
@@ -83,25 +82,27 @@ fun View.setHeight(height: Int) {
     layoutParams = layoutParams.also { it.height = height }
 }
 
-fun Context.changeColor(initial: Int, callback: (color: Int) -> Unit) = alert {
-    titleResource = R.string.colorARGB
-    val layout = View.inflate(this@changeColor, R.layout.dialog_editor, null)
-    customView = layout
+fun Context.changeColor(initial: Int, callback: (color: Int) -> Unit) {
+    val layout = View.inflate(this, R.layout.dialog_editor, null)
     val etColor = layout.findViewById<EditText>(R.id.editText).apply {
         setText(java.lang.Integer.toHexString(initial).toUpperCase())
     }
-    neutralPressed(R.string.picker) {
-        alertColorPicker(initial, callback)
-    }
-    yesButton {
-        try {
-            val iColor = etColor.text.toString().toLong(16).toInt()
-            callback(iColor)
-        } catch (e: NumberFormatException) {
+    AlertDialog.Builder(this)
+        .setTitle(R.string.colorARGB)
+        .setView(layout)
+        .setNeutralButton(R.string.picker) { _, _ ->
+            alertColorPicker(initial, callback)
         }
-    }
-    cancelButton { }
-}.safelyShow()
+        .setPositiveButton(android.R.string.ok) { _, _ ->
+            try {
+                val iColor = etColor.text.toString().toLong(16).toInt()
+                callback(iColor)
+            } catch (e: NumberFormatException) {
+            }
+        }
+        .setNegativeButton(android.R.string.cancel, null)
+        .create().safelyShow()
+}
 
 
 fun Context.alertColorPicker(initial: Int, callback: (color: Int) -> Unit) =
@@ -191,13 +192,6 @@ fun Dialog.safelyShow(): DialogInterface {
     return this
 }
 
-fun AlertBuilder<*>.safelyShow(): DialogInterface? = try {
-    show()
-} catch (e: Exception) {
-    val message = "展示对话框失败，"
-    Reporter.post(message, e)
-    null
-}
 
 /**
  * 简单提示一些信息，
@@ -206,7 +200,7 @@ fun AlertBuilder<*>.safelyShow(): DialogInterface? = try {
 fun Context.tip(
     s: String
 ) {
-    AlertDialog.Builder(ctx)
+    AlertDialog.Builder(this)
         .setMessage(s)
         .setPositiveButton(android.R.string.ok, null)
         .show()
@@ -221,7 +215,7 @@ fun Context.confirm(
     s: String,
     onConfirm: Runnable
 ) {
-    AlertDialog.Builder(ctx)
+    AlertDialog.Builder(this)
         .setMessage(s)
         .setPositiveButton(android.R.string.ok) { _, _ -> onConfirm.run() }
         .setNegativeButton(android.R.string.cancel, null)
@@ -248,14 +242,13 @@ fun Context.uiSelect(
     var sleeping = false
     synchronized(thread) {
         var dialog: DialogInterface? = null
-        runOnUiThread {
-            dialog = AlertDialog.Builder(ctx).apply {
-                setTitle(ctx.getString(R.string.select_placeholder, name))
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
+            dialog = AlertDialog.Builder(this@uiSelect).apply {
+                setTitle(this@uiSelect.getString(R.string.select_placeholder, name))
                 setSingleChoiceItems(items, default) { dialog, which ->
                     dialog.dismiss()
                     result = which
                     if (sleeping) {
-                        // 如果已经超时，中断就不知道会影响到什么了，
                         thread.interrupt()
                     }
                 }
@@ -296,30 +289,29 @@ fun Context.uiInput(
     var sleeping = false
     synchronized(thread) {
         var dialog: DialogInterface? = null
-        runOnUiThread {
-            dialog = alert {
-                title = ctx.getString(R.string.input_placeholder, name)
-                val layout = View.inflate(ctx, R.layout.dialog_editor, null)
-                customView = layout
-                val etName = layout.findViewById<EditText>(R.id.editText)
-                if (multiLine) {
-                    etName.inputType =
-                        InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
-                }
-                etName.setText(default)
-                yesButton {
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
+            val layout = View.inflate(this@uiInput, R.layout.dialog_editor, null)
+            val etName = layout.findViewById<EditText>(R.id.editText)
+            if (multiLine) {
+                etName.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            }
+            etName.setText(default)
+            dialog = AlertDialog.Builder(this@uiInput)
+                .setTitle(this@uiInput.getString(R.string.input_placeholder, name))
+                .setView(layout)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
                     result = etName.text.toString()
                     if (sleeping) {
-                        // 如果已经超时，中断就不知道会影响到什么了，
                         thread.interrupt()
                     }
                 }
-                onCancelled {
+                .setOnCancelListener {
                     if (sleeping) {
                         thread.interrupt()
                     }
                 }
-            }.safelyShow()
+                .create().safelyShow()
         }
         try {
             sleeping = true

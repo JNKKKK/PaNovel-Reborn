@@ -2,14 +2,14 @@ package cc.aoeiuv020.panovel.donate
 
 import android.annotation.SuppressLint
 import android.content.*
+import android.net.Uri
 import android.widget.ImageView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getSystemService
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.browse
-import org.jetbrains.anko.toast
 
 
 /**
@@ -31,7 +31,7 @@ sealed class Donate {
         }
 
         override fun pay(context: Context) {
-            context.browse("https://www.paypal.me/$name")
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/$name")))
         }
     }
 
@@ -46,7 +46,7 @@ sealed class Donate {
         }
 
         override fun pay(context: Context) {
-            context.browse("https://QR.ALIPAY.COM/$payCode")
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://QR.ALIPAY.COM/$payCode")))
         }
 
         fun open(context: Context) {
@@ -55,23 +55,23 @@ sealed class Donate {
                 val intent = packageManager.getLaunchIntentForPackage("com.eg.android.AlipayGphone")
                 context.startActivity(intent)
             } catch (e: Exception) {
-                context.toast("你好像没有安装支付宝")
+                Toast.makeText(context, "你好像没有安装支付宝", Toast.LENGTH_SHORT).show()
             }
         }
 
         @SuppressLint("SetTextI18n")
         fun red(context: Context) {
-            context.alert {
-                message = "打开支付宝首页搜“$redCode”领红包，\n或者截图到支付宝扫码"
-                positiveButton("支付宝") {
+            AlertDialog.Builder(context)
+                .setMessage("打开支付宝首页搜“$redCode”领红包，\n或者截图到支付宝扫码")
+                .setPositiveButton("支付宝") { _, _ ->
                     open(context)
                 }
-                negativeButton(R.string.copy) {
-                    val cm: ClipboardManager = getSystemService<ClipboardManager>(context, ClipboardManager::class.java).notNullOrReport()
+                .setNegativeButton(R.string.copy) { _, _ ->
+                    val cm: ClipboardManager = getSystemService(context, ClipboardManager::class.java).notNullOrReport()
                     cm.primaryClip = ClipData.newPlainText("alipayRedCode", redCode)
                     open(context)
                 }
-            }.safelyShow()
+                .create().safelyShow()
         }
     }
 
@@ -87,11 +87,11 @@ sealed class Donate {
         }
 
         override fun pay(context: Context) {
-            context.alert {
-                val ivQR = ImageView(context)
-                ivQR.setImageResource(qrcodeId)
-                customView = ivQR
-                positiveButton(R.string.jump_to_we_chat) {
+            val ivQR = ImageView(context)
+            ivQR.setImageResource(qrcodeId)
+            AlertDialog.Builder(context)
+                .setView(ivQR)
+                .setPositiveButton(R.string.jump_to_we_chat) { _, _ ->
                     val intent = Intent(TENCENT_ACTIVITY_BIZSHORTCUT)
                     intent.`package` = TENCENT_PACKAGE_NAME
                     intent.putExtra(TENCENT_EXTRA_ACTIVITY_BIZSHORTCUT, true)
@@ -101,10 +101,10 @@ sealed class Donate {
                     try {
                         context.startActivity(intent)
                     } catch (e: ActivityNotFoundException) {
-                        context.toast("你好像没有安装微信")
+                        Toast.makeText(context, "你好像没有安装微信", Toast.LENGTH_SHORT).show()
                     }
                 }
-            }.safelyShow()
+                .create().safelyShow()
         }
     }
 

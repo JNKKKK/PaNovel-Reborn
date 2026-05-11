@@ -1,8 +1,5 @@
 package cc.aoeiuv020.panovel.api
 
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.log.info
-import cc.aoeiuv020.okhttp.OkHttpUtils
 import okhttp3.*
 import okio.Buffer
 import org.junit.Assert.assertEquals
@@ -106,13 +103,13 @@ class OkHttpTest {
 
     @Test
     fun cookie() {
-        val client = OkHttpUtils.client.newBuilder()
+        val client = OkHttpClient().newBuilder()
                 .cookieJar(cookieJar)
                 .addInterceptor {
                     val response = it.proceed(it.request())
                     val headers = response.networkResponse()!!.request().headers()
                     val cookie = headers["Cookie"]
-                    logger.info { "request cookie $cookie" }
+                    logger.info("request cookie {}", cookie)
                     response
                 }
                 .build()
@@ -127,13 +124,13 @@ class OkHttpTest {
     val cookieJar = object : CookieJar {
         private val cookies = mutableMapOf<String, Cookie>()
         override fun saveFromResponse(url: HttpUrl, cookies: MutableList<Cookie>) {
-            logger.info { "save cookies $cookies" }
+            logger.info("save cookies {}", cookies)
             this.cookies.putAll(cookies.map { it.name() to it })
         }
 
         override fun loadForRequest(url: HttpUrl): MutableList<Cookie> {
             return cookies.values.toMutableList().also {
-                logger.info { "load cookies $it" }
+                logger.info("load cookies {}", it)
             }
         }
     }
@@ -143,7 +140,7 @@ class OkHttpTest {
         val bookId = "1234"
         val chapterId = "5678"
         val url = "https://m.qidian.com/majax/chapter/getChapterInfo?bookId=$bookId&chapterId=$chapterId"
-        val httpUrl = HttpUrl.parse(url).notNull()
+        val httpUrl = HttpUrl.parse(url)!!
         assertEquals("/majax/chapter/getChapterInfo", httpUrl.encodedPath())
         assertEquals("bookId=1234&chapterId=5678", httpUrl.query())
     }

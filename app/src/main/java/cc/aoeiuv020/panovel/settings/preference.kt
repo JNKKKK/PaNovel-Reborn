@@ -9,7 +9,6 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import org.jetbrains.anko.find
 
 
 /**
@@ -48,7 +47,7 @@ class ListPreference : android.preference.ListPreference {
 
     override fun onBindView(view: View) {
         super.onBindView(view)
-        val tv = view.find<TextView>(android.R.id.text1)
+        val tv = view.findViewById<TextView>(android.R.id.text1)
         tv.text = entry
     }
 }
@@ -85,7 +84,7 @@ open class EditTextPreference : android.preference.EditTextPreference {
 
     override fun onBindView(view: View) {
         super.onBindView(view)
-        val tv: TextView = view.find(android.R.id.text1)
+        val tv: TextView = view.findViewById(android.R.id.text1)
         tv.text = text
     }
 }

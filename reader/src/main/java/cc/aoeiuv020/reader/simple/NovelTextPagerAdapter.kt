@@ -2,11 +2,10 @@ package cc.aoeiuv020.reader.simple
 
 import android.view.View
 import android.view.ViewGroup
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
+import timber.log.Timber
 import java.util.*
 
-internal class NovelTextPagerAdapter(private val simpleReader: SimpleReader) : androidx.viewpager.widget.PagerAdapter(), AnkoLogger {
+internal class NovelTextPagerAdapter(private val simpleReader: SimpleReader) : androidx.viewpager.widget.PagerAdapter() {
     private val chapters get() = simpleReader.chapterList
     private val unusedHolders: LinkedList<PageHolder> = LinkedList()
     private val usedHolders: LinkedList<PageHolder> = LinkedList()
@@ -20,9 +19,7 @@ internal class NovelTextPagerAdapter(private val simpleReader: SimpleReader) : a
             PageHolder(simpleReader)
         }.also { usedHolders.push(it) }
         val chapter = chapters[position]
-        debug {
-            "instantiate $position $chapter"
-        }
+        Timber.d("instantiate $position $chapter")
         container.addView(holder.itemView)
         holder.position = position
         holder.request(position)
@@ -31,7 +28,7 @@ internal class NovelTextPagerAdapter(private val simpleReader: SimpleReader) : a
 
     override fun setPrimaryItem(container: ViewGroup, position: Int, obj: Any) {
         super.setPrimaryItem(container, position, obj)
-        debug { "viewpager current position $position" }
+        Timber.d("viewpager current position $position")
         current = obj as? PageHolder
     }
 
@@ -41,14 +38,12 @@ internal class NovelTextPagerAdapter(private val simpleReader: SimpleReader) : a
     fun getCurrentTextProgress(): Int? = current?.getTextProgress() ?: textProgress
     fun setCurrentTextProgress(textProgress: Int) {
         this.textProgress = textProgress
-        debug { "setCurrentTextProgress position ${current?.position}" }
+        Timber.d("setCurrentTextProgress position ${current?.position}")
         current?.setTextProgress(textProgress)
     }
 
     override fun destroyItem(container: ViewGroup, position: Int, obj: Any) {
-        debug {
-            "destroy $position"
-        }
+        Timber.d("destroy $position")
         val holder = obj as PageHolder
         val view = holder.itemView
         container.removeView(view)

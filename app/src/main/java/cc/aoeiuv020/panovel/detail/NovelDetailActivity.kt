@@ -21,19 +21,17 @@ import cc.aoeiuv020.panovel.util.noCover
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.ctx
-import org.jetbrains.anko.debug
-import org.jetbrains.anko.startActivity
+import android.content.Intent
+import timber.log.Timber
 
 /**
  *
  * Created by AoEiuV020 on 2017.10.03-18:10:37.
  */
-class NovelDetailActivity : AppCompatActivity(), IView, AnkoLogger {
+class NovelDetailActivity : AppCompatActivity(), IView {
     companion object {
         fun start(ctx: Context, novel: Novel) {
-            ctx.startActivity<NovelDetailActivity>(Novel.KEY_ID to novel.nId)
+            ctx.startActivity(Intent(ctx, NovelDetailActivity::class.java).putExtra(Novel.KEY_ID, novel.nId))
         }
     }
 
@@ -54,7 +52,7 @@ class NovelDetailActivity : AppCompatActivity(), IView, AnkoLogger {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val id = intent?.getLongExtra(Novel.KEY_ID, -1L)
-        debug { "receive id: $id" }
+        Timber.d("receive id: $id")
         if (id == null || id == -1L) {
             Reporter.unreachable()
             finish()
@@ -99,7 +97,7 @@ class NovelDetailActivity : AppCompatActivity(), IView, AnkoLogger {
         if (novel.image == noCover) {
             binding.image.setImageResource(R.mipmap.no_cover)
         } else {
-            Glide.with(ctx.applicationContext)
+            Glide.with(this.applicationContext)
                     .load(novel.image)
                     .apply(RequestOptions().apply {
                         error(R.mipmap.no_cover)

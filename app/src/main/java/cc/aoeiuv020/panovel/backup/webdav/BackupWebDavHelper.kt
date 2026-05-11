@@ -3,20 +3,18 @@ package cc.aoeiuv020.panovel.backup.webdav
 import android.app.Activity
 import cc.aoeiuv020.panovel.backup.BackupHelper
 import cc.aoeiuv020.panovel.util.Delegates
-import cc.aoeiuv020.panovel.util.notNullOrReport
 import com.thegrizzlylabs.sardineandroid.Sardine
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine
 import com.thegrizzlylabs.sardineandroid.impl.SardineException
-import okhttp3.HttpUrl
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.info
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import timber.log.Timber
 import java.io.File
 
 
 /**
  * Created by AoEiuV020 on 2021.04.25-12:35:51.
  */
-class BackupWebDavHelper : BackupHelper, AnkoLogger {
+class BackupWebDavHelper : BackupHelper {
     override val type: String
         get() = "WebDav"
     var server: String by Delegates.string("")
@@ -25,7 +23,7 @@ class BackupWebDavHelper : BackupHelper, AnkoLogger {
     var password: String by Delegates.string("")
 
     override fun ready(): Boolean {
-        return server.takeIf { it.isNotBlank() }?.takeIf { HttpUrl.parse(it) != null } != null
+        return server.takeIf { it.isNotBlank() }?.takeIf { runCatching { it.toHttpUrl() }.isSuccess } != null
                 && fileName.takeIf { it.isNotBlank() } != null
                 && username.takeIf { it.isNotBlank() } != null
                 && password.takeIf { it.isNotBlank() } != null
@@ -39,7 +37,7 @@ class BackupWebDavHelper : BackupHelper, AnkoLogger {
     }
 
     private fun getUrl(showPassword: Boolean = false): String {
-        return HttpUrl.parse(server).notNullOrReport().newBuilder()
+        return server.toHttpUrl().newBuilder()
                 .username(username)
                 .password(if (showPassword) password else if (password.isEmpty()) "" else "***")
                 .addPathSegment(fileName)
@@ -52,9 +50,7 @@ class BackupWebDavHelper : BackupHelper, AnkoLogger {
     }
 
     override fun restore(tempFile: File) = tryRun {
-        info {
-            "import ${configPreview()}, file: $tempFile"
-        }
+        Timber.i("import ${configPreview()}, file: $tempFile")
         val sardine: Sardine = initWebDav()
         sardine.get(getUrl(true)).use { input ->
             tempFile.outputStream().use { output ->
@@ -65,9 +61,7 @@ class BackupWebDavHelper : BackupHelper, AnkoLogger {
     }
 
     override fun backup(tempFile: File) = tryRun {
-        info {
-            "export ${configPreview()}, file: $tempFile"
-        }
+        Timber.i("export ${configPreview()}, file: $tempFile")
         tryRun {
             val sardine: Sardine = initWebDav()
             sardine.put(getUrl(true), tempFile, "application/zip")
@@ -88,10 +82,8 @@ class BackupWebDavHelper : BackupHelper, AnkoLogger {
     fun test(server: String, username: String, password: String) = tryRun {
         val sardine: Sardine = OkHttpSardine()
         sardine.setCredentials(username, password)
-        info {
-            val exists = sardine.exists(server)
-            "$server ${if (exists) "exists" else "not exists"}"
-        }
+        val exists = sardine.exists(server)
+        Timber.i("$server ${if (exists) "exists" else "not exists"}")
     }
 
     private inline fun <T, R> T.tryRun(block: T.() -> R): R {

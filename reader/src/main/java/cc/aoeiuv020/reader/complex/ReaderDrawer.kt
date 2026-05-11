@@ -5,13 +5,13 @@ import android.content.IntentFilter
 import android.graphics.*
 import android.os.Build
 import android.text.TextPaint
-import cc.aoeiuv020.anull.notNull
 import cc.aoeiuv020.pager.Pager
 import cc.aoeiuv020.pager.PagerDrawer
 import cc.aoeiuv020.pager.Size
 import cc.aoeiuv020.reader.*
 import cc.aoeiuv020.reader.ReaderConfigName.*
-import org.jetbrains.anko.*
+import kotlinx.coroutines.*
+import timber.log.Timber
 import java.io.FileNotFoundException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,7 +23,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 @SuppressWarnings("SimpleDateFormat")
 class ReaderDrawer(private val reader: ComplexReader, private val novel: String, private val requester: TextRequester)
-    : PagerDrawer(), AnkoLogger {
+    : PagerDrawer() {
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     val pagesCache: androidx.collection.LruCache<Int, List<Page>?> = androidx.collection.LruCache(8)
     private lateinit var titlePaint: TextPaint
     private lateinit var textPaint: TextPaint
@@ -91,7 +92,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         textPaint = TextPaint().apply {
             isAntiAlias = true
             color = reader.config.textColor
-            textSize = reader.ctx.sp(reader.config.textSize).toFloat()
+            textSize = (reader.config.textSize * reader.ctx.resources.displayMetrics.scaledDensity).toInt().toFloat()
             typeface = reader.config.font
         }
         titlePaint = TextPaint(textPaint).apply {
@@ -106,23 +107,23 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
             }
         }
         messagePaint = TextPaint(textPaint).apply {
-            textSize = reader.ctx.sp(reader.config.messageSize).toFloat()
+            textSize = (reader.config.messageSize * reader.ctx.resources.displayMetrics.scaledDensity).toInt().toFloat()
         }
     }
 
     override fun drawCurrentPage(background: Canvas, content: Canvas) {
-        debug { "drawCurrentPage <$chapterIndex, $pageIndex>" }
+        Timber.d("drawCurrentPage <$chapterIndex, $pageIndex>")
 
         drawBackground(background)
 
         if (pager == null) {
-            warn { "pager is null" }
+            Timber.w("pager is null")
             return
         }
 
         if (chapterIndex !in reader.chapterList.indices) {
             // TODO: 打开小说时必到这里两次，
-            warn { "chapter index out of bounds <$chapterIndex/${reader.chapterList.size}>" }
+            Timber.w("chapter index out of bounds <$chapterIndex/${reader.chapterList.size}>")
             return
         }
 
@@ -158,13 +159,13 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         var index = pageIndex
         val textHeight = textPaint.getFontMetricsInt(null)
         if (pages == null) {
-            debug { "chapter $chapterIndex pages null" }
+            Timber.d("chapter $chapterIndex pages null")
             drawTextBottom(content, "正在获取章节...", 0f, textHeight.toFloat(), textPaint)
             request(chapterIndex)
             return null
         }
         if (pages.isEmpty()) {
-            debug { "chapter $chapterIndex pages empty" }
+            Timber.d("chapter $chapterIndex pages empty")
             var y = textHeight
             drawTextBottom(content, "本章空内容，", 0f, y.toFloat(), textPaint)
             y += textHeight
@@ -205,8 +206,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
     }
 
     private fun drawBattery(canvas: Canvas) {
-        val intent = reader.ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                .notNull()
+        val intent = reader.ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))!!
         val battery = intent.getIntExtra("level", 0)
         val text = "$battery"
         val margins = reader.config.batteryMargins
@@ -280,13 +280,13 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
 
     private fun drawContent(content: Canvas, page: Page) {
         val textHeight = textPaint.getFontMetricsInt(null)
-        val lineSpacing = reader.ctx.dip(reader.config.lineSpacing)
+        val lineSpacing = (reader.config.lineSpacing * reader.ctx.resources.displayMetrics.density).toInt()
 
         val width = content.width.toFloat()
         var y = 0
-        val paragraphSpacing = reader.ctx.dip(reader.config.paragraphSpacing)
+        val paragraphSpacing = (reader.config.paragraphSpacing * reader.ctx.resources.displayMetrics.density).toInt()
         page.lines.forEach { line ->
-            verbose { "draw height $y/${content.height}" }
+            Timber.v("draw height $y/${content.height}")
             when (line) {
                 is Title -> {
                     y += textHeight
@@ -345,24 +345,26 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
             return
         }
         requestingList.add(requestIndex)
-        debug { "$this lazyRequest $requestIndex, refresh = $refresh" }
-        doAsync({ e ->
-            val message = "小说章节获取失败：$requestIndex, ${reader.chapterList[requestIndex]}"
-            error(message, e)
-            // 缓存空的页面，到时候显示本章空内容，
-            pagesCache.put(requestIndex, listOf())
-            requestingList.remove(requestIndex)
-            if (requestIndex == chapterIndex) {
-                pager?.refresh()
-            }
-        }, reader.ioExecutorService) {
-            val text = requester.requestChapter(requestIndex, refresh)
-            val pages = typesetting(reader.chapterList[requestIndex], text)
-            pagesCache.put(requestIndex, pages)
-            requestingList.remove(requestIndex)
-            debug { "request result $requestIndex == $chapterIndex" }
-            uiThread {
+        Timber.d("$this lazyRequest $requestIndex, refresh = $refresh")
+        scope.launch {
+            try {
+                val pages = withContext(reader.ioExecutorService.asCoroutineDispatcher()) {
+                    val text = requester.requestChapter(requestIndex, refresh)
+                    typesetting(reader.chapterList[requestIndex], text)
+                }
+                pagesCache.put(requestIndex, pages)
+                requestingList.remove(requestIndex)
+                Timber.d("request result $requestIndex == $chapterIndex")
                 // 如果还在这个章节就刷新，
+                if (requestIndex == chapterIndex) {
+                    pager?.refresh()
+                }
+            } catch (e: Exception) {
+                val message = "小说章节获取失败：$requestIndex, ${reader.chapterList[requestIndex]}"
+                Timber.e(e, message)
+                // 缓存空的页面，到时候显示本章空内容，
+                pagesCache.put(requestIndex, listOf())
+                requestingList.remove(requestIndex)
                 if (requestIndex == chapterIndex) {
                     pager?.refresh()
                 }
@@ -380,8 +382,8 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         var height = 0
         var fitHeight = 0
         val lines = mutableListOf<Any>()
-        val lineSpacing = reader.ctx.dip(reader.config.lineSpacing)
-        val paragraphSpacing = reader.ctx.dip(reader.config.paragraphSpacing)
+        val lineSpacing = (reader.config.lineSpacing * reader.ctx.resources.displayMetrics.density).toInt()
+        val paragraphSpacing = (reader.config.paragraphSpacing * reader.ctx.resources.displayMetrics.density).toInt()
         val textHeight = typesettingTextPaint.getFontMetricsInt(null)
         (listOf(chapter) + list).forEachIndexed { index, str ->
             // 不支持图片，得到段就直接转成String,
@@ -390,7 +392,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
             var count: Int
             while (start < paragraph.length) {
                 height += textHeight
-                verbose { "typesetting height $height/${contentSize.height}" }
+                Timber.v("typesetting height $height/${contentSize.height}")
                 if (height > contentSize.height) {
                     // 铺满高度需要添加的间距，
                     // 转int下取整以免最后一行超出底部，
@@ -399,7 +401,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
                     val fitLineSpacing = (space.toFloat() / (lines.size - 1))
                             .toInt()
                     height = textHeight
-                    debug { "add lines size ${lines.size}" }
+                    Timber.d("add lines size ${lines.size}")
                     pages.add(Page(ArrayList(lines), fitLineSpacing))
                     lines.clear()
                 }
@@ -420,10 +422,10 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         }
         // 多出来的最后一页，
         if (lines.isNotEmpty()) {
-            debug { "add lines size ${lines.size}" }
+            Timber.d("add lines size ${lines.size}")
             pages.add(Page(ArrayList(lines)))
         }
-        debug { "pages size = ${pages.size}" }
+        Timber.d("pages size = ${pages.size}")
         return pages
     }
 

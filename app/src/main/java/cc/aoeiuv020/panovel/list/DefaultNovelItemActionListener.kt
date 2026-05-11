@@ -1,6 +1,5 @@
 package cc.aoeiuv020.panovel.list
 
-import cc.aoeiuv020.base.jar.ioExecutorService
 import cc.aoeiuv020.exception.interrupt
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
@@ -15,8 +14,10 @@ import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.text.NovelTextActivity
 import cc.aoeiuv020.panovel.util.uiInput
 import cc.aoeiuv020.panovel.util.uiSelect
-import org.jetbrains.anko.*
 import java.nio.charset.UnsupportedCharsetException
+import timber.log.Timber
+import kotlinx.coroutines.*
+import androidx.appcompat.app.AlertDialog
 
 /**
  * Created by AoEiuV020 on 2018.05.23-12:49:51.
@@ -24,12 +25,11 @@ import java.nio.charset.UnsupportedCharsetException
 class DefaultNovelItemActionListener(
         private val actionDoneListener: (ItemAction, NovelViewHolder) -> Unit = { _, _ -> },
         private val onError: (String, Throwable) -> Unit
-) : NovelItemActionListener, AnkoLogger {
-    override val loggerTag: String
-        get() = "ItemActionListener"
+) : NovelItemActionListener {
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     fun on(action: ItemAction, vh: NovelViewHolder): Boolean {
-        debug { "doing $action at ${vh.novel.name}" }
+        Timber.d("doing $action at ${vh.novel.name}")
         when (action) {
             ReadLastChapter -> NovelTextActivity.start(vh.ctx, vh.novel, -1)
             ReadContinue -> NovelTextActivity.start(vh.ctx, vh.novel)
@@ -66,10 +66,13 @@ class DefaultNovelItemActionListener(
                         R.string.clean_cache to CleanCache,
                         R.string.clean_this_novel to CleanData
                 )
-                vh.ctx.selector(vh.ctx.getString(R.string.title_more_action),
-                        list.unzip().first.map { vh.ctx.getString(it) }) { _, i ->
-                    on(list[i].second, vh)
-                }
+                val items = list.unzip().first.map { vh.ctx.getString(it) }.toTypedArray()
+                AlertDialog.Builder(vh.ctx)
+                    .setTitle(vh.ctx.getString(R.string.title_more_action))
+                    .setItems(items) { _, i ->
+                        on(list[i].second, vh)
+                    }
+                    .show()
 
             }
             // 返回false不消费长按事件，
@@ -113,36 +116,35 @@ class DefaultNovelItemActionListener(
 
     override fun onStarChanged(vh: NovelViewHolder, star: Boolean) {
         val novelManager = vh.novelManager
-        doAsync({ e ->
-            val message = "${if (star) "添加" else "删除"}书架《${vh.novel.name}》失败，"
-            // 这应该是数据库操作出问题，正常情况不会出现才对，
-            // 未知异常统一上报，
-            Reporter.post(message, e)
-            error(message, e)
-            vh.ctx.runOnUiThread {
+        scope.launch {
+            try {
+                novelManager.updateBookshelf(star)
+            } catch (e: Exception) {
+                val message = "${if (star) "添加" else "删除"}书架《${vh.novel.name}》失败，"
+                // 这应该是数据库操作出问题，正常情况不会出现才对，
+                // 未知异常统一上报，
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 onError(message, e)
             }
-        }) {
-            novelManager.updateBookshelf(star)
         }
-
     }
 
     override fun refreshChapters(vh: NovelViewHolder) {
         val novelManager = vh.novelManager
-        doAsync({ e ->
-            val message = "刷新小说《${vh.novel.name}》失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            vh.ctx.runOnUiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    novelManager.requestChapters(true)
+                }
+                vh.refreshed(novelManager)
+            } catch (e: Exception) {
+                val message = "刷新小说《${vh.novel.name}》失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 // 失败也停止显示正在刷新，
                 vh.refreshed(novelManager)
                 onError(message, e)
-            }
-        }, ioExecutorService) {
-            novelManager.requestChapters(true)
-            uiThread {
-                vh.refreshed(novelManager)
             }
         }
     }
@@ -152,92 +154,94 @@ class DefaultNovelItemActionListener(
     }
 
     private fun pinned(vh: NovelViewHolder) {
-        doAsync({ e ->
-            val message = "置顶小说《${vh.novel.name}》失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            vh.ctx.runOnUiThread {
+        scope.launch {
+            try {
+                vh.novelManager.pinned()
+            } catch (e: Exception) {
+                val message = "置顶小说《${vh.novel.name}》失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 onError(message, e)
             }
-        }) {
-            vh.novelManager.pinned()
         }
     }
 
     private fun cancelPinned(vh: NovelViewHolder) {
-        doAsync({ e ->
-            val message = "取消置顶小说《${vh.novel.name}》失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            vh.ctx.runOnUiThread {
+        scope.launch {
+            try {
+                vh.novelManager.cancelPinned()
+            } catch (e: Exception) {
+                val message = "取消置顶小说《${vh.novel.name}》失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 onError(message, e)
             }
-        }) {
-            vh.novelManager.cancelPinned()
         }
     }
 
     private fun cleanCache(vh: NovelViewHolder) {
-        doAsync({ e ->
-            val message = "清除小说缓存<${vh.novel.bookId}>失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            vh.ctx.runOnUiThread {
+        scope.launch {
+            try {
+                vh.novelManager.cleanCache()
+            } catch (e: Exception) {
+                val message = "清除小说缓存<${vh.novel.bookId}>失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 onError(message, e)
             }
-        }) {
-            vh.novelManager.cleanCache()
         }
     }
 
     private fun cleanData(vh: NovelViewHolder) {
-        doAsync({ e ->
-            val message = "清除小说数据<${vh.novel.bookId}>失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            vh.ctx.runOnUiThread {
+        scope.launch {
+            try {
+                vh.novelManager.cleanData()
+            } catch (e: Exception) {
+                val message = "清除小说数据<${vh.novel.bookId}>失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 onError(message, e)
             }
-        }) {
-            vh.novelManager.cleanData()
         }
     }
 
     private fun exportNovel(vh: NovelViewHolder) {
-        doAsync({ e ->
-            val message = "导出小说<${vh.novel.bookId}>失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            vh.ctx.runOnUiThread {
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val ctx = vh.ctx
+                    val types = LocalNovelType.values()
+                    val items = types.map { type ->
+                        when (type) {
+                            LocalNovelType.TEXT -> R.string.select_item_text
+                            LocalNovelType.EPUB -> R.string.select_item_epub
+                        }.let { ctx.getString(it) }
+                    }.toTypedArray()
+                    // 默认导出txt,
+                    val defaultIndex = 0
+                    val type = ctx.uiSelect(ctx.getString(R.string.file_type), items, defaultIndex)?.let { selectIndex ->
+                        types[selectIndex]
+                    } ?: interrupt(ctx.getString(R.string.tip_no_file_type))
+                    val charset = if (type == LocalNovelType.TEXT) {
+                        ctx.uiInput(ctx.getString(R.string.file_charset), Charsets.UTF_8.name())?.let {
+                            try {
+                                charset(it)
+                            } catch (e: UnsupportedCharsetException) {
+                                interrupt(ctx.getString(R.string.tip_not_support_charset, it))
+                            }
+                        } ?: interrupt(ctx.getString(R.string.tip_no_charset))
+                    } else {
+                        Charsets.UTF_8
+                    }
+
+                    NovelExporter.export(vh.ctx, type, charset, vh.novelManager)
+                }
+            } catch (e: Exception) {
+                val message = "导出小说<${vh.novel.bookId}>失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
                 onError(message, e)
             }
-        }, ioExecutorService) {
-            val ctx = vh.ctx
-            val types = LocalNovelType.values()
-            val items = types.map { type ->
-                when (type) {
-                    LocalNovelType.TEXT -> R.string.select_item_text
-                    LocalNovelType.EPUB -> R.string.select_item_epub
-                }.let { ctx.getString(it) }
-            }.toTypedArray()
-            // 默认导出txt,
-            val defaultIndex = 0
-            val type = ctx.uiSelect(ctx.getString(R.string.file_type), items, defaultIndex)?.let { selectIndex ->
-                types[selectIndex]
-            } ?: interrupt(ctx.getString(R.string.tip_no_file_type))
-            val charset = if (type == LocalNovelType.TEXT) {
-                ctx.uiInput(ctx.getString(R.string.file_charset), Charsets.UTF_8.name())?.let {
-                    try {
-                        charset(it)
-                    } catch (e: UnsupportedCharsetException) {
-                        interrupt(ctx.getString(R.string.tip_not_support_charset, it))
-                    }
-                } ?: interrupt(ctx.getString(R.string.tip_no_charset))
-            } else {
-                Charsets.UTF_8
-            }
-
-            NovelExporter.export(vh.ctx, type, charset, vh.novelManager)
         }
     }
 

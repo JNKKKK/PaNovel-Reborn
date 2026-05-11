@@ -1,10 +1,9 @@
 package cc.aoeiuv020.panovel.share
 
 import cc.aoeiuv020.base.jar.jsoupConnect
-import cc.aoeiuv020.okhttp.OkHttpUtils
-import cc.aoeiuv020.okhttp.url
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import okhttp3.FormBody
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.URL
 
@@ -37,13 +36,13 @@ internal class PasteUbuntu {
                 .url(homePage)
                 .post(form)
                 .build()
-        return OkHttpUtils.client.newBuilder().followRedirects(false)
+        return OkHttpClient.Builder().followRedirects(false)
                 .build()
                 .newCall(request)
                 .execute().let { response ->
                     val l = response.header("Location")
                             .notNullOrReport()
-                    URL(URL(response.url()), l).toString()
+                    URL(URL(response.request.url.toString()), l).toString()
                 }
     }
 

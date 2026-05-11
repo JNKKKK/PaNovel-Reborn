@@ -2,10 +2,8 @@ package cc.aoeiuv020.panovel.share
 
 import android.content.Context
 import android.view.View
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.gson.toJson
-import cc.aoeiuv020.gson.type
 import cc.aoeiuv020.panovel.App
+import com.google.gson.reflect.TypeToken
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.BookList
@@ -13,11 +11,11 @@ import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.bumptech.glide.Glide
 import com.google.gson.JsonObject
+import android.content.Intent
+import android.net.Uri
 import android.widget.ImageView
 import android.widget.TextView
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.browse
-import org.jetbrains.anko.yesButton
+import androidx.appcompat.app.AlertDialog
 import java.util.*
 
 /**
@@ -44,24 +42,24 @@ object Share {
 
     fun exportBookList(bookList: BookList, novelList: List<NovelMinimal>): String {
         val bookListBean = BookListBean(bookList.name, novelList, VERSION, bookList.uuid)
-        return bookListBean.toJson(App.gson)
+        return App.gson.toJson(bookListBean)
     }
 
     fun importBookList(text: String): BookListBean {
-        val bookListJson = text.toBean<JsonObject>(App.gson)
+        val bookListJson = App.gson.fromJson(text, JsonObject::class.java)
         val version = bookListJson.get("version")?.asJsonPrimitive?.asInt
         return when (version) {
             3 -> {
-                App.gson.fromJson(bookListJson, type<BookListBean>())
+                App.gson.fromJson(bookListJson, object : TypeToken<BookListBean>() {}.type)
             }
             2 -> {
-                App.gson.fromJson<BookListBean2>(bookListJson, type<BookListBean2>()).let {
+                App.gson.fromJson<BookListBean2>(bookListJson, object : TypeToken<BookListBean2>() {}.type).let {
                     BookListBean(it.name, it.list, it.version, UUID.randomUUID().toString())
                 }
             }
             1 -> {
                 // 旧版version为null,
-                val bookListBean1: BookListBean1 = App.gson.fromJson(bookListJson, type<BookListBean1>())
+                val bookListBean1: BookListBean1 = App.gson.fromJson(bookListJson, object : TypeToken<BookListBean1>() {}.type)
                 BookListBean(bookListBean1.name, bookListBean1.list.map {
                     // 旧版的extra为完整地址，直接拿来，就算写进数据库了，刷新详情页后也会被新版的bookId覆盖，
                     NovelMinimal(site = it.site, author = it.author, name = it.name, detail = it.requester.extra)
@@ -87,14 +85,14 @@ object Share {
             text = url
             setTextIsSelectable(true)
             setOnClickListener {
-                context.browse(url)
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
             }
         }
         Glide.with(context.applicationContext).load(qrCode).into(layout.findViewById<ImageView>(R.id.ivQrCode))
-        context.alert {
-            titleResource = R.string.share
-            customView = layout
-            yesButton { }
-        }.safelyShow()
+        AlertDialog.Builder(context)
+            .setTitle(R.string.share)
+            .setView(layout)
+            .setPositiveButton(android.R.string.ok, null)
+            .create().safelyShow()
     }
 }

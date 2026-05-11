@@ -1,15 +1,11 @@
 package cc.aoeiuv020.panovel.local
 
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.log.debug
-import cc.aoeiuv020.log.error
 import cc.aoeiuv020.regex.pick
-import cc.aoeiuv020.string.divide
-import cc.aoeiuv020.string.lastDivide
-import nl.siegmann.epublib.domain.Author
-import nl.siegmann.epublib.domain.Book
-import nl.siegmann.epublib.domain.Resource
-import nl.siegmann.epublib.epub.EpubWriter
+
+import io.documentnode.epub4j.domain.Author
+import io.documentnode.epub4j.domain.Book
+import io.documentnode.epub4j.domain.Resource
+import io.documentnode.epub4j.epub.EpubWriter
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.slf4j.Logger
@@ -40,19 +36,18 @@ class EpubExporter(
             language = "zh"
             info.author?.also {
                 try {
-                    val (first, last) = it.divide(' ')
-                    val firstName = first.trim()
-                    val lastName = last.trim()
+                    val firstName = it.substringBefore(' ').trim()
+                    val lastName = it.substringAfter(' ', "").trim()
                     addAuthor(Author(firstName, lastName))
-                    logger.debug { "添加作者<$firstName $lastName>" }
+                    logger.debug("添加作者<{} {}>", firstName, lastName)
                 } catch (e: Exception) {
                     addAuthor(Author(it))
-                    logger.debug { "添加作者<$it>" }
+                    logger.debug("添加作者<{}>", it)
                 }
             }
             info.name?.also {
                 addTitle(it)
-                logger.debug { "添加标题<$it>" }
+                logger.debug("添加标题<{}>", it)
             }
             info.introduction?.let { intro ->
                 try {
@@ -65,7 +60,7 @@ class EpubExporter(
                             }
                 } catch (e: Exception) {
                     // 按理说不会有失败，
-                    logger.error(e) { "导出简介失败，" }
+                    logger.error("导出简介失败，", e)
                     null
                 }
             }?.also { div ->
@@ -78,10 +73,10 @@ class EpubExporter(
                 // info.image或者url中一般有图片文件名，
                 // 但不可控，万一就出现重名的呢，
                 val fileName = try {
-                    it.lastDivide('/').second
+                    it.substringAfterLast('/', "").ifEmpty { throw IllegalArgumentException() }
                 } catch (_: Exception) {
                     try {
-                        url.toString().lastDivide('/').second
+                        url.toString().substringAfterLast('/', "").ifEmpty { throw IllegalArgumentException() }
                     } catch (_: Exception) {
                         // 失败填充默认jpg一般没问题，
                         "cover.jpg"
@@ -90,13 +85,11 @@ class EpubExporter(
                 val resource = url.openStream().use { input ->
                     Resource(input, fileName)
                 }
-                logger.debug {
-                    "添加封面<$url, ${resource.href}>"
-                }
+                logger.debug("添加封面<{}, {}>", url, resource.href)
                 book.coverImage = resource
             } catch (e: Exception) {
                 // 任何失败就不添加封面了，
-                logger.error(e) { "导出封面失败" }
+                logger.error("导出封面失败", e)
             }
         }
 
@@ -130,11 +123,11 @@ class EpubExporter(
                 try {
                     val url = contentProvider.getImage(extra)
                     // 如果打开图片输入流返回空，直接抛异常到下面的catch打印普通文本，
-                    logger.debug { "adding image: $url" }
-                    val resource = contentProvider.openImage(url).notNull().use { input ->
+                    logger.debug("adding image: {}", url)
+                    val resource = contentProvider.openImage(url)!!.use { input ->
                         val suffix = try {
                             // 从url中拿文件后辍，
-                            url.toString().lastDivide('.').second
+                            url.toString().substringAfterLast('.', "").ifEmpty { throw IllegalArgumentException() }
                         } catch (e: Exception) {
                             // 失败填充默认jpg一般没问题，
                             "jpg"
@@ -148,7 +141,7 @@ class EpubExporter(
                             // jsoup没有内容的标签不封闭，以防万一加上text就封闭了，
                             .text("")
                 } catch (e: Exception) {
-                    logger.error(e) { "导出图片<$extra>出错，" }
+                    logger.error("导出图片<{}>出错，", extra, e)
                     div.appendElement("p")
                             .text("$indent[image]")
                 }

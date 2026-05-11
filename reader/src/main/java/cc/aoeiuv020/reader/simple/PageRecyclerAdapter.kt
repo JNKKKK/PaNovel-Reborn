@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import cc.aoeiuv020.reader.Image
 import cc.aoeiuv020.reader.R
-import org.jetbrains.anko.AnkoLogger
 
 /**
  *
@@ -13,7 +12,7 @@ import org.jetbrains.anko.AnkoLogger
  */
 internal class PageRecyclerAdapter(
         val reader: SimpleReader
-) : androidx.recyclerview.widget.RecyclerView.Adapter<PageRecyclerAdapter.ViewHolder>(), AnkoLogger {
+) : androidx.recyclerview.widget.RecyclerView.Adapter<PageRecyclerAdapter.ViewHolder>() {
     private val ctx get() = reader.ctx
     private var chapterName: String = ""
     var data: List<String> = emptyList()

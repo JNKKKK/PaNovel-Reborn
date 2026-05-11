@@ -3,10 +3,8 @@ package cc.aoeiuv020.panovel.server
 import android.content.Context
 import androidx.annotation.WorkerThread
 import cc.aoeiuv020.base.jar.notZero
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.jsonpath.get
-import cc.aoeiuv020.jsonpath.jsonPath
 import cc.aoeiuv020.panovel.App
+import com.google.gson.JsonParser
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
@@ -19,81 +17,82 @@ import cc.aoeiuv020.panovel.server.service.NovelService
 import cc.aoeiuv020.panovel.server.service.impl.NovelServiceImpl
 import cc.aoeiuv020.panovel.settings.ServerSettings
 import cc.aoeiuv020.panovel.util.*
-import org.jetbrains.anko.*
+import kotlinx.coroutines.*
+import timber.log.Timber
 
 /**
  *
  * Created by AoEiuV020 on 2018.04.06-02:37:52.
  */
-object ServerManager : AnkoLogger {
+object ServerManager  {
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var novelService: NovelService? = null
     private var outOfVersion: Boolean = false
     private var disabled: Boolean = false
     var config: Config? = null
 
     fun downloadUpdate(ctx: Context, extra: String) {
-        debug { "downloadUpdate $extra" }
-        ctx.doAsync({ e ->
-            val message = "更新通知解析失败,"
-            Reporter.post(message, e)
-            error(message, e)
-        }) {
-            val remoteNovel: Novel = extra.jsonPath.get<String>("novel").toBean()
-            requireNotNull(remoteNovel.site)
-            requireNotNull(remoteNovel.author)
-            requireNotNull(remoteNovel.name)
-            requireNotNull(remoteNovel.detail)
-            requireNotNull(remoteNovel.chaptersCount)
-            val (localNovel, hasUpdate) = DataManager.receiveUpdate(remoteNovel)
-            if (!hasUpdate || !ServerSettings.notifyNovelUpdate) {
-                // 没有更新或者不通知更新就不继续，
-                return@doAsync
-            }
-            debug {
-                "notifyPinnedOnly: ${ServerSettings.notifyPinnedOnly}"
-            }
-            debug {
-                "pinnedTime: ${localNovel.pinnedTime}"
-            }
-            debug {
-                "pinnedTime.notZero: ${localNovel.pinnedTime.notZero()}"
-            }
-            if (ServerSettings.notifyPinnedOnly && localNovel.pinnedTime.notZero() == null) {
-                return@doAsync
-            }
-            debug {
-                "notify update: $localNovel"
-            }
-            if (ServerSettings.singleNotification) {
-                val bitText = DataManager.hasUpdateNovelList()
-                        .joinToString("\n") {
-                            it.run { "$name: $lastChapterName" }
-                        }
-                uiThread {
-                    it.notify(id = 2,
+        Timber.d("downloadUpdate $extra")
+        scope.launch {
+            try {
+                val (localNovel, hasUpdate) = withContext(Dispatchers.IO) {
+                    val remoteNovel: Novel = run {
+                        val obj = JsonParser.parseString(extra).asJsonObject
+                        val novelElement = obj.get("novel")
+                        val novelStr = if (novelElement.isJsonPrimitive) novelElement.asString else novelElement.toString()
+                        App.gson.fromJson(novelStr, Novel::class.java)
+                    }
+                    requireNotNull(remoteNovel.site)
+                    requireNotNull(remoteNovel.author)
+                    requireNotNull(remoteNovel.name)
+                    requireNotNull(remoteNovel.detail)
+                    requireNotNull(remoteNovel.chaptersCount)
+                    DataManager.receiveUpdate(remoteNovel)
+                }
+                if (!hasUpdate || !ServerSettings.notifyNovelUpdate) {
+                    // 没有更新或者不通知更新就不继续，
+                    return@launch
+                }
+                Timber.d("notifyPinnedOnly: ${ServerSettings.notifyPinnedOnly}")
+                Timber.d("pinnedTime: ${localNovel.pinnedTime}")
+                Timber.d("pinnedTime.notZero: ${localNovel.pinnedTime.notZero()}")
+                if (ServerSettings.notifyPinnedOnly && localNovel.pinnedTime.notZero() == null) {
+                    return@launch
+                }
+                Timber.d("notify update: $localNovel")
+                if (ServerSettings.singleNotification) {
+                    val bitText = withContext(Dispatchers.IO) {
+                        DataManager.hasUpdateNovelList()
+                                .joinToString("\n") {
+                                    it.run { "$name: $lastChapterName" }
+                                }
+                    }
+                    ctx.notify(id = 2,
                             text = localNovel.lastChapterName,
-                            title = it.getString(R.string.notify_has_update_title_placeholder, localNovel.name),
+                            title = ctx.getString(R.string.notify_has_update_title_placeholder, localNovel.name),
                             bigText = bitText,
                             time = localNovel.receiveUpdateTime.notZero()?.time,
                             channelId = NotificationChannelId.update)
-                }
-            } else {
-                uiThread {
-                    it.notify(id = localNovel.nId.toInt(),
+                } else {
+                    ctx.notify(id = localNovel.nId.toInt(),
                             text = localNovel.lastChapterName,
-                            title = it.getString(R.string.notify_has_update_title_placeholder, localNovel.name),
+                            title = ctx.getString(R.string.notify_has_update_title_placeholder, localNovel.name),
                             time = localNovel.receiveUpdateTime.notZero()?.time,
                             channelId = NotificationChannelId.update)
                 }
+            } catch (e: Exception) {
+                val message = "更新通知解析失败,"
+                Reporter.post(message, e)
+                Timber.e(e, message)
             }
         }
     }
 
     fun queryList(novelMap: Map<Long, Novel>): Map<Long, QueryResponse> {
-        debug { "queryList ：${novelMap.map { "${it.key}=${it.value.bookId}" }}" }
+        Timber.d("queryList ：${novelMap.map { "${it.key}=${it.value.bookId}" }}")
         val service = getService() ?: return emptyMap()
         return service.queryList(novelMap).also {
-            debug { "查询小说更新返回: $it" }
+            Timber.d("查询小说更新返回: $it")
         }
     }
 
@@ -102,11 +101,11 @@ object ServerManager : AnkoLogger {
     }
 
     fun message(): Message? {
-        debug { "message ：" }
+        Timber.d("message ：")
         return try {
             DnsUtils.txtToBean(ServerAddress.MESSAGE_HOST)
         } catch (e: Exception) {
-            warn("get message failed: " + ServerAddress.MESSAGE_HOST, e)
+            Timber.w("get message failed: ${ServerAddress.MESSAGE_HOST}: $e")
             null
         }
     }
@@ -114,7 +113,7 @@ object ServerManager : AnkoLogger {
     @Synchronized
     @WorkerThread
     private fun getService(): NovelService? {
-        debug { "getService <$novelService, $outOfVersion>" }
+        Timber.d("getService <$novelService, $outOfVersion>")
         // 已经创建就直接返回，
         novelService?.let { return it }
         // 如果版本过低，直接返回空，不继续，
@@ -126,7 +125,7 @@ object ServerManager : AnkoLogger {
         try {
             config = DnsUtils.txtToBean(ServerAddress.CONFIG_HOST)
         } catch (e: Exception) {
-            warn("get config failed: " + ServerAddress.CONFIG_HOST, e)
+            Timber.w("get config failed: ${ServerAddress.CONFIG_HOST}: $e")
             disabled = true
             return null
         }
@@ -138,7 +137,7 @@ object ServerManager : AnkoLogger {
         }
         val minVersion = VersionName(config.minVersion)
         val currentVersion = VersionName(VersionUtil.getAppVersionName(App.ctx))
-        info { "getService minVersion $minVersion/$currentVersion" }
+        Timber.i("getService minVersion $minVersion/$currentVersion")
         if (currentVersion < minVersion) {
             // 如果版本过低，直接返回空，不继续，
             outOfVersion = true
@@ -146,7 +145,7 @@ object ServerManager : AnkoLogger {
         }
         val serverAddress =
             ServerAddress.new(ServerSettings.serverAddress.takeIf { !it.isNullOrEmpty() } ?: apiUrl)
-        info { "server: " + serverAddress.baseUrl }
+        Timber.i("server: " + serverAddress.baseUrl)
         return NovelServiceImpl(serverAddress)
     }
 }

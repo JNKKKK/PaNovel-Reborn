@@ -43,11 +43,13 @@ import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import cc.aoeiuv020.panovel.databinding.DialogSelectColorSchemeBinding
-import org.jetbrains.anko.*
 import java.io.File
 import java.io.FileNotFoundException
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import timber.log.Timber
+import kotlinx.coroutines.*
+import androidx.lifecycle.lifecycleScope
 
 
 /**
@@ -57,18 +59,17 @@ import java.util.concurrent.TimeUnit
 class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
     companion object {
         fun start(ctx: Context, novel: Novel) {
-            start(ctx, novel.nId)
+            start(this@NovelTextActivity, novel.nId)
         }
 
         fun start(ctx: Context, id: Long) {
-            ctx.startActivity<NovelTextActivity>(Novel.KEY_ID to id)
+            ctx.startActivity(Intent(ctx, NovelTextActivity::class.java).putExtra(Novel.KEY_ID, id))
         }
 
         fun start(ctx: Context, novel: Novel, index: Int) {
-            ctx.startActivity<NovelTextActivity>(
-                    Novel.KEY_ID to novel.nId,
-                    "index" to index.toJson()
-            )
+            ctx.startActivity(Intent(ctx, NovelTextActivity::class.java)
+                    .putExtra(Novel.KEY_ID, novel.nId)
+                    .putExtra("index", App.gson.toJson(index)))
         }
     }
 
@@ -110,7 +111,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
         progressDialog = ProgressDialog(this)
 
         val id = intent?.getLongExtra(Novel.KEY_ID, -1L)
-        debug { "receive id: $id" }
+        Timber.d("receive id: $id")
         if (id == null || id == -1L) {
             Reporter.unreachable()
             finish()
@@ -155,7 +156,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
             // 按理说每个网站的extra都是设计好的，可以得到完整地址的，
             // 但就算失败了在这里也没什么关系，
             Reporter.post(message, e)
-            error(message, e)
+            Timber.e(e, message)
             showError(message, e)
         }
         binding.urlBar.setOnClickListener {
@@ -206,7 +207,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
                     return mutableMapOf("Referer" to binding.urlTextView.text.toString())
                 }
             }
-            Glide.with(ctx.applicationContext)
+            Glide.with(this@NovelTextActivity.applicationContext)
                     .downloadOnly()
                     .load(glideUrl)
                     .listener(object : RequestListener<File?> {
@@ -312,7 +313,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
     }
 
     fun setAnimationMode(animationMode: AnimationMode, oldAnimationMode: AnimationMode) {
-        debug { "setAnimationMode $oldAnimationMode to $animationMode" }
+        Timber.d("setAnimationMode $oldAnimationMode to $animationMode")
         if ((animationMode == AnimationMode.SIMPLE && oldAnimationMode != AnimationMode.SIMPLE)
                 || (animationMode != AnimationMode.SIMPLE && oldAnimationMode == AnimationMode.SIMPLE)) {
             resetReader()
@@ -372,13 +373,13 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
                     // 不在这里做永久保存，
                     reader.config.backgroundImage = uri
                 } catch (e: SecurityException) {
-                    error("读取背景图失败", e)
+                    Timber.e(e, "读取背景图失败")
                     cacheUri = uri
                     ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), requestCode)
                 } catch (e: FileNotFoundException) {
                     // 不明原因，
                     // https://bugly.qq.com/v2/crash-reporting/crashes/be0d684a75/1705?pid=1
-                    error("神奇，图片找不到，", e)
+                    Timber.e(e, "神奇，图片找不到，")
                 }
             }
             1 -> data?.data?.let { uri ->
@@ -386,13 +387,13 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
                     ReaderSettings.font = uri
                     setFont(ReaderSettings.tfFont)
                 } catch (e: SecurityException) {
-                    error("读取字体失败", e)
+                    Timber.e(e, "读取字体失败")
                     cacheUri = uri
                     ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), requestCode)
                 } catch (e: FileNotFoundException) {
                     // 不明原因，
                     // https://bugly.qq.com/v2/crash-reporting/crashes/be0d684a75/1705?pid=1
-                    error("神奇，图片找不到，", e)
+                    Timber.e(e, "神奇，图片找不到，")
                 }
             }
         }
@@ -405,7 +406,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
                     // 不在这里做永久保存，
                     reader.config.backgroundImage = uri
                 } catch (e: SecurityException) {
-                    error("读取背景图还是失败", e)
+                    Timber.e(e, "读取背景图还是失败")
                     cacheUri = null
                 }
             }
@@ -414,7 +415,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
                     ReaderSettings.font = uri
                     setFont(ReaderSettings.tfFont)
                 } catch (e: SecurityException) {
-                    error("读取字体还是失败", e)
+                    Timber.e(e, "读取字体还是失败")
                     cacheUri = null
                 }
             }
@@ -470,7 +471,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
      * 改变界面上显示的内容，
      */
     private fun onChapterSelected(index: Int) {
-        debug { "onChapterSelected $index" }
+        Timber.d("onChapterSelected $index")
         // 可能重复赋值，但是无所谓了，
         novel.readAt(index, chaptersAsc)
         if (index in chaptersAsc.indices) {
@@ -502,7 +503,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
     }
 
     fun showChaptersAsc(chaptersAsc: List<NovelChapter>) {
-        debug { "chapters loaded ${chaptersAsc.size}" }
+        Timber.d("chapters loaded ${chaptersAsc.size}")
         this.chaptersAsc = chaptersAsc
         if (chaptersAsc.isEmpty()) {
             // 真有小说空章节的，不知道怎么回事，
@@ -538,22 +539,22 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
         }
         onChapterSelected(novel.readAtChapterIndex)
         progressDialog.dismiss()
-        doAsync({ e ->
-            val message = "处理小说章节列表失败，"
-            Reporter.post(message, e)
-            error(message, e)
-            runOnUiThread {
-                showError(message, e)
-            }
-        }) {
-            val chapterList = chaptersAsc.map { it.name }
-            uiThread {
-                debug {
-                    "load status: <${novel.run { "$readAtChapterIndex.$readAtChapterName/$readAtTextIndex" }}"
+        lifecycleScope.launch {
+            try {
+                val chapterList = withContext(Dispatchers.IO) {
+                    chaptersAsc.map { it.name }
                 }
+                Timber.d("load status: <${novel.run { "$readAtChapterIndex.$readAtChapterName/$readAtTextIndex" }}")
                 reader.chapterList = chapterList
                 reader.currentChapter = novel.readAtChapterIndex
                 reader.textProgress = novel.readAtTextIndex
+            } catch (e: Exception) {
+                val message = "处理小说章节列表失败，"
+                Reporter.post(message, e)
+                Timber.e(e, message)
+                runOnUiThread {
+                    showError(message, e)
+                }
             }
         }
     }
@@ -573,9 +574,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
 
     fun refreshChapterList() {
         loading(progressDialog, R.string.novel_chapters)
-        debug {
-            "refreshChapterList"
-        }
+        Timber.d("refreshChapterList")
         if (_novel == null) {
             // 以防万一，太乱了，
             return
@@ -584,9 +583,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
         if (::reader.isInitialized) {
             novel.readAt(reader.currentChapter, chaptersAsc)
             novel.readAtTextIndex = reader.textProgress
-            debug {
-                "save status: <${novel.run { "$readAtChapterIndex.$readAtChapterName/$readAtTextIndex" }}"
-            }
+            Timber.d("save status: <${novel.run { "$readAtChapterIndex.$readAtChapterName/$readAtTextIndex" }}")
         }
         presenter.refreshChapterList()
     }
@@ -637,7 +634,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
         tempColorPref.textColor = ReaderSettings.textColor
         tempColorPref.backgroundColor = ReaderSettings.backgroundColor
         tempColorPref.backgroundImage = ReaderSettings.backgroundImage
-        AlertDialog.Builder(ctx).apply {
+        AlertDialog.Builder(this@NovelTextActivity).apply {
             setTitle(R.string.select_color_scheme)
             val dialogBinding = DialogSelectColorSchemeBinding.inflate(layoutInflater)
             val view = dialogBinding.root
@@ -729,9 +726,9 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
     }
 
     fun showContents(cachedList: Collection<String>) {
-        AlertDialog.Builder(ctx)
+        AlertDialog.Builder(this@NovelTextActivity)
                 .setTitle(R.string.contents)
-                .setSingleChoiceItems(NovelContentsAdapter(ctx, novel, chaptersAsc, cachedList), novel.readAtChapterIndex) { dialog, index ->
+                .setSingleChoiceItems(NovelContentsAdapter(this@NovelTextActivity, novel, chaptersAsc, cachedList), novel.readAtChapterIndex) { dialog, index ->
                     selectChapter(index)
                     dialog.dismiss()
                 }.create().apply {

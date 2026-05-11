@@ -8,19 +8,17 @@ import android.os.Bundle
 import android.preference.PreferenceActivity
 import android.preference.PreferenceFragment
 import android.view.MenuItem
+import android.content.Intent
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.backup.BackupActivity
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.startActivity
-
 /**
  *
  * Created by AoEiuV020 on 2017.10.15-19:11:34.
  */
-class SettingsActivity : AppCompatPreferenceActivity(), AnkoLogger {
+class SettingsActivity : AppCompatPreferenceActivity() {
     companion object {
         fun start(context: Context) {
-            context.startActivity<SettingsActivity>()
+            context.startActivity(Intent(context, SettingsActivity::class.java))
         }
     }
 

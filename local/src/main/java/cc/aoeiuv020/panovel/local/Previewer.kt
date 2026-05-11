@@ -1,8 +1,6 @@
 package cc.aoeiuv020.panovel.local
 
-import cc.aoeiuv020.anull.notNull
-import net.sf.jazzlib.ZipFile
-import nl.siegmann.epublib.epub.EpubReader
+import io.documentnode.epub4j.epub.EpubReader
 import java.io.File
 import java.nio.charset.Charset
 
@@ -41,10 +39,7 @@ class Previewer(
                 file.inputStream()
             }
             LocalNovelType.EPUB -> {
-                // 默认随便给个最常见的utf8编码，用的时候拿出来判断的是字节流，这里的编码不影响，
-                EpubReader().readEpubLazy(ZipFile(file), Charsets.UTF_8.name())
-                        // 拿出最重要的opf文件判断编码，
-                        // 这里有先被EpubReader解析一次，浪费，但无所谓了，
+                file.inputStream().use { EpubReader().readEpub(it) }
                         .opfResource.inputStream
             }
         }.use { input ->
@@ -55,10 +50,10 @@ class Previewer(
     fun parse(type: LocalNovelType, charset: Charset?): LocalNovelInfo {
         return when (type) {
             LocalNovelType.TEXT -> {
-                TextParser(file, charset.notNull("charset"))
+                TextParser(file, charset!!)
             }
             LocalNovelType.EPUB -> {
-                EpubParser(file, charset.notNull("charset"))
+                EpubParser(file, charset!!)
             }
         }.parse()
     }

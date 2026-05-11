@@ -1,7 +1,5 @@
 package cc.aoeiuv020.panovel.api.base
 
-import cc.aoeiuv020.anull.notNull
-import cc.aoeiuv020.atry.tryOrNul
 import cc.aoeiuv020.base.jar.*
 import cc.aoeiuv020.panovel.api.*
 import cc.aoeiuv020.regex.matches
@@ -116,7 +114,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
      */
     protected open fun findBookId(extra: String): String = if (bookIdRegex != null) {
         try {
-            extra.pick(bookIdRegex.notNull())[bookIdIndex]
+            extra.pick(bookIdRegex!!)[bookIdIndex]
         } catch (e: Exception) {
             extra
         }
@@ -130,7 +128,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
      */
     protected open fun findBookIdWithChapterId(extra: String): String = if (bookIdWithChapterIdRegex != null) {
         try {
-            extra.pick(bookIdWithChapterIdRegex.notNull())[bookIdWithChapterIdIndex]
+            extra.pick(bookIdWithChapterIdRegex!!)[bookIdWithChapterIdIndex]
         } catch (e: Exception) {
             extra
         }
@@ -220,7 +218,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
         }
 
         fun put(value: String) {
-            cookies.add(Cookie.parse(httpUrl, value).notNull())
+            cookies.add(Cookie.parse(httpUrl, value)!!)
         }
 
         fun contains(name: String): Boolean {
@@ -273,7 +271,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
     protected inner class _Search(name: String)
         : _Requester(name) {
 
-        fun document(document: Document = parse(call.notNull(), forceCharset ?: charset),
+        fun document(document: Document = parse(call!!, forceCharset ?: charset),
                      init: _NovelItemListParser.() -> Unit): List<NovelItem> =
                 _NovelItemListParser(document).also(init).parse()
     }
@@ -448,11 +446,11 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
             var introduction: String? = null
             var extra: String? = null
             fun createNovelDetail() = NovelDetail(
-                    novel.notNull(),
+                    novel!!,
                     image,
                     update,
                     introduction.toString(),
-                    extra.notNull()
+                    extra!!
             )
         }
     }
@@ -511,21 +509,21 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
             novelChapterList = volumesList?.flatMap {
                 it.requireElements(query, name = TAG_CHAPTER_LINK).mapNotNull {
                     // 解析不通过的章节直接无视，不抛异常，
-                    tryOrNul {
+                    runCatching {
                         _NovelChapterParser(it).run {
                             init()
                             parse()
                         }
-                    }
+                    }.getOrNull()
                 }
             } ?: parent.requireElements(query, name = TAG_CHAPTER_LINK).mapNotNull {
                 // 解析不通过的章节直接无视，不抛异常，
-                tryOrNul {
+                runCatching {
                     _NovelChapterParser(it).run {
                         init()
                         parse()
                     }
-                }
+                }.getOrNull()
             }
         }
 
@@ -538,12 +536,12 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
         }) {
             novelChapterList = list.mapNotNull {
                 // 解析不通过的章节直接无视，不抛异常，
-                tryOrNul {
+                runCatching {
                     _NovelChapterParser(it).run {
                         init()
                         parse()
                     }
-                }
+                }.getOrNull()
             }
         }
 
@@ -553,9 +551,9 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
     protected inner class _NovelChapterParser(root: Element)
         : _Parser<NovelChapter>(root) {
         private val _novelChapter = _NovelChapter()
-        override fun parse(): NovelChapter? = tryOrNul {
+        override fun parse(): NovelChapter? = runCatching {
             _novelChapter.createNovelChapter()
-        }
+        }.getOrNull()
 
         var name: String?
             get() = _novelChapter.name
@@ -600,8 +598,8 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
             var extra: String? = null
             var update: Date? = null
             fun createNovelChapter(): NovelChapter = NovelChapter(
-                    name = name.notNull(),
-                    extra = extra.notNull(),
+                    name = name!!,
+                    extra = extra!!,
                     update = update
             )
         }
@@ -695,9 +693,9 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
 
             fun createNovelItem() = NovelItem(
                     site,
-                    name.notNull(),
-                    author.notNull(),
-                    extra.notNull()
+                    name!!,
+                    author!!,
+                    extra!!
             )
         }
     }
@@ -753,7 +751,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
         }
 
         fun <T> inputStream(block: _Response.(InputStream) -> T): T {
-            val response = response(call.notNull())
+            val response = response(call!!)
             val _response = _Response(response)
             return response.inputStream(listener) {
                 _response.block(it)
@@ -764,7 +762,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
                 val response: Response
         ) {
             // 我为什么要用networkResponse？
-//            val request: Request = response.networkResponse().notNull().request()
+//            val request: Request = response.networkResponse()!!.request()
         }
     }
 
@@ -780,9 +778,9 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
         var dataMap: Map<String, String>? = null
         fun createCall(): Call {
             val httpUrlBuilder = (httpUrl
-                    ?: absUrl(url.notNull()).toHttpUrl()).newBuilder()
+                    ?: absUrl(url!!).toHttpUrl()).newBuilder()
             val requestBuilder = request?.newBuilder() ?: Request.Builder()
-            if (HttpMethod.permitsRequestBody(method.notNull())) {
+            if (HttpMethod.permitsRequestBody(method!!)) {
                 // post,
                 // 编码可以空，会是默认UTF-8,
                 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
@@ -791,7 +789,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
                 dataMap?.forEach { (name, value) ->
                     bodyBuilder.add(name, value)
                 }
-                requestBuilder.method(method.notNull(), requestBody ?: bodyBuilder.build())
+                requestBuilder.method(method!!, requestBody ?: bodyBuilder.build())
             } else {
                 // get,
                 dataMap?.forEach { (name, value) ->
@@ -799,7 +797,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
                     val eValue = URLEncoder.encode(value, forceCharset ?: charset ?: defaultCharset)
                     httpUrlBuilder.addEncodedQueryParameter(eName, eValue)
                 }
-                requestBuilder.method(method.notNull(), null)
+                requestBuilder.method(method!!, null)
             }
             requestBuilder.url(httpUrlBuilder.build())
             // 存在headerMap就只用headerMap，否则设置默认ua,

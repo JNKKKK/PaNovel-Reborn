@@ -6,20 +6,22 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.R
+import cc.aoeiuv020.panovel.databinding.ActivityBackupWebDavConfigBinding
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.tip
-import kotlinx.android.synthetic.main.activity_backup_web_dav_config.*
 import okhttp3.HttpUrl
 import org.jetbrains.anko.*
 
 class BackupWebDavConfigActivity : AppCompatActivity(), AnkoLogger {
+    private lateinit var binding: ActivityBackupWebDavConfigBinding
     private val backupHelper = BackupWebDavHelper()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_backup_web_dav_config)
+        binding = ActivityBackupWebDavConfigBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        btnTest.setOnClickListener {
+        binding.btnTest.setOnClickListener {
             if (!checkInput()) {
                 return@setOnClickListener
             }
@@ -29,33 +31,33 @@ class BackupWebDavConfigActivity : AppCompatActivity(), AnkoLogger {
                     tip("测试失败：" + t.message)
                 }
             }) {
-                backupHelper.test(getInput(llServer), getInput(llUsername), getInput(llPassword).takeIf { it.isNotEmpty() }
+                backupHelper.test(getInput(binding.llServer), getInput(binding.llUsername), getInput(binding.llPassword).takeIf { it.isNotEmpty() }
                         ?: backupHelper.password)
                 uiThread {
                     toast("测试成功")
                 }
             }
         }
-        btnSave.setOnClickListener {
+        binding.btnSave.setOnClickListener {
             if (!checkInput()) {
                 return@setOnClickListener
             }
-            backupHelper.server = getInput(llServer)
-            backupHelper.fileName = getInput(llFileName)
-            backupHelper.username = getInput(llUsername)
-            getInput(llPassword).takeIf { it.isNotEmpty() }?.let {
+            backupHelper.server = getInput(binding.llServer)
+            backupHelper.fileName = getInput(binding.llFileName)
+            backupHelper.username = getInput(binding.llUsername)
+            getInput(binding.llPassword).takeIf { it.isNotEmpty() }?.let {
                 backupHelper.password = it
             }
             finish()
         }
-        setInput(llServer, backupHelper.server)
-        setInput(llFileName, backupHelper.fileName)
-        setInput(llUsername, backupHelper.username)
+        setInput(binding.llServer, backupHelper.server)
+        setInput(binding.llFileName, backupHelper.fileName)
+        setInput(binding.llUsername, backupHelper.username)
         if (backupHelper.password.isNotEmpty()) {
-            setInputHint(llPassword, "密码不变")
+            setInputHint(binding.llPassword, "密码不变")
         }
 
-        tvJianguoyun.setOnClickListener { v ->
+        binding.tvJianguoyun.setOnClickListener { v ->
             browse("https://blog.jianguoyun.com/?p=2748")
         }
     }
@@ -69,7 +71,7 @@ class BackupWebDavConfigActivity : AppCompatActivity(), AnkoLogger {
     }
 
     private fun checkInput(): Boolean {
-        getInput(llServer).takeIf { it.isNotBlank() }?.let { HttpUrl.parse(it) }?.also {
+        getInput(binding.llServer).takeIf { it.isNotBlank() }?.let { HttpUrl.parse(it) }?.also {
             if (it.host() == "dav.jianguoyun.com" && (it.encodedPath() == "/dav" || it.encodedPath() == "/dav/")) {
                 tip("坚果云根目录不允许存放文件，请指定子目录，如：\nhttps://dav.jianguoyun.com/dav/panovel")
                 return false
@@ -77,13 +79,13 @@ class BackupWebDavConfigActivity : AppCompatActivity(), AnkoLogger {
         } ?: return false.also {
             toast("服务器地址不合法")
         }
-        getInput(llFileName).takeIf { it.isNotEmpty() } ?: return false.also {
+        getInput(binding.llFileName).takeIf { it.isNotEmpty() } ?: return false.also {
             toast("文件名不能为空")
         }
-        getInput(llUsername).takeIf { it.isNotEmpty() } ?: return false.also {
+        getInput(binding.llUsername).takeIf { it.isNotEmpty() } ?: return false.also {
             toast("用户名不能为空")
         }
-        getInput(llPassword).takeIf { it.isNotEmpty() || backupHelper.password.isNotEmpty() }
+        getInput(binding.llPassword).takeIf { it.isNotEmpty() || backupHelper.password.isNotEmpty() }
                 ?: return false.also {
                     toast("密码不能为空")
                 }

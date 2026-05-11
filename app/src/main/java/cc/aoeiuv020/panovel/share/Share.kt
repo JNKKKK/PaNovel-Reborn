@@ -13,7 +13,8 @@ import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.bumptech.glide.Glide
 import com.google.gson.JsonObject
-import kotlinx.android.synthetic.main.dialog_shared.view.*
+import android.widget.ImageView
+import android.widget.TextView
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.browse
 import org.jetbrains.anko.yesButton
@@ -82,14 +83,14 @@ object Share {
 
     fun alert(context: Context, url: String, qrCode: String) {
         val layout = View.inflate(context, R.layout.dialog_shared, null)
-        layout.tvUrl.apply {
+        layout.findViewById<TextView>(R.id.tvUrl).apply {
             text = url
             setTextIsSelectable(true)
             setOnClickListener {
                 context.browse(url)
             }
         }
-        Glide.with(context.applicationContext).load(qrCode).into(layout.ivQrCode)
+        Glide.with(context.applicationContext).load(qrCode).into(layout.findViewById<ImageView>(R.id.ivQrCode))
         context.alert {
             titleResource = R.string.share
             customView = layout

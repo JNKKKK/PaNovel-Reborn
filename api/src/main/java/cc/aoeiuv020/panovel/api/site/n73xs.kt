@@ -88,7 +88,7 @@ class N73xs : DslJsoupNovelContext() {init {
     cookieFilter {
         removeAll {
             // 删除cookie绕开搜索时间间隔限制，
-            it.name() == "jieqiVisitTime"
+            it.name == "jieqiVisitTime"
         }
     }
 }

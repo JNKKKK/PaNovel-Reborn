@@ -28,7 +28,6 @@ import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.report.Reporter
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
-import kotlinx.android.synthetic.main.dialog_editor.view.*
 import org.jetbrains.anko.*
 import java.util.concurrent.TimeUnit
 
@@ -88,7 +87,7 @@ fun Context.changeColor(initial: Int, callback: (color: Int) -> Unit) = alert {
     titleResource = R.string.colorARGB
     val layout = View.inflate(this@changeColor, R.layout.dialog_editor, null)
     customView = layout
-    val etColor = layout.editText.apply {
+    val etColor = layout.findViewById<EditText>(R.id.editText).apply {
         setText(java.lang.Integer.toHexString(initial).toUpperCase())
     }
     neutralPressed(R.string.picker) {
@@ -302,7 +301,7 @@ fun Context.uiInput(
                 title = ctx.getString(R.string.input_placeholder, name)
                 val layout = View.inflate(ctx, R.layout.dialog_editor, null)
                 customView = layout
-                val etName = layout.editText
+                val etName = layout.findViewById<EditText>(R.id.editText)
                 if (multiLine) {
                     etName.inputType =
                         InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE

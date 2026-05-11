@@ -1,3 +1,7 @@
+android {
+    namespace "cc.aoeiuv020.pager"
+}
+
 dependencies {
     implementation 'androidx.appcompat:appcompat:' + androidx_version
 }

@@ -41,10 +41,9 @@ import cc.aoeiuv020.panovel.settings.SettingsActivity
 import cc.aoeiuv020.panovel.find.shuju.post.QidianshujuPostActivity
 import cc.aoeiuv020.panovel.find.sp7.Sp7Activity
 import cc.aoeiuv020.panovel.find.sp7.list.Sp7ListActivity
+import cc.aoeiuv020.panovel.databinding.ActivityMainBinding
 import cc.aoeiuv020.panovel.util.*
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.dialog_editor.view.*
 import net.lucode.hackware.magicindicator.ViewPagerHelper
 import net.lucode.hackware.magicindicator.buildins.UIUtil
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator
@@ -62,6 +61,7 @@ import org.jetbrains.anko.*
  */
 class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
 
+    private lateinit var binding: ActivityMainBinding
     lateinit var progressDialog: ProgressDialog
     private var migratingDialog: ProgressDialog? = null
     private val bookshelfFragment: BookshelfFragment?
@@ -165,8 +165,9 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
         initNotificationChannel()
 
@@ -213,7 +214,7 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
                 R.string.history to HistoryFragment())
 
 
-        container.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
+        binding.container.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
             }
 
@@ -222,15 +223,15 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
 
             override fun onPageSelected(position: Int) {
                 if (position == 1) {
-                    fab.show()
+                    binding.fab.show()
                 } else {
-                    fab.hide()
+                    binding.fab.hide()
                 }
             }
 
         })
 
-        fab.setOnClickListener { _ ->
+        binding.fab.setOnClickListener { _ ->
             bookListFragment?.newBookList()
         }
     }
@@ -244,7 +245,7 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
         }
 
 
-        container.adapter = pagerAdapter
+        binding.container.adapter = pagerAdapter
 
         val commonNavigator = CommonNavigator(this)
         val titleList = titleIdList.map {
@@ -259,7 +260,7 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
                 colorTransitionPagerTitleView.normalColor = Color.GRAY
                 colorTransitionPagerTitleView.selectedColor = Color.WHITE
                 colorTransitionPagerTitleView.text = titleList[index]
-                colorTransitionPagerTitleView.setOnClickListener { container.currentItem = index }
+                colorTransitionPagerTitleView.setOnClickListener { binding.container.currentItem = index }
                 return colorTransitionPagerTitleView
             }
 
@@ -271,7 +272,7 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
                 return indicator
             }
         }
-        magic_indicator.navigator = commonNavigator
+        binding.magicIndicator.navigator = commonNavigator
         val titleContainer = commonNavigator.titleContainer
         titleContainer.showDividers = LinearLayout.SHOW_DIVIDER_MIDDLE
         titleContainer.dividerDrawable = object : ColorDrawable() {
@@ -280,10 +281,10 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
             }
         }
 
-        ViewPagerHelper.bind(magic_indicator, container)
+        ViewPagerHelper.bind(binding.magicIndicator, binding.container)
 
         if (InterfaceSettings.tabGravityCenter) {
-            llIndicator.gravity = Gravity.CENTER_HORIZONTAL
+            binding.llIndicator.gravity = Gravity.CENTER_HORIZONTAL
         }
     }
 
@@ -323,7 +324,7 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
         titleResource = R.string.open
         val layout = View.inflate(this@MainActivity, R.layout.dialog_editor, null)
         customView = layout
-        val etName = layout.editText
+        val etName = layout.findViewById<android.widget.EditText>(R.id.editText)
         etName.hint = getString(R.string.main_open_hint)
         yesButton {
             val url = etName.text.toString()
@@ -404,7 +405,7 @@ class MainActivity : AppCompatActivity(), MigrationView, AnkoLogger {
     }
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(fab, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.fab, "", Snackbar.LENGTH_SHORT)
     }
 
     fun showMessage(message: String) {

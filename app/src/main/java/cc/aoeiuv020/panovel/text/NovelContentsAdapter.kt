@@ -6,13 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.CheckedTextView
+import android.widget.TextView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
-import kotlinx.android.synthetic.main.novel_chapter_item.view.*
 import java.util.concurrent.TimeUnit
 
 /**
@@ -32,10 +33,10 @@ class NovelContentsAdapter(
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = convertView
                 ?: LayoutInflater.from(context).inflate(R.layout.novel_chapter_item, parent, false).apply {
-                    name.setTextColor(chapterColorList)
+                    findViewById<CheckedTextView>(R.id.name).setTextColor(chapterColorList)
                 }
-        val nameTextView = view.name
-        val tvUpdateTime = view.tvUpdateTime
+        val nameTextView = view.findViewById<CheckedTextView>(R.id.name)
+        val tvUpdateTime = view.findViewById<TextView>(R.id.tvUpdateTime)
         val chapter = getItem(position)
         nameTextView.apply {
             text = chapter.name

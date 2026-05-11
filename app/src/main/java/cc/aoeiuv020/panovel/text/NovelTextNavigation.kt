@@ -3,9 +3,7 @@ package cc.aoeiuv020.panovel.text
 import android.content.DialogInterface
 import android.view.View
 import android.view.WindowManager
-import android.widget.LinearLayout
-import android.widget.SeekBar
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Novel
@@ -15,28 +13,16 @@ import cc.aoeiuv020.panovel.text.NovelTextNavigation.Direction.*
 import cc.aoeiuv020.panovel.util.*
 import cc.aoeiuv020.reader.AnimationMode
 import cc.aoeiuv020.reader.ReaderConfigName
-import kotlinx.android.synthetic.main.dialog_seekbar.view.*
-import kotlinx.android.synthetic.main.novel_text_navigation.view.*
-import kotlinx.android.synthetic.main.novel_text_read_animation.view.*
-import kotlinx.android.synthetic.main.novel_text_read_default.view.*
-import kotlinx.android.synthetic.main.novel_text_read_margins.view.*
-import kotlinx.android.synthetic.main.novel_text_read_margins_item.view.*
-import kotlinx.android.synthetic.main.novel_text_read_settings.view.*
-import kotlinx.android.synthetic.main.novel_text_read_typesetting.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.debug
 
-/**
- *
- * Created by AoEiuV020 on 2017.11.20-21:59:26.
- */
 class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigation: View) : AnkoLogger {
-    private val mPanelDefault = navigation.panelDefault
-    private val mPanelSettings = navigation.panelSettings
-    private val mPanelTypesetting = navigation.panelTypesetting
-    private val mPanelAnimation = navigation.panelAnimation
-    private val mPanelMargins = navigation.panelMargins
+    private val mPanelDefault: View = navigation.findViewById(R.id.panelDefault)
+    private val mPanelSettings: View = navigation.findViewById(R.id.panelSettings)
+    private val mPanelTypesetting: View = navigation.findViewById(R.id.panelTypesetting)
+    private val mPanelAnimation: View = navigation.findViewById(R.id.panelAnimation)
+    private val mPanelMargins: LinearLayout = navigation.findViewById(R.id.panelMargins)
 
     private fun showLayout(view: View) {
         listOf(mPanelDefault, mPanelSettings, mPanelTypesetting, mPanelAnimation, mPanelMargins).forEach {
@@ -46,28 +32,28 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
     }
 
     init {
-        mPanelDefault.ivContents.setOnClickListener {
+        mPanelDefault.findViewById<View>(R.id.ivContents).setOnClickListener {
             view.presenter.loadContents()
         }
-        mPanelDefault.ivSettings.setOnClickListener {
+        mPanelDefault.findViewById<View>(R.id.ivSettings).setOnClickListener {
             showLayout(mPanelSettings)
             view.fullScreen()
         }
-        mPanelDefault.ivStar.apply {
+        mPanelDefault.findViewById<CheckBox>(R.id.ivStar).apply {
             isChecked = novel.bookshelf
             setOnClickListener {
                 toggle()
                 view.presenter.updateBookshelf(isChecked)
             }
         }
-        mPanelDefault.ivColor.setOnClickListener {
+        mPanelDefault.findViewById<View>(R.id.ivColor).setOnClickListener {
             view.selectColorScheme()
         }
-        mPanelDefault.ivColor.setOnLongClickListener {
+        mPanelDefault.findViewById<View>(R.id.ivColor).setOnLongClickListener {
             view.lastColorScheme()
             true
         }
-        mPanelDefault.ivRefresh.apply {
+        mPanelDefault.findViewById<View>(R.id.ivRefresh).apply {
             setOnClickListener {
                 view.refreshCurrentChapter()
             }
@@ -76,36 +62,42 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                 true
             }
         }
-        mPanelDefault.ivDownload.setOnClickListener {
+        mPanelDefault.findViewById<View>(R.id.ivDownload).setOnClickListener {
             view.download()
         }
-        mPanelDefault.ivDownload.setOnLongClickListener {
+        mPanelDefault.findViewById<View>(R.id.ivDownload).setOnLongClickListener {
             view.askDownload()
         }
-        mPanelDefault.apply {
-            tvPreviousChapter.setOnClickListener {
-                view.previousChapter()
-            }
-            tvNextChapter.setOnClickListener {
-                view.nextChapter()
-            }
-            sbTextProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser) {
-                        view.setTextProgress(progress)
-                    }
-                }
-
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                }
-
-                override fun onStopTrackingTouch(seekBar: SeekBar) {
-                }
-            })
+        mPanelDefault.findViewById<View>(R.id.tvPreviousChapter).setOnClickListener {
+            view.previousChapter()
         }
+        mPanelDefault.findViewById<View>(R.id.tvNextChapter).setOnClickListener {
+            view.nextChapter()
+        }
+        mPanelDefault.findViewById<SeekBar>(R.id.sbTextProgress).setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    view.setTextProgress(progress)
+                }
+            }
 
-        mPanelSettings.apply {
-            // 设置信息字体大小，
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+            }
+        })
+
+        run {
+            val messageSizeTextView = mPanelSettings.findViewById<TextView>(R.id.messageSizeTextView)
+            val messageSizeSeekBar = mPanelSettings.findViewById<SeekBar>(R.id.messageSizeSeekBar)
+            val textSizeTextView = mPanelSettings.findViewById<TextView>(R.id.textSizeTextView)
+            val textSizeSeekBar = mPanelSettings.findViewById<SeekBar>(R.id.textSizeSeekBar)
+            val tvFont = mPanelSettings.findViewById<TextView>(R.id.tvFont)
+            val tvTypesetting = mPanelSettings.findViewById<TextView>(R.id.tvTypesetting)
+            val tvAnimation = mPanelSettings.findViewById<TextView>(R.id.tvAnimation)
+            val tvBrightness = mPanelSettings.findViewById<TextView>(R.id.tvBrightness)
+
             val messageSize = ReaderSettings.messageSize
             debug { "load textSite = $messageSize" }
             messageSizeTextView.text = view.getString(R.string.text_size_placeholders, messageSize)
@@ -126,7 +118,6 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                 }
             })
 
-            // 设置字体大小，
             val textSize = ReaderSettings.textSize
             debug { "load textSite = $textSize" }
             textSizeTextView.text = view.getString(R.string.text_size_placeholders, textSize)
@@ -147,7 +138,6 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                 }
             })
 
-            // 设置字体，
             tvFont.setOnClickListener {
                 view.alert(R.string.select_font) {
                     positiveButton(android.R.string.yes) {
@@ -167,18 +157,16 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                 showLayout(mPanelAnimation)
             }
 
-            // 设置亮度，
             view.setBrightness(ReaderSettings.brightness)
             tvBrightness.setOnClickListener {
                 AlertDialog.Builder(view).apply {
                     setTitle(R.string.brightness)
                     val layout = View.inflate(view, R.layout.dialog_seekbar, null)
                     setView(layout)
-                    layout.seekBar.apply {
+                    layout.findViewById<SeekBar>(R.id.seekBar).apply {
                         progress = ReaderSettings.brightness
                         setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                                // progress 0-255,
                                 view.setBrightness(progress)
                             }
 
@@ -192,10 +180,8 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                     }
                     setNeutralButton(R.string.follow_system) { _, _ ->
                         view.setBrightnessFollowSystem()
-                        // 负数代表亮度跟随系统，
                         ReaderSettings.brightness = -1
                     }
-                    // 鬼知道发生了什么，这里简写成lambda就会编译报错，上面的就没问题，
                     @Suppress("ObjectLiteralToLambda")
                     val emptyListener = object : DialogInterface.OnClickListener {
                         override fun onClick(dialog: DialogInterface?, which: Int) {
@@ -203,21 +189,28 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                     }
                     setPositiveButton(android.R.string.yes, emptyListener)
                 }.create().apply {
-                    // 去除对话框的灰背景，
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                    window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
                 }.safelyShow()
-                // 弹对话框时退出全屏，
                 view.hide()
             }
 
-            // 设置保持亮屏，
             if (ReaderSettings.keepScreenOn) {
                 view.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
-        mPanelTypesetting.apply {
-            // 设置行间距，
+        run {
+            val lineSpacingTextView = mPanelTypesetting.findViewById<TextView>(R.id.lineSpacingTextView)
+            val lineSpacingSeekBar = mPanelTypesetting.findViewById<SeekBar>(R.id.lineSpacingSeekBar)
+            val paragraphSpacingTextView = mPanelTypesetting.findViewById<TextView>(R.id.paragraphSpacingTextView)
+            val paragraphSpacingSeekBar = mPanelTypesetting.findViewById<SeekBar>(R.id.paragraphSpacingSeekBar)
+            val llMargins = mPanelTypesetting.findViewById<LinearLayout>(R.id.llMargins)
+            val tvPagination = mPanelTypesetting.findViewById<TextView>(R.id.tvPagination)
+            val tvTime = mPanelTypesetting.findViewById<TextView>(R.id.tvTime)
+            val tvBattery = mPanelTypesetting.findViewById<TextView>(R.id.tvBattery)
+            val tvBookName = mPanelTypesetting.findViewById<TextView>(R.id.tvBookName)
+            val tvChapterName = mPanelTypesetting.findViewById<TextView>(R.id.tvChapterName)
+
             val lineSpacing = ReaderSettings.lineSpacing
             lineSpacingTextView.text = view.getString(R.string.line_spacing_placeholder, lineSpacing)
             lineSpacingSeekBar.progress = lineSpacing
@@ -235,7 +228,6 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                 }
             })
 
-            // 设置段间距，
             val paragraphSpacing = ReaderSettings.paragraphSpacing
             paragraphSpacingTextView.text = view.getString(R.string.paragraph_spacing_placeholder, paragraphSpacing)
             paragraphSpacingSeekBar.progress = paragraphSpacing
@@ -254,7 +246,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             })
 
             initLayoutMargins(llMargins, ReaderSettings.contentMargins, ReaderConfigName.ContentMargins)
-            llMargins.llDisplay.hide()
+            llMargins.findViewById<View>(R.id.llDisplay).hide()
 
             tvPagination.setOnClickListener {
                 showLayout(mPanelMargins)
@@ -278,7 +270,11 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             }
         }
 
-        mPanelAnimation.apply {
+        run {
+            val tvAnimationSpeed = mPanelAnimation.findViewById<TextView>(R.id.tvAnimationSpeed)
+            val sbAnimationSpeed = mPanelAnimation.findViewById<SeekBar>(R.id.sbAnimationSpeed)
+            val rgAnimationMode = mPanelAnimation.findViewById<RadioGroup>(R.id.rgAnimationMode)
+
             val maxSpeed = 3f
             val animationSpeed: Float = ReaderSettings.animationSpeed
             tvAnimationSpeed.text = view.getString(R.string.animation_speed_placeholder, animationSpeed)
@@ -321,7 +317,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                     R.id.rbSlide -> AnimationMode.SLIDE
                     R.id.rbNone -> AnimationMode.NONE
                     R.id.rbScroll -> AnimationMode.SCROLL
-                    else -> AnimationMode.SIMPLE // 不存在的，
+                    else -> AnimationMode.SIMPLE
                 }
                 val oldAnimationMode = ReaderSettings.animationMode
                 if (oldAnimationMode != animationMode) {
@@ -336,20 +332,18 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
         debug {
             "$name: $margins"
         }
-        llMargins.apply {
-            val display = margins.enabled
-            cbDisplay.setOnCheckedChangeListener(null)
-            cbDisplay.isChecked = display
-            cbDisplay.setOnCheckedChangeListener { _, isChecked ->
-                margins.enabled = isChecked
-                view.setMargins(margins, name)
-            }
-
-            initMarginSeekBar(iLeft, LEFT, margins, name)
-            initMarginSeekBar(iRight, RIGHT, margins, name)
-            initMarginSeekBar(iTop, TOP, margins, name)
-            initMarginSeekBar(iBottom, BOTTOM, margins, name)
+        val cbDisplay = llMargins.findViewById<CheckBox>(R.id.cbDisplay)
+        cbDisplay.setOnCheckedChangeListener(null)
+        cbDisplay.isChecked = margins.enabled
+        cbDisplay.setOnCheckedChangeListener { _, isChecked ->
+            margins.enabled = isChecked
+            view.setMargins(margins, name)
         }
+
+        initMarginSeekBar(llMargins.findViewById(R.id.iLeft), LEFT, margins, name)
+        initMarginSeekBar(llMargins.findViewById(R.id.iRight), RIGHT, margins, name)
+        initMarginSeekBar(llMargins.findViewById(R.id.iTop), TOP, margins, name)
+        initMarginSeekBar(llMargins.findViewById(R.id.iBottom), BOTTOM, margins, name)
     }
 
     private enum class Direction {
@@ -357,13 +351,12 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
     }
 
     private fun initMarginSeekBar(layout: View, direction: Direction, margins: Margins, name: ReaderConfigName) {
-        // 进度条从-1开始，
         val minValue = -1
-        val nameTextView: TextView = layout.tvMarginName
-        val decreaseTextView: TextView = layout.tvDecrease
-        val seekBar: SeekBar = layout.sbMargin
-        val increaseTextView: TextView = layout.tvIncrease
-        val valueTextView: TextView = layout.tvMarginValue
+        val nameTextView: TextView = layout.findViewById(R.id.tvMarginName)
+        val decreaseTextView: TextView = layout.findViewById(R.id.tvDecrease)
+        val seekBar: SeekBar = layout.findViewById(R.id.sbMargin)
+        val increaseTextView: TextView = layout.findViewById(R.id.tvIncrease)
+        val valueTextView: TextView = layout.findViewById(R.id.tvMarginValue)
         fun getValue() = when (direction) {
             LEFT -> margins.left
             RIGHT -> margins.right
@@ -424,7 +417,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
     fun reset(currentTextCount: Int, currentTextProgress: Int) {
         showLayout(mPanelDefault)
 
-        mPanelDefault.sbTextProgress.apply {
+        mPanelDefault.findViewById<SeekBar>(R.id.sbTextProgress).apply {
             max = currentTextCount
             progress = currentTextProgress
         }

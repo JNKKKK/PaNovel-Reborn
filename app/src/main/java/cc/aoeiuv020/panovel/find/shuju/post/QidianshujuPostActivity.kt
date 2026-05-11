@@ -8,11 +8,10 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
+import cc.aoeiuv020.panovel.databinding.ActivityQidianshujuPostBinding
 import cc.aoeiuv020.panovel.find.shuju.QidianshujuActivity
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_qidianshuju_post.rvContent
-import kotlinx.android.synthetic.main.activity_single_search.srlRefresh
 import org.jetbrains.anko.*
 
 /**
@@ -25,21 +24,23 @@ class QidianshujuPostActivity : AppCompatActivity(), IView, AnkoLogger {
         }
     }
 
+    private lateinit var binding: ActivityQidianshujuPostBinding
     private lateinit var presenter: QidianshujuPostPresenter
     private lateinit var adapter: QidianshujuPostAdapter
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(rvContent, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.rvContent, "", Snackbar.LENGTH_SHORT)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_qidianshuju_post)
+        binding = ActivityQidianshujuPostBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setTitle(R.string.title_qidianshuju_first_order)
 
-        srlRefresh.isRefreshing = true
-        srlRefresh.setOnRefreshListener {
+        binding.srlRefresh.isRefreshing = true
+        binding.srlRefresh.setOnRefreshListener {
             presenter.refresh()
         }
 
@@ -58,7 +59,7 @@ class QidianshujuPostActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun initRecycler() {
-        rvContent.adapter = QidianshujuPostAdapter().also {
+        binding.rvContent.adapter = QidianshujuPostAdapter().also {
             adapter = it
         }
     }
@@ -71,7 +72,7 @@ class QidianshujuPostActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         adapter.setData(data)
         snack.dismiss()
     }
@@ -80,7 +81,7 @@ class QidianshujuPostActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.setText(getString(R.string.qidianshuju_post_progress_place_holder, retry, maxRetry))
         snack.show()
     }
@@ -89,7 +90,7 @@ class QidianshujuPostActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.dismiss()
         alert(
             title = ctx.getString(R.string.error),

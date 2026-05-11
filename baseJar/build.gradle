@@ -1,6 +1,5 @@
 dependencies {
-    api 'cc.aoeiuv020:gson:' + a_gson_version
-    api 'cc.aoeiuv020:jsonpath:' + a_jsonpath_version
-    api 'cc.aoeiuv020:okhttp:' + a_okhttp_version
+    api 'com.google.code.gson:gson:2.10.1'
+    api 'com.squareup.okhttp3:okhttp:4.12.0'
     api 'org.jsoup:jsoup:' + jsoup_version
 }

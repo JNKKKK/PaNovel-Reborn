@@ -7,17 +7,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.BookList
+import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.main.MainActivity
 import cc.aoeiuv020.panovel.share.Share
 import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.panovel.util.showKeyboard
-import kotlinx.android.synthetic.main.dialog_editor.view.*
-import kotlinx.android.synthetic.main.novel_item_list.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.selector
@@ -28,6 +28,9 @@ import org.jetbrains.anko.yesButton
  * Created by AoEiuV020 on 2017.11.22-14:07:56.
  */
 class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
+    private var _binding: NovelItemListBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var progressDialog: ProgressDialog
     private val itemListener: BookListFragmentAdapter.ItemListener = object : BookListFragmentAdapter.ItemListener {
         override fun onClick(vh: BookListFragmentAdapter.ViewHolder) {
@@ -87,7 +90,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
             titleResource = R.string.copy
             val layout = View.inflate(context, R.layout.dialog_editor, null)
             customView = layout
-            val etName = layout.editText
+            val etName = layout.findViewById<EditText>(R.id.editText)
             etName.setText(bookList.name)
             etName.setSelection(0, etName.text.length)
             etName.hint = bookList.name
@@ -108,7 +111,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
             titleResource = R.string.rename
             val layout = View.inflate(context, R.layout.dialog_editor, null)
             customView = layout
-            val etName = layout.editText
+            val etName = layout.findViewById<EditText>(R.id.editText)
             etName.setText(bookList.name)
             etName.setSelection(0, etName.text.length)
             etName.hint = bookList.name
@@ -130,16 +133,18 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
 
     private val presenter: BookListFragmentPresenter = BookListFragmentPresenter()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.novel_item_list, container, false)
+                              savedInstanceState: Bundle?): View {
+        _binding = NovelItemListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         progressDialog = ProgressDialog(context)
         // Note: 这里不是小说列表，固定用LinearLayoutManager，
-        rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
-        rvNovel.adapter = mAdapter
-        srlRefresh.setOnRefreshListener {
+        binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+        binding.rvNovel.adapter = mAdapter
+        binding.srlRefresh.setOnRefreshListener {
             refresh()
         }
         presenter.attach(this)
@@ -147,6 +152,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
 
     override fun onDestroyView() {
         presenter.detach()
+        _binding = null
         super.onDestroyView()
     }
 
@@ -158,12 +164,12 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
     }
 
     fun refresh() {
-        srlRefresh.isRefreshing = true
+        binding.srlRefresh.isRefreshing = true
         presenter.refresh()
     }
 
     fun showBookListList(list: List<BookList>) {
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         mAdapter.data = list
     }
 
@@ -181,7 +187,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
             titleResource = R.string.add_book_list
             val layout = View.inflate(context, R.layout.dialog_editor, null)
             customView = layout
-            val etName = layout.editText
+            val etName = layout.findViewById<EditText>(R.id.editText)
             yesButton {
                 val name = etName.text.toString()
                 if (name.isNotEmpty()) {
@@ -193,13 +199,13 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
     }
 
     fun showComplete(message: String) {
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         progressDialog.dismiss()
         (activity as? MainActivity)?.showMessage(message)
     }
 
     fun showError(message: String, e: Throwable) {
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         progressDialog.dismiss()
         (activity as? MainActivity)?.showError(message, e)
     }

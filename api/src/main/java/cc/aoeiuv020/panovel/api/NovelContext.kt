@@ -219,7 +219,7 @@ abstract class NovelContext {
      */
     fun putCookies(cookies: List<Cookie>) {
         this.cookies = this.cookies + cookies.map {
-            it.name() to it
+            it.name to it
         }
     }
 
@@ -234,7 +234,7 @@ abstract class NovelContext {
         // 要确保setCookies被调用才会本地保存cookie,
         this.cookies = this.cookies + cookies.filter { (name, cookie) ->
             // 只更新value不同的，以免覆盖了okhttp拿到的包含超时等完整信息的cookie,
-            this.cookies[name]?.value() != cookie.value()
+            this.cookies[name]?.value != cookie.value
         }
     }
 
@@ -254,8 +254,8 @@ abstract class NovelContext {
      * 覆盖保存headers,
      */
     fun replaceHeaders(headers: Headers) {
-        val map = HashMap<String, String>(headers.size())
-        repeat(headers.size()) {
+        val map = HashMap<String, String>(headers.size)
+        repeat(headers.size) {
             map[headers.name(it)] = headers.value(it)
         }
         this.headers = map

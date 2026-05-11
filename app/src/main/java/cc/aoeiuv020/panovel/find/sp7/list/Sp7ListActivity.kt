@@ -14,11 +14,10 @@ import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.find.sp7.Sp7Activity
 import cc.aoeiuv020.panovel.settings.OtherSettings
+import cc.aoeiuv020.panovel.databinding.ActivitySp7ListBinding
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.regex.pick
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_single_search.srlRefresh
-import kotlinx.android.synthetic.main.activity_sp7_list.*
 import org.jetbrains.anko.*
 
 /**
@@ -31,25 +30,27 @@ class Sp7ListActivity : AppCompatActivity(), IView, AnkoLogger {
         }
     }
 
+    private lateinit var binding: ActivitySp7ListBinding
     private lateinit var presenter: Sp7ListPresenter
     private lateinit var adapter: Sp7ListAdapter
     private lateinit var postUrl: String
     private var itemJumpQidian: MenuItem? = null
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(rvContent, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.rvContent, "", Snackbar.LENGTH_SHORT)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sp7_list)
+        binding = ActivitySp7ListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setTitle(R.string.sp7)
 
         postUrl = "http://www.sp7.top/sd.html"
 
-        srlRefresh.isRefreshing = true
-        srlRefresh.setOnRefreshListener {
+        binding.srlRefresh.isRefreshing = true
+        binding.srlRefresh.setOnRefreshListener {
             presenter.refresh()
         }
 
@@ -68,7 +69,7 @@ class Sp7ListActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun initRecycler() {
-        rvContent.adapter = Sp7ListAdapter().also {
+        binding.rvContent.adapter = Sp7ListAdapter().also {
             adapter = it
             it.setOnItemClickListener(object : Sp7ListAdapter.OnItemClickListener {
                 override fun onItemClick(item: Item) {
@@ -119,7 +120,7 @@ class Sp7ListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         adapter.setData(data)
         snack.dismiss()
     }
@@ -128,7 +129,7 @@ class Sp7ListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.setText(getString(R.string.qidianshuju_post_progress_place_holder, retry, maxRetry))
         snack.show()
     }
@@ -137,7 +138,7 @@ class Sp7ListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.dismiss()
         alert(
             title = ctx.getString(R.string.error),

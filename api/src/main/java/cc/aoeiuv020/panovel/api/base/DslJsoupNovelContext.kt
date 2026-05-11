@@ -7,6 +7,7 @@ import cc.aoeiuv020.panovel.api.*
 import cc.aoeiuv020.regex.matches
 import cc.aoeiuv020.regex.pick
 import okhttp3.*
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.internal.http.HttpMethod
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -214,7 +215,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
 
         fun remove(name: String) {
             cookies.removeAll {
-                it.name() == name
+                it.name == name
             }
         }
 
@@ -224,7 +225,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
 
         fun contains(name: String): Boolean {
             return cookies.any {
-                it.name() == name
+                it.name == name
             }
         }
 
@@ -779,7 +780,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
         var dataMap: Map<String, String>? = null
         fun createCall(): Call {
             val httpUrlBuilder = (httpUrl
-                    ?: HttpUrl.parse(absUrl(url.notNull())).notNull()).newBuilder()
+                    ?: absUrl(url.notNull()).toHttpUrl()).newBuilder()
             val requestBuilder = request?.newBuilder() ?: Request.Builder()
             if (HttpMethod.permitsRequestBody(method.notNull())) {
                 // post,

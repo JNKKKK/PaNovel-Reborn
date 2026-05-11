@@ -4,9 +4,9 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.BookList
-import kotlinx.android.synthetic.main.book_list_item.view.*
 
 /**
  *
@@ -36,8 +36,8 @@ class BookListFragmentAdapter(
     }
 
     class ViewHolder(itemView: View, itemListener: ItemListener) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
-        private val name = itemView.ivName
-        private val count = itemView.ivCount
+        private val name: TextView = itemView.findViewById(R.id.ivName)
+        private val count: TextView = itemView.findViewById(R.id.ivCount)
         // 提供外面的加调方法使用，
         lateinit var bookList: BookList
             private set

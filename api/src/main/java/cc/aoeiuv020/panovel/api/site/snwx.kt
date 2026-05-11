@@ -20,7 +20,7 @@ class Snwx : DslJsoupNovelContext() {init {
         // 删除cookie绕开搜索时间间隔限制，
         // 这网站只删除jieqiVisitTime已经没用了，
         removeAll {
-            httpUrl.encodedPath().startsWith("/modules/article/search.php")
+            httpUrl.encodedPath.startsWith("/modules/article/search.php")
         }
     }
     search {

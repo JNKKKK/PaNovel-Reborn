@@ -11,18 +11,19 @@ import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.settings.ListSettings
+import cc.aoeiuv020.panovel.databinding.ActivityFuzzySearchBinding
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.getStringExtra
 import com.google.android.material.snackbar.Snackbar
 import com.miguelcatalan.materialsearchview.MaterialSearchView
-import kotlinx.android.synthetic.main.activity_fuzzy_search.*
-import kotlinx.android.synthetic.main.novel_item_list.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.ctx
 import org.jetbrains.anko.startActivity
 
 
 class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
+    private lateinit var binding: ActivityFuzzySearchBinding
+
     companion object {
         fun start(ctx: Context) {
             ctx.startActivity<FuzzySearchActivity>()
@@ -60,13 +61,14 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_fuzzy_search)
-        setSupportActionBar(toolbar)
+        binding = ActivityFuzzySearchBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        searchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                searchView.hideKeyboard(searchView)
+                binding.searchView.hideKeyboard(binding.searchView)
                 search(query)
                 return true
             }
@@ -74,14 +76,14 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
             override fun onQueryTextChange(newText: String?): Boolean = false
         })
 
-        rvNovel.layoutManager = if (ListSettings.gridView) {
+        binding.rvNovel.layoutManager = if (ListSettings.gridView) {
             androidx.recyclerview.widget.GridLayoutManager(ctx, if (ListSettings.largeView) 3 else 5)
         } else {
             androidx.recyclerview.widget.LinearLayoutManager(ctx)
         }
         presenter = FuzzySearchPresenter()
         presenter.attach(this)
-        rvNovel.adapter = novelListAdapter
+        binding.rvNovel.adapter = novelListAdapter
 
         name = getStringExtra("name", savedInstanceState)
         author = getStringExtra("author", savedInstanceState)
@@ -90,7 +92,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
         site?.let {
             presenter.singleSite(it)
         }
-        srlRefresh.setOnRefreshListener {
+        binding.srlRefresh.setOnRefreshListener {
             // 任何时候刷新都没影响，所以一开始就初始化好，
             forceRefresh()
         }
@@ -98,7 +100,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
         // 如果传入了名字，就直接开始搜索，
         name?.let { nameNonnull ->
             search(nameNonnull, author)
-        } ?: searchView.post { showSearch() }
+        } ?: binding.searchView.post { showSearch() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -108,8 +110,8 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun showSearch() {
-        searchView.showSearch()
-        searchView.setQuery(presenter.name, false)
+        binding.searchView.showSearch()
+        binding.searchView.setQuery(presenter.name, false)
     }
 
     override fun onDestroy() {
@@ -118,7 +120,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun search(name: String, author: String? = null) {
-        srlRefresh.isRefreshing = true
+        binding.srlRefresh.isRefreshing = true
         title = name
         this.name = name
         this.author = author
@@ -135,7 +137,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
         name?.let {
             search(it, author)
         } ?: run {
-            srlRefresh.isRefreshing = false
+            binding.srlRefresh.isRefreshing = false
         }
     }
 
@@ -150,22 +152,22 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
 
     fun addResult(list: List<NovelManager>) {
         // 插入有时会导致下滑，原因不明，保存状态解决，
-        val lm = rvNovel.layoutManager ?: return
+        val lm = binding.rvNovel.layoutManager ?: return
         val state = lm.onSaveInstanceState() ?: return
         novelListAdapter.addAll(list)
         lm.onRestoreInstanceState(state)
     }
 
     fun showOnComplete() {
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
     }
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(rvNovel, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.rvNovel, "", Snackbar.LENGTH_SHORT)
     }
 
     fun showError(message: String, e: Throwable) {
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.setText(message + e.message)
         snack.show()
     }
@@ -178,8 +180,8 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.search -> {
-                searchView.showSearch()
-                searchView.setQuery(presenter.name, false)
+                binding.searchView.showSearch()
+                binding.searchView.setQuery(presenter.name, false)
             }
             android.R.id.home -> onBackPressed()
             else -> return super.onOptionsItemSelected(item)

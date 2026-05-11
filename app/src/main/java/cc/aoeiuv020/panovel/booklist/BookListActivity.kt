@@ -19,9 +19,9 @@ import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.settings.ServerSettings
 import cc.aoeiuv020.panovel.util.getStringExtra
+import cc.aoeiuv020.panovel.databinding.ActivityBookListBinding
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.novel_item_list.*
 import org.jetbrains.anko.*
 
 /**
@@ -37,6 +37,7 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
         }
     }
 
+    private lateinit var binding: ActivityBookListBinding
     // onCreate里赋值，必须有值，
     private var bookListId: Long = -1
     private lateinit var presenter: BookListActivityPresenter
@@ -71,7 +72,8 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_book_list)
+        binding = ActivityBookListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -84,14 +86,14 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
             return
         }
 
-        rvNovel.layoutManager = if (ListSettings.gridView) {
+        binding.rvNovel.layoutManager = if (ListSettings.gridView) {
             androidx.recyclerview.widget.GridLayoutManager(ctx, if (ListSettings.largeView) 3 else 5)
         } else {
             androidx.recyclerview.widget.LinearLayoutManager(ctx)
         }
         presenter = BookListActivityPresenter(bookListId)
-        rvNovel.adapter = novelListAdapter
-        srlRefresh.setOnRefreshListener {
+        binding.rvNovel.adapter = novelListAdapter
+        binding.srlRefresh.setOnRefreshListener {
             forceRefresh()
         }
 
@@ -127,7 +129,7 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun refresh() {
-        srlRefresh.isRefreshing = true
+        binding.srlRefresh.isRefreshing = true
         presenter.refresh()
     }
 
@@ -144,12 +146,12 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (ServerSettings.askUpdate) {
             presenter.askUpdate(list)
         } else {
-            srlRefresh.isRefreshing = false
+            binding.srlRefresh.isRefreshing = false
         }
     }
 
     fun showAskUpdateResult(hasUpdateList: List<Long>) {
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         // 就算是空列表也要传进去，更新一下刷新时间，
         // 空列表可能是因为连不上服务器，
         novelListAdapter.hasUpdate(hasUpdateList)
@@ -158,7 +160,7 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
     @Suppress("UNUSED_PARAMETER")
     fun askUpdateError(message: String, e: Throwable) {
         // 询问服务器更新出错不展示，
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
     }
 
     fun selectToAdd(list: List<NovelManager>, nameArray: Array<String>, containsArray: BooleanArray) {
@@ -193,11 +195,11 @@ class BookListActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(rvNovel, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.rvNovel, "", Snackbar.LENGTH_SHORT)
     }
 
     fun showError(message: String, e: Throwable) {
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.setText(message + e.message)
         snack.show()
     }

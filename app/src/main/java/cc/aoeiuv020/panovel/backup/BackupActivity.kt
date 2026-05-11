@@ -17,17 +17,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
+import cc.aoeiuv020.panovel.databinding.ActivityExportBinding
 import cc.aoeiuv020.panovel.settings.BackupSettings
 import cc.aoeiuv020.panovel.util.confirm
 import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_export.*
 import org.jetbrains.anko.*
 
 
 class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
+    private lateinit var binding: ActivityExportBinding
+
     companion object {
         fun start(ctx: Context) {
             ctx.startActivity<BackupActivity>()
@@ -38,7 +40,8 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
     private lateinit var presenter: BackupPresenter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_export)
+        binding = ActivityExportBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         initWidget()
@@ -50,46 +53,46 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
 
     fun getCheckedOption(): Set<BackupOption> {
         val options = mutableSetOf<BackupOption>()
-        cbBookshelf.isChecked && options.add(BackupOption.Bookshelf)
-        cbBookList.isChecked && options.add(BackupOption.BookList)
-        cbProgress.isChecked && options.add(BackupOption.Progress)
-        cbSettings.isChecked && options.add(BackupOption.Settings)
+        binding.cbBookshelf.isChecked && options.add(BackupOption.Bookshelf)
+        binding.cbBookList.isChecked && options.add(BackupOption.BookList)
+        binding.cbProgress.isChecked && options.add(BackupOption.Progress)
+        binding.cbSettings.isChecked && options.add(BackupOption.Settings)
         return options
     }
 
-    fun getSelectPath(): Uri = when (rgPath.checkedRadioButtonId) {
-        R.id.rbDefaultOldUri -> rbDefaultOldUri.text.toString()
-        R.id.rbDefaultNewUri -> rbDefaultNewUri.text.toString()
-        R.id.rbOtherPath -> etOtherPath.text.toString()
+    fun getSelectPath(): Uri = when (binding.rgPath.checkedRadioButtonId) {
+        R.id.rbDefaultOldUri -> binding.rbDefaultOldUri.text.toString()
+        R.id.rbDefaultNewUri -> binding.rbDefaultNewUri.text.toString()
+        R.id.rbOtherPath -> binding.etOtherPath.text.toString()
         else -> throw IllegalStateException("未知错误，")
     }.let {
         Uri.parse(it)
     }
 
-    fun getSelectedId(): Int = rgPath.checkedRadioButtonId
+    fun getSelectedId(): Int = binding.rgPath.checkedRadioButtonId
 
     private fun initWidget() {
         progressDialog = ProgressDialog(this)
-        btnImport.setOnClickListener {
+        binding.btnImport.setOnClickListener {
             confirm(getString(R.string.confirm_backup_import), Runnable {
                 loading(progressDialog, getString(R.string.sImport))
                 saveSelected()
                 presenter.import()
             })
         }
-        btnExport.setOnClickListener {
+        binding.btnExport.setOnClickListener {
             confirm(getString(R.string.confirm_backup_export), Runnable {
                 loading(progressDialog, getString(R.string.export))
                 saveSelected()
                 presenter.export()
             })
         }
-        btnChoose.setOnClickListener {
+        binding.btnChoose.setOnClickListener {
             requestFile()
         }
         loadSelected()
-        repeat(rgPath.childCount) { index ->
-            rgPath.getChildAt(index).setOnClickListener { v ->
+        repeat(binding.rgPath.childCount) { index ->
+            binding.rgPath.getChildAt(index).setOnClickListener { v ->
                 val backupHelper = presenter.getHelper(v.id) ?: return@setOnClickListener
                 debug {
                     "backup click ${backupHelper.type}"
@@ -101,32 +104,32 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
 
     private fun loadSelected() {
         val checkedIndex = if (BackupSettings.checkedButtonIndex == -1) {
-            rgPath.childCount - 1
+            binding.rgPath.childCount - 1
         } else {
             BackupSettings.checkedButtonIndex
         }
-        rgPath.check(rgPath.getChildAt(checkedIndex).id)
-        cbBookshelf.isChecked = BackupSettings.cbBookshelf
-        cbBookList.isChecked = BackupSettings.cbBookList
-        cbProgress.isChecked = BackupSettings.cbProgress
-        cbSettings.isChecked = BackupSettings.cbSettings
+        binding.rgPath.check(binding.rgPath.getChildAt(checkedIndex).id)
+        binding.cbBookshelf.isChecked = BackupSettings.cbBookshelf
+        binding.cbBookList.isChecked = BackupSettings.cbBookList
+        binding.cbProgress.isChecked = BackupSettings.cbProgress
+        binding.cbSettings.isChecked = BackupSettings.cbSettings
     }
 
     private fun saveSelected() {
-        repeat(rgPath.childCount) { index ->
-            val childAt = rgPath.getChildAt(index)
-            if (childAt.id == rgPath.checkedRadioButtonId) {
-                BackupSettings.checkedButtonIndex = if (index == rgPath.childCount - 1) {
+        repeat(binding.rgPath.childCount) { index ->
+            val childAt = binding.rgPath.getChildAt(index)
+            if (childAt.id == binding.rgPath.checkedRadioButtonId) {
+                BackupSettings.checkedButtonIndex = if (index == binding.rgPath.childCount - 1) {
                     -1
                 } else {
                     index
                 }
             }
         }
-        BackupSettings.cbBookshelf = cbBookshelf.isChecked
-        BackupSettings.cbBookList = cbBookList.isChecked
-        BackupSettings.cbProgress = cbProgress.isChecked
-        BackupSettings.cbSettings = cbSettings.isChecked
+        BackupSettings.cbBookshelf = binding.cbBookshelf.isChecked
+        BackupSettings.cbBookList = binding.cbBookList.isChecked
+        BackupSettings.cbProgress = binding.cbProgress.isChecked
+        BackupSettings.cbSettings = binding.cbSettings.isChecked
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -134,9 +137,9 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
             requestCode == 1 -> data?.data?.let { uri ->
                 showOtherPath(uri.toString())
             }
-            1000 <= requestCode && requestCode < 1000 + rgPath.childCount -> {
+            1000 <= requestCode && requestCode < 1000 + binding.rgPath.childCount -> {
                 val index = requestCode - 1000
-                val radioButton = rgPath.getChildAt(index) as RadioButton
+                val radioButton = binding.rgPath.getChildAt(index) as RadioButton
                 val backupHelper = presenter.getHelper(radioButton.id).notNullOrReport()
                 if (backupHelper.ready()) {
                     radioButton.text = backupHelper.notNullOrReport().configPreview()
@@ -201,17 +204,17 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
     }
 
     fun showDefaultPath(defaultOldUri: String, defaultNewUri: String) {
-        rbDefaultOldUri.text = defaultOldUri
-        rbDefaultNewUri.text = defaultNewUri
+        binding.rbDefaultOldUri.text = defaultOldUri
+        binding.rbDefaultNewUri.text = defaultNewUri
     }
 
     fun showOtherPath(defaultOtherUri: String) {
-        etOtherPath.setText(defaultOtherUri)
+        binding.etOtherPath.setText(defaultOtherUri)
     }
 
     private val snack: Snackbar by lazy {
         // TODO: 有时候不会弹出，只在收起时闪一下，可能是设置了跟着软键盘弹起的原因，
-        Snackbar.make(clRoot, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.clRoot, "", Snackbar.LENGTH_SHORT)
     }
 
     fun showMessage(message: String) {
@@ -234,13 +237,13 @@ class BackupActivity : AppCompatActivity(), AnkoLogger, IView {
     }
 
     fun showBackupHint(radioButtonId: Int, test: String) {
-        rgPath.find<RadioButton>(radioButtonId).text = test
+        binding.rgPath.find<RadioButton>(radioButtonId).text = test
     }
 
     fun startConfig(backupHelper: BackupHelper) {
-        repeat(rgPath.childCount) { index ->
-            val childAt = rgPath.getChildAt(index)
-            if (childAt.id == rgPath.checkedRadioButtonId) {
+        repeat(binding.rgPath.childCount) { index ->
+            val childAt = binding.rgPath.getChildAt(index)
+            if (childAt.id == binding.rgPath.checkedRadioButtonId) {
                 startConfig(backupHelper, index)
             }
         }

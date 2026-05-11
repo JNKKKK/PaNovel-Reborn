@@ -71,11 +71,11 @@ class Qidian : DslJsoupNovelContext() {init {
         // 用到的接口需要cookies中的_csrfToken参数，
         // 如果没有，就额外拿一遍详情页，取其中返回的_csrfToken，
         // _csrfToken这个cookie能坚持一年，不用考虑过期的事，而且okhttp会自动处理过期的cookie, 应该只有刚刚过期时的请求会出意外，
-        val token = cookies["_csrfToken"]?.value() ?: run {
+        val token = cookies["_csrfToken"]?.value ?: run {
             response(connect(getNovelDetailUrl(bookId)))
                     // 不用的body也要close,
-                    .apply { body()?.close() }
-                    .headers().responseCookies()["_csrfToken"].notNull()
+                    .apply { body?.close() }
+                    .headers.responseCookies()["_csrfToken"].notNull()
         }
         get {
             url = "https://book.qidian.com/ajax/book/category?_csrfToken=$token&bookId=$bookId"
@@ -168,9 +168,9 @@ class Qidian : DslJsoupNovelContext() {init {
     private val gson: Gson = GsonUtils.gson
 
     override fun cookieFilter(url: HttpUrl, cookies: MutableList<Cookie>): MutableList<Cookie> {
-        if (url.encodedPath() == "/majax/chapter/getChapterInfo") {
+        if (url.encodedPath == "/majax/chapter/getChapterInfo") {
             // 不删除这个Cookie就拿不到页面，或者把同样的参数放一份在get参数里，不知道起点怎么想的，
-            cookies.removeAll { it.name() == "_csrfToken" }
+            cookies.removeAll { it.name == "_csrfToken" }
         }
         return cookies
     }

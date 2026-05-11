@@ -20,7 +20,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
       - name: init custom env
         run: |
           set -a
@@ -94,7 +98,7 @@ jobs:
           find ./app/build/outputs -name '*.apk' -exec mv {} $BUILD_NAME_WITH_VERSION.apk \;
           find ./app/build/outputs -name 'mapping.txt' -exec mv {} $BUILD_NAME_WITH_VERSION-mapping.txt \;
       - name: Upload APK
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: android-build
           path: ${{ env.BUILD_NAME_WITH_VERSION }}.apk

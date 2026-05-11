@@ -13,6 +13,8 @@ import cc.aoeiuv020.panovel.server.dal.model.*
 import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel
 import cc.aoeiuv020.panovel.server.service.NovelService
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -37,17 +39,17 @@ class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService 
     private inner class LogInterceptor : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
-            logger.info { "connect ${request.url()}" }
+            logger.info { "connect ${request.url}" }
             logger.debug {
                 val buffer = Buffer()
-                request.body()?.writeTo(buffer)
+                request.body?.writeTo(buffer)
                 "body ${buffer.readUtf8()}"
             }
             val response = chain.proceed(request)
-            logger.debug { "response ${response.request().url()}" }
+            logger.debug { "response ${response.request.url}" }
             // 应该没有不是网络请求的情况，但是不了解okhttp的缓存，但还是不要在这里用可能抛异常的拓展方法requestHeaders，
-            logger.debug { "request.headers ${response.networkResponse()?.request()?.headers()}" }
-            logger.debug { "response.headers ${response.headers()}" }
+            logger.debug { "request.headers ${response.networkResponse?.request?.headers}" }
+            logger.debug { "response.headers ${response.headers}" }
             return response
         }
     }
@@ -57,17 +59,15 @@ class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService 
 
     private fun <T> post(url: String, any: Any, type: Type): T {
         val mobRequest = MobRequest(any.toJson())
-        val requestBody = RequestBody.create(
-                MediaType.parse("application/json"),
-                mobRequest.toJson()
-        )
+        val requestBody = mobRequest.toJson()
+                .toRequestBody("application/json".toMediaType())
         val request = Request.Builder()
                 .url(url)
                 .post(requestBody)
                 .build()
         val call = client.newCall(request)
         // .string()会关闭body,
-        val response: MobResponse = call.execute().body().notNull().string().notNull()
+        val response: MobResponse = call.execute().body.notNull().string().notNull()
                 .toBean()
         if (!response.isSuccess()) {
             // 只能说可能是上传的参数不对，

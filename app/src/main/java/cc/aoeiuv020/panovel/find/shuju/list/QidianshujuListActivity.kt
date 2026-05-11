@@ -14,12 +14,11 @@ import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.find.shuju.QidianshujuActivity
+import cc.aoeiuv020.panovel.databinding.ActivityQidianshujuListBinding
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.regex.pick
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_qidianshuju_list.*
-import kotlinx.android.synthetic.main.activity_single_search.srlRefresh
 import org.jetbrains.anko.*
 
 /**
@@ -34,25 +33,27 @@ class QidianshujuListActivity : AppCompatActivity(), IView, AnkoLogger {
         }
     }
 
+    private lateinit var binding: ActivityQidianshujuListBinding
     private lateinit var presenter: QidianshujuListPresenter
     private lateinit var adapter: QidianshujuListAdapter
     private lateinit var postUrl: String
     private var itemJumpQidian: MenuItem? = null
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(rvContent, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.rvContent, "", Snackbar.LENGTH_SHORT)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_qidianshuju_list)
+        binding = ActivityQidianshujuListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setTitle(R.string.title_qidianshuju_first_order_ranking)
 
         postUrl = intent.getStringExtra("postUrl").notNullOrReport()
 
-        srlRefresh.isRefreshing = true
-        srlRefresh.setOnRefreshListener {
+        binding.srlRefresh.isRefreshing = true
+        binding.srlRefresh.setOnRefreshListener {
             presenter.refresh()
         }
 
@@ -71,7 +72,7 @@ class QidianshujuListActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun initRecycler() {
-        rvContent.adapter = QidianshujuListAdapter().also {
+        binding.rvContent.adapter = QidianshujuListAdapter().also {
             adapter = it
             it.setOnItemClickListener(object : QidianshujuListAdapter.OnItemClickListener {
                 override fun onItemClick(item: Item) {
@@ -123,7 +124,7 @@ class QidianshujuListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         adapter.setData(data)
         snack.dismiss()
     }
@@ -132,7 +133,7 @@ class QidianshujuListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.setText(getString(R.string.qidianshuju_post_progress_place_holder, retry, maxRetry))
         snack.show()
     }
@@ -141,7 +142,7 @@ class QidianshujuListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.dismiss()
         alert(
             title = ctx.getString(R.string.error),

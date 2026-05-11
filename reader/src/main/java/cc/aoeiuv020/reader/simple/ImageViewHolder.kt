@@ -6,12 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import cc.aoeiuv020.reader.*
-import kotlinx.android.synthetic.main.simple_image_item.view.*
 import org.jetbrains.anko.dip
 
-/**
- * Created by AoEiuV020 on 2018.06.11-11:05:03.
- */
 internal class ImageViewHolder(
         itemView: View,
         private val prAdapter: PageRecyclerAdapter
@@ -24,8 +20,8 @@ internal class ImageViewHolder(
     }
 
     private val ctx: Context = itemView.context
-    private val tvPage = itemView.tvPage
-    private val ivImage = itemView.ivImage
+    private val tvPage = itemView.findViewById<android.widget.TextView>(R.id.tvPage)
+    private val ivImage = itemView.findViewById<com.github.chrisbanes.photoview.PhotoView>(R.id.ivImage)
 
     fun setImage(reader: INovelReader, index: Int, image: Image) {
         tvPage.text = (index + 1).toString()

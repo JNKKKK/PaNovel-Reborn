@@ -15,7 +15,6 @@ import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 import cc.aoeiuv020.panovel.util.tip
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.site_list_item.view.*
 
 /**
  * Created by AoEiuV020 on 2018.05.13-16:50:53.
@@ -50,12 +49,12 @@ class SiteListAdapter(
     }
 
     inner class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
-        private val tvStopUpkeep: TextView = itemView.tvStopUpkeep
-        private val tvName: TextView = itemView.tvName
-        private val ivLogo: ImageView = itemView.ivLogo
-        private val tvLogo: TextView = itemView.tvLogo
-        private val ivSettings: ImageView = itemView.ivSettings
-        val cbEnabled: CheckBox = itemView.cbEnabled
+        private val tvStopUpkeep: TextView = itemView.findViewById(R.id.tvStopUpkeep)
+        private val tvName: TextView = itemView.findViewById(R.id.tvName)
+        private val ivLogo: ImageView = itemView.findViewById(R.id.ivLogo)
+        private val tvLogo: TextView = itemView.findViewById(R.id.tvLogo)
+        private val ivSettings: ImageView = itemView.findViewById(R.id.ivSettings)
+        val cbEnabled: CheckBox = itemView.findViewById(R.id.cbEnabled)
         lateinit var site: Site
 
         init {

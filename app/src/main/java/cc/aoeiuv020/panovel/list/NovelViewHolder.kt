@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.format.DateUtils
 import android.util.TypedValue
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.UiThread
@@ -16,7 +17,6 @@ import cc.aoeiuv020.panovel.text.CheckableImageView
 import cc.aoeiuv020.panovel.util.noCover
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import kotlinx.android.synthetic.main.novel_item_big.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.debug
 import org.jetbrains.anko.dip
@@ -36,17 +36,17 @@ class NovelViewHolder(itemView: View,
     private val itemListener = DefaultNovelItemActionListener(actionDoneListener, onError)
 
     // 所有View可空，准备支持不同布局，小的布局可能大部分View都没有，
-    val name: TextView? = itemView.tvName
-    val author: TextView? = itemView.tvAuthor
-    val site: TextView? = itemView.tvSite
-    val image: ImageView? = itemView.ivImage
-    val last: TextView? = itemView.tvLast
-    val checkUpdate: TextView? = itemView.tvCheckUpdate
-    val readAt: TextView? = itemView.tvReadAt
-    val star: CheckableImageView? = itemView.ivStar
-    val refreshingDot: RefreshingDotView? = itemView.rdRefreshing
+    val name: TextView? = itemView.findViewById(R.id.tvName)
+    val author: TextView? = itemView.findViewById(R.id.tvAuthor)
+    val site: TextView? = itemView.findViewById(R.id.tvSite)
+    val image: ImageView? = itemView.findViewById(R.id.ivImage)
+    val last: TextView? = itemView.findViewById(R.id.tvLast)
+    val checkUpdate: TextView? = itemView.findViewById(R.id.tvCheckUpdate)
+    val readAt: TextView? = itemView.findViewById(R.id.tvReadAt)
+    val star: CheckableImageView? = itemView.findViewById(R.id.ivStar)
+    val refreshingDot: RefreshingDotView? = itemView.findViewById(R.id.rdRefreshing)
     // 包括刷新小红点和加入书架的爱心的FrameLayout,
-    val flDot: View? = itemView.flDot
+    val flDot: FrameLayout? = itemView.findViewById(R.id.flDot)
     // 提供外面的加调方法使用，
     lateinit var novelManager: NovelManager
         private set

@@ -9,7 +9,9 @@ import cc.aoeiuv020.panovel.download.DownloadingNotificationManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.DownloadSettings
 import cc.aoeiuv020.panovel.util.safelyShow
-import kotlinx.android.synthetic.main.dialog_download_count.view.*
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.RadioGroup
 import org.jetbrains.anko.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -124,16 +126,16 @@ class DownloadManager(
             titleResource = R.string.download_chapters_count
             val layout = View.inflate(ctx, R.layout.dialog_download_count, null)
             customView = layout
-            val etCount = layout.editText.apply {
+            val etCount = layout.findViewById<EditText>(R.id.editText).apply {
                 setText(defaultCount.toString())
             }
-            val rgFrom = layout.rgFrom
+            val rgFrom = layout.findViewById<RadioGroup>(R.id.rgFrom)
             if (fromFirst) {
                 rgFrom.check(R.id.rbFromFirst)
             } else {
                 rgFrom.check(R.id.rbFromCurrent)
             }
-            val cbRemember = layout.checkBox
+            val cbRemember = layout.findViewById<CheckBox>(R.id.checkBox)
             fun remember() {
                 if (cbRemember.isChecked) {
                     etCount.text.toString().toIntOrNull()?.let {

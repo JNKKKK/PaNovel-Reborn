@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import cc.aoeiuv020.panovel.IView
-import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.NovelManager
+import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.main.MainActivity
 import cc.aoeiuv020.panovel.settings.ItemAction.Pinned
@@ -15,7 +15,6 @@ import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.settings.ServerSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
-import kotlinx.android.synthetic.main.novel_item_list.*
 import org.jetbrains.anko.AnkoLogger
 
 /**
@@ -23,6 +22,9 @@ import org.jetbrains.anko.AnkoLogger
  * Created by AoEiuV020 on 2017.10.15-17:22:28.
  */
 class BookshelfFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
+    private var _binding: NovelItemListBinding? = null
+    private val binding get() = _binding!!
+
     private val novelListAdapter: NovelListAdapter by lazy {
         NovelListAdapter(initItem = {
             // 以防万一加上问号?支持视图中没有小红点的情况，
@@ -42,18 +44,21 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
     private val presenter: BookshelfPresenter = BookshelfPresenter()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? = inflater.inflate(R.layout.novel_item_list, container, false)
+                              savedInstanceState: Bundle?): View {
+        _binding = NovelItemListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        rvNovel.layoutManager = if (ListSettings.gridView) {
+        binding.rvNovel.layoutManager = if (ListSettings.gridView) {
             androidx.recyclerview.widget.GridLayoutManager(requireContext(), if (ListSettings.largeView) 3 else 5)
         } else {
             androidx.recyclerview.widget.LinearLayoutManager(requireContext())
         }
-        rvNovel.adapter = novelListAdapter
-        srlRefresh.setOnRefreshListener {
+        binding.rvNovel.adapter = novelListAdapter
+        binding.srlRefresh.setOnRefreshListener {
             forceRefresh()
         }
 
@@ -62,6 +67,7 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
 
     override fun onDestroyView() {
         presenter.detach()
+        _binding = null
         super.onDestroyView()
     }
 
@@ -73,7 +79,7 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
     }
 
     fun refresh() {
-        srlRefresh.isRefreshing = true
+        binding.srlRefresh.isRefreshing = true
         presenter.refresh()
     }
 
@@ -90,12 +96,12 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
         if (ServerSettings.askUpdate) {
             presenter.askUpdate(list)
         } else {
-            srlRefresh.isRefreshing = false
+            binding.srlRefresh.isRefreshing = false
         }
     }
 
     fun showAskUpdateResult(hasUpdateList: List<Long>) {
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         // 就算是空列表也要传进去，更新一下刷新时间，
         // 空列表可能是因为连不上服务器，
         novelListAdapter.hasUpdate(hasUpdateList)
@@ -104,13 +110,13 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), IView, AnkoLogger {
     @Suppress("UNUSED_PARAMETER")
     fun askUpdateError(message: String, e: Throwable) {
         // 询问服务器更新出错不展示，
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
     }
 
     fun showError(message: String, e: Throwable) {
         // 按理说到这里已经不会是正在刷新的状态了，
         // 鬼知道发生了什么，反正这里就是npe了一次，导入旧版备份数据后回到书架时崩溃，
-        srlRefresh?.isRefreshing = false
+        _binding?.srlRefresh?.isRefreshing = false
         (activity as? MainActivity)?.showError(message, e)
     }
 }

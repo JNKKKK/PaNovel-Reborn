@@ -5,11 +5,12 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.ProgressBar
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.setSize
 import cc.aoeiuv020.panovel.util.show
-import kotlinx.android.synthetic.main.view_refreshing_dot.view.*
 
 /**
  * Created by AoEiuV020 on 2018.05.23-11:48:08.
@@ -22,8 +23,13 @@ class RefreshingDotView : FrameLayout {
     @Suppress("unused")
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes)
 
+    private val pbRefreshing: ProgressBar
+    private val ivDot: ImageView
+
     init {
         View.inflate(context, R.layout.view_refreshing_dot, this)
+        pbRefreshing = findViewById(R.id.pbRefreshing)
+        ivDot = findViewById(R.id.ivDot)
     }
 
     fun refreshing() {

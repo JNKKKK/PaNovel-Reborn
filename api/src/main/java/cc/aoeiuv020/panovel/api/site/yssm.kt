@@ -34,7 +34,7 @@ class Yssm : DslJsoupNovelContext() {init {
         response.inputStream {
             it.copyTo(byteArrayOutputStream, max)
         }
-        val cutDocument = Jsoup.parse(byteArrayOutputStream.toByteArray().inputStream(), null, response.request().url().toString())
+        val cutDocument = Jsoup.parse(byteArrayOutputStream.toByteArray().inputStream(), null, response.request.url.toString())
         document(cutDocument) {
             // 由于被截断，可能处理最后一个元素会出异常，无视，
             itemsIgnoreFailed("#container > div.details.list-type > ul > li") {

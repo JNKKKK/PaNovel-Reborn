@@ -5,14 +5,16 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.R
+import cc.aoeiuv020.panovel.databinding.ActivityDonateBinding
 import cc.aoeiuv020.panovel.settings.AdSettings
-import kotlinx.android.synthetic.main.activity_donate.*
 import org.jetbrains.anko.ctx
 import org.jetbrains.anko.startActivity
 import java.util.concurrent.TimeUnit
 
 
 class DonateActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityDonateBinding
+
     companion object {
         fun start(context: Context) {
             context.startActivity<DonateActivity>()
@@ -21,23 +23,24 @@ class DonateActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_donate)
+        binding = ActivityDonateBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        lPaypal.setOnClickListener {
+        binding.lPaypal.setOnClickListener {
             Donate.paypal.pay(ctx)
         }
 
-        lAlipay.setOnClickListener {
+        binding.lAlipay.setOnClickListener {
             Donate.alipay.pay(ctx)
         }
 
-        lWeChatPay.setOnClickListener {
+        binding.lWeChatPay.setOnClickListener {
             Donate.weChatPay.pay(ctx)
         }
 
-        tvDonateExplain.text = assets.open("Donate.txt").reader().readText()
+        binding.tvDonateExplain.text = assets.open("Donate.txt").reader().readText()
     }
 
     private var stopTime: Long = 0

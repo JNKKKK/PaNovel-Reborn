@@ -13,10 +13,10 @@ import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
+import cc.aoeiuv020.panovel.databinding.ActivitySingleSearchBinding
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.onActivityDestroy
 import cc.aoeiuv020.panovel.util.safelyShow
-import kotlinx.android.synthetic.main.activity_single_search.*
 import org.jetbrains.anko.*
 
 /**
@@ -24,6 +24,8 @@ import org.jetbrains.anko.*
  * 还有登录也在这里，
  */
 class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
+    private lateinit var binding: ActivitySingleSearchBinding
+
     companion object {
         fun start(ctx: Context, site: String) {
             ctx.startActivity<SingleSearchActivity>("site" to site)
@@ -35,8 +37,9 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_single_search)
-        setSupportActionBar(toolbar)
+        binding = ActivitySingleSearchBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         siteName = intent?.getStringExtra("site") ?: run {
@@ -47,10 +50,10 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
         debug { "receive site: $siteName" }
         title = siteName
 
-        srlRefresh.isRefreshing = true
-        srlRefresh.setOnRefreshListener {
-            wvSite.reload()
-            srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = true
+        binding.srlRefresh.setOnRefreshListener {
+            binding.wvSite.reload()
+            binding.srlRefresh.isRefreshing = false
         }
 
         initWebView()
@@ -63,7 +66,7 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebView() {
-        wvSite.apply {
+        binding.wvSite.apply {
             webViewClient = MyWebViewClient()
             webChromeClient = WebChromeClient()
             settings.apply {
@@ -81,13 +84,13 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
         CookieManager.getInstance().apply {
             setAcceptCookie(true)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                setAcceptThirdPartyCookies(wvSite, true)
+                setAcceptThirdPartyCookies(binding.wvSite, true)
             }
         }
     }
 
     override fun onDestroy() {
-        wvSite.onActivityDestroy()
+        binding.wvSite.onActivityDestroy()
         super.onDestroy()
     }
 
@@ -96,8 +99,8 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
             "onNewIntent ${intent.data}"
         }
         // 以防万一，从别的浏览器跳到这里时不要显示下拉刷新中，
-        srlRefresh.isRefreshing = false
-        wvSite.loadUrl(intent.data.toString())
+        binding.srlRefresh.isRefreshing = false
+        binding.wvSite.loadUrl(intent.data.toString())
     }
 
     private inner class MyWebViewClient : WebViewClient(), AnkoLogger {
@@ -150,11 +153,11 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
         }.safelyShow()
     }
 
-    fun getCurrentUrl(): String? = wvSite.url
+    fun getCurrentUrl(): String? = binding.wvSite.url
 
     fun openPage(url: String) {
-        srlRefresh.isRefreshing = false
-        wvSite.loadUrl(url)
+        binding.srlRefresh.isRefreshing = false
+        binding.wvSite.loadUrl(url)
     }
 
     private fun open() {
@@ -191,8 +194,8 @@ class SingleSearchActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     override fun onBackPressed() {
-        if (wvSite.canGoBack()) {
-            wvSite.goBack()
+        if (binding.wvSite.canGoBack()) {
+            binding.wvSite.goBack()
         } else {
             finish()
         }

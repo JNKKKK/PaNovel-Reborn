@@ -16,7 +16,7 @@ class Miaobige : DslJsoupNovelContext() {init {
         logo = "https://img.miaobige.com/skin/images/logo.png"
     }
     cookieFilter {
-        removeAll { httpUrl.encodedPath().startsWith("/search/") }
+        removeAll { httpUrl.encodedPath.startsWith("/search/") }
     }
     search {
         // https://www.miaobige.com/search/?s=%B6%BC%CA%D0

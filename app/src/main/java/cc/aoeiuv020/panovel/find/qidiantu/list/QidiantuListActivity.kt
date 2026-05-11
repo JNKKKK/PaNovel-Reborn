@@ -14,11 +14,10 @@ import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.find.qidiantu.QidiantuActivity
 import cc.aoeiuv020.panovel.settings.OtherSettings
+import cc.aoeiuv020.panovel.databinding.ActivityQidiantuListBinding
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.regex.pick
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_qidiantu_list.*
-import kotlinx.android.synthetic.main.activity_single_search.srlRefresh
 import org.jetbrains.anko.*
 
 /**
@@ -37,6 +36,7 @@ class QidiantuListActivity : AppCompatActivity(), IView, AnkoLogger {
         }
     }
 
+    private lateinit var binding: ActivityQidiantuListBinding
     private lateinit var presenter: QidiantuListPresenter
     private lateinit var adapter: QidiantuListAdapter
     private lateinit var headAdapter: QidiantuPostAdapter
@@ -44,19 +44,20 @@ class QidiantuListActivity : AppCompatActivity(), IView, AnkoLogger {
     private var itemJumpQidian: MenuItem? = null
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(rvContent, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.rvContent, "", Snackbar.LENGTH_SHORT)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_qidiantu_list)
+        binding = ActivityQidiantuListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setTitle(R.string.qidiantu)
 
         postUrl = intent.getStringExtra("postUrl") ?: "https://www.qidiantu.com/shouding/"
 
-        srlRefresh.isRefreshing = true
-        srlRefresh.setOnRefreshListener {
+        binding.srlRefresh.isRefreshing = true
+        binding.srlRefresh.setOnRefreshListener {
             presenter.refresh()
         }
 
@@ -75,7 +76,7 @@ class QidiantuListActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun initRecycler() {
-        rvHead.adapter = QidiantuPostAdapter().also {
+        binding.rvHead.adapter = QidiantuPostAdapter().also {
             headAdapter = it
             it.setOnItemClickListener(object : QidiantuPostAdapter.OnItemClickListener {
                 override fun onItemClick(item: Post) {
@@ -84,7 +85,7 @@ class QidiantuListActivity : AppCompatActivity(), IView, AnkoLogger {
                 }
             })
         }
-        rvContent.adapter = QidiantuListAdapter().also {
+        binding.rvContent.adapter = QidiantuListAdapter().also {
             adapter = it
             it.setOnItemClickListener(object : QidiantuListAdapter.OnItemClickListener {
                 override fun onItemClick(item: Item) {
@@ -135,7 +136,7 @@ class QidiantuListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         adapter.setData(data)
         headAdapter.setData(head)
         if (title.isNotBlank()) {
@@ -153,7 +154,7 @@ class QidiantuListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.setText(getString(R.string.qidianshuju_post_progress_place_holder, retry, maxRetry))
         snack.show()
     }
@@ -162,7 +163,7 @@ class QidiantuListActivity : AppCompatActivity(), IView, AnkoLogger {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
             return
         }
-        srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = false
         snack.dismiss()
         alert(
             title = ctx.getString(R.string.error),

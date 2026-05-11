@@ -1,6 +1,7 @@
-dependencies {
-}
-publish {
-    licences = ["Apache-2.0"]
+android {
+    namespace "cc.aoeiuv020.filepicker"
 }
 
+dependencies {
+    implementation project(':baseJar')
+}

@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Site
-import kotlinx.android.synthetic.main.activity_site_choose.*
+import cc.aoeiuv020.panovel.databinding.ActivitySiteChooseBinding
 import org.jetbrains.anko.ctx
 import org.jetbrains.anko.selector
 import org.jetbrains.anko.startActivity
@@ -22,6 +22,7 @@ class SiteChooseActivity : AppCompatActivity(), IView {
         }
     }
 
+    private lateinit var binding: ActivitySiteChooseBinding
     private lateinit var presenter: SiteChoosePresenter
 
     private val itemListener = object : SiteListAdapter.ItemListener {
@@ -46,7 +47,7 @@ class SiteChooseActivity : AppCompatActivity(), IView {
                     },
                     R.string.pinned to {
                         vh.site.pinnedTime = Date()
-                        (rvSiteList.adapter as SiteListAdapter).move(vh.layoutPosition, 0)
+                        (binding.rvSiteList.adapter as SiteListAdapter).move(vh.layoutPosition, 0)
                         presenter.pinned(vh.site)
                     },
                     R.string.cancel_pinned to {
@@ -67,11 +68,12 @@ class SiteChooseActivity : AppCompatActivity(), IView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_site_choose)
+        binding = ActivitySiteChooseBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // Note: 这里不是小说列表，固定用LinearLayoutManager，
-        rvSiteList.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.rvSiteList.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
 
         presenter = SiteChoosePresenter()
         presenter.attach(this)
@@ -81,7 +83,7 @@ class SiteChooseActivity : AppCompatActivity(), IView {
 
     fun showSiteList(siteList: List<Site>) {
         val adapter = SiteListAdapter(siteList, itemListener)
-        rvSiteList.adapter = adapter
+        binding.rvSiteList.adapter = adapter
     }
 
     override fun onSupportNavigateUp(): Boolean {

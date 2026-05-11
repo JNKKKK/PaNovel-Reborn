@@ -16,9 +16,9 @@ import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.onActivityDestroy
+import cc.aoeiuv020.panovel.databinding.ActivityQidianshujuBinding
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.regex.pick
-import kotlinx.android.synthetic.main.activity_single_search.*
 import org.jetbrains.anko.*
 
 /**
@@ -34,19 +34,21 @@ class QidiantuActivity : AppCompatActivity(), IView, AnkoLogger {
         }
     }
 
+    private lateinit var binding: ActivityQidianshujuBinding
     private var itemJumpQidian: MenuItem? = null
     private lateinit var presenter: QidiantuPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_qidianshuju)
+        binding = ActivityQidianshujuBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setTitle(R.string.qidiantu)
 
-        srlRefresh.isRefreshing = true
-        srlRefresh.setOnRefreshListener {
-            wvSite.reload()
-            srlRefresh.isRefreshing = false
+        binding.srlRefresh.isRefreshing = true
+        binding.srlRefresh.setOnRefreshListener {
+            binding.wvSite.reload()
+            binding.srlRefresh.isRefreshing = false
         }
 
         initWebView()
@@ -59,7 +61,7 @@ class QidiantuActivity : AppCompatActivity(), IView, AnkoLogger {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebView() {
-        wvSite.apply {
+        binding.wvSite.apply {
             webViewClient = MyWebViewClient()
             webChromeClient = MyWebChromeClient()
             settings.apply {
@@ -69,13 +71,13 @@ class QidiantuActivity : AppCompatActivity(), IView, AnkoLogger {
         CookieManager.getInstance().apply {
             setAcceptCookie(true)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                setAcceptThirdPartyCookies(wvSite, true)
+                setAcceptThirdPartyCookies(binding.wvSite, true)
             }
         }
     }
 
     override fun onDestroy() {
-        wvSite.onActivityDestroy()
+        binding.wvSite.onActivityDestroy()
         super.onDestroy()
     }
 
@@ -134,8 +136,8 @@ class QidiantuActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     fun openPage(url: String) {
-        srlRefresh.isRefreshing = false
-        wvSite.loadUrl(url)
+        binding.srlRefresh.isRefreshing = false
+        binding.wvSite.loadUrl(url)
     }
 
     fun openNovelDetail(novel: Novel) {
@@ -161,8 +163,8 @@ class QidiantuActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     override fun onBackPressed() {
-        if (wvSite.canGoBack()) {
-            wvSite.goBack()
+        if (binding.wvSite.canGoBack()) {
+            binding.wvSite.goBack()
         } else {
             finish()
         }

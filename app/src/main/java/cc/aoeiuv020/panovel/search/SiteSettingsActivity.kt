@@ -6,11 +6,11 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.IView
 import cc.aoeiuv020.panovel.R
+import cc.aoeiuv020.panovel.databinding.ActivitySiteSettingsBinding
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.show
 import cc.aoeiuv020.panovel.util.tip
 import cc.aoeiuv020.panovel.util.uiInput
-import kotlinx.android.synthetic.main.activity_site_settings.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.debug
 import org.jetbrains.anko.startActivity
@@ -23,12 +23,14 @@ class SiteSettingsActivity : AppCompatActivity(), IView, AnkoLogger {
         }
     }
 
+    private lateinit var binding: ActivitySiteSettingsBinding
     private lateinit var siteName: String
     private lateinit var presenter: SiteSettingsPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_site_settings)
+        binding = ActivitySiteSettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -48,26 +50,26 @@ class SiteSettingsActivity : AppCompatActivity(), IView, AnkoLogger {
 
     fun init() {
         if (!presenter.isUpkeep()) {
-            llStopUpkeep.show()
-            llStopUpkeep.setOnClickListener {
+            binding.llStopUpkeep.show()
+            binding.llStopUpkeep.setOnClickListener {
                 tip(presenter.getReason())
             }
         }
-        llCookie.setOnClickListener {
+        binding.llCookie.setOnClickListener {
             presenter.setCookie({ cookies ->
                 uiInput(getString(R.string.cookie), cookies)
             }, {
                 showMessage(getString(R.string.tip_set_cookie_success))
             })
         }
-        llHeader.setOnClickListener {
+        binding.llHeader.setOnClickListener {
             presenter.setHeader({ header ->
                 uiInput(getString(R.string.header), header, multiLine = true)
             }, {
                 showMessage(getString(R.string.tip_set_header_success))
             })
         }
-        llCharset.setOnClickListener {
+        binding.llCharset.setOnClickListener {
             presenter.setCharset({
                 uiInput(getString(R.string.site_charset), it)
             }, {

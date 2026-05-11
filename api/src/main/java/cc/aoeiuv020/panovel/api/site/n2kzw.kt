@@ -133,7 +133,7 @@ class N2kzw : DslJsoupNovelContext() {init {
     cookieFilter {
         removeAll {
             // 删除cookie绕开搜索时间间隔限制，
-            it.name() == "ss_search_delay"
+            it.name == "ss_search_delay"
         }
     }
 }

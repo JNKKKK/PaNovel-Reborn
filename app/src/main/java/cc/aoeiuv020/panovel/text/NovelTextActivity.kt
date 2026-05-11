@@ -42,8 +42,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
-import kotlinx.android.synthetic.main.activity_novel_text.*
-import kotlinx.android.synthetic.main.dialog_select_color_scheme.view.*
+import cc.aoeiuv020.panovel.databinding.DialogSelectColorSchemeBinding
 import org.jetbrains.anko.*
 import java.io.File
 import java.io.FileNotFoundException
@@ -148,9 +147,9 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
     fun showNovel(novel: Novel) {
         this.novel = novel
         initReader(novel)
-        navigation = NovelTextNavigation(this, novel, nav_view)
+        navigation = NovelTextNavigation(this, novel, binding.navView.root)
         try {
-            urlTextView.text = presenter.getDetailUrl()
+            binding.urlTextView.text = presenter.getDetailUrl()
         } catch (e: Exception) {
             val message = "获取小说《${novel.name}》<${novel.site}, ${novel.detail}>详情页地址失败，"
             // 按理说每个网站的extra都是设计好的，可以得到完整地址的，
@@ -159,10 +158,10 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
             error(message, e)
             showError(message, e)
         }
-        urlBar.setOnClickListener {
+        binding.urlBar.setOnClickListener {
             // urlTextView只显示完整地址，以便点击打开，
             // 只支持打开网络地址，本地小说不支持调用其他app打开，
-            urlTextView.text?.takeIf { it.startsWith("http") }
+            binding.urlTextView.text?.takeIf { it.startsWith("http") }
                     ?.also { browse(it.toString()) }
                     ?: showError("本地小说不支持外部打开，")
         }
@@ -204,7 +203,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
         ) {
             val glideUrl = object : GlideUrl(image.url) {
                 override fun getHeaders(): MutableMap<String, String> {
-                    return mutableMapOf("Referer" to urlTextView.text.toString())
+                    return mutableMapOf("Referer" to binding.urlTextView.text.toString())
                 }
             }
             Glide.with(ctx.applicationContext)
@@ -240,7 +239,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
             reader.destroy()
         }
         reader = Readers.getReader(this, novel.name,
-                flContent, contentRequester, ReaderSettings.makeReaderConfig()).apply {
+                binding.flContent, contentRequester, ReaderSettings.makeReaderConfig()).apply {
             menuListener = object : MenuListener {
                 override fun hide() {
                     this@NovelTextActivity.hide()
@@ -303,7 +302,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
      */
     private fun resetReader() {
         reader.destroy()
-        flContent.removeAllViews() // 多余，上面已经移除，
+        binding.flContent.removeAllViews() // 多余，上面已经移除，
         initReader(novel)
         showChaptersAsc(chaptersAsc)
     }
@@ -477,7 +476,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
         if (index in chaptersAsc.indices) {
             val chapter = chaptersAsc[index]
             title = "${novel.name} - ${chapter.name}"
-            urlTextView.text = presenter.getContentUrl(chapter)
+            binding.urlTextView.text = presenter.getContentUrl(chapter)
         }
     }
 
@@ -640,17 +639,18 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
         tempColorPref.backgroundImage = ReaderSettings.backgroundImage
         AlertDialog.Builder(ctx).apply {
             setTitle(R.string.select_color_scheme)
-            val view = layoutInflater.inflate(R.layout.dialog_select_color_scheme, null)
-            view.tvBackgroundImage.setOnClickListener {
+            val dialogBinding = DialogSelectColorSchemeBinding.inflate(layoutInflater)
+            val view = dialogBinding.root
+            dialogBinding.tvBackgroundImage.setOnClickListener {
                 requestBackgroundImage()
             }
-            view.tvInputBackgroundColor.setOnClickListener {
+            dialogBinding.tvInputBackgroundColor.setOnClickListener {
                 changeColor(reader.config.backgroundColor) { color ->
                     reader.config.backgroundImage = null
                     reader.config.backgroundColor = color
                 }
             }
-            view.llBackgroundColor.apply {
+            dialogBinding.llBackgroundColor.apply {
                 val listener = View.OnClickListener {
                     val color = ((it as ImageView).drawable as ColorDrawable).color
                     reader.config.backgroundImage = null
@@ -669,12 +669,12 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
                     ivColor.setOnClickListener(listener)
                 }
             }
-            view.tvInputTextColor.setOnClickListener {
+            dialogBinding.tvInputTextColor.setOnClickListener {
                 changeColor(reader.config.textColor) { color ->
                     reader.config.textColor = color
                 }
             }
-            view.llTextColor.apply {
+            dialogBinding.llTextColor.apply {
                 val listener = View.OnClickListener {
                     val color = ((it as ImageView).drawable as ColorDrawable).color
                     reader.config.textColor = color

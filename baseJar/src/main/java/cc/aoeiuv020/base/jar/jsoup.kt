@@ -25,7 +25,7 @@ import java.util.*
 
 fun jsoupParse(call: Call): Document {
     val response = call.execute()
-    return response.body().notNull().use {
+    return response.body.notNull().use {
         it.byteStream().use { input ->
             Jsoup.parse(input, response.charset(), response.url())
         }
@@ -36,19 +36,17 @@ fun jsoupConnect(url: String): Document = jsoupParse(OkHttpUtils.get(url))
 
 fun Element.findAll(predicate: (Element) -> Boolean): List<Element> {
     val list = LinkedList<Element>()
-    // 过时方法懒得改，
-    @Suppress("DEPRECATION")
-    NodeTraversor(object : NodeVisitor {
-        override fun tail(node: Node?, depth: Int) {
+    NodeTraversor.traverse(object : NodeVisitor {
+        override fun tail(node: Node, depth: Int) {
         }
 
-        override fun head(node: Node?, depth: Int) {
+        override fun head(node: Node, depth: Int) {
             if (node is Element && predicate(node)) {
                 list.add(node)
             }
         }
 
-    }).traverse(this)
+    }, this)
     // 转成RandomAccess的ArrayList,
     return list.toList()
 }
@@ -75,24 +73,18 @@ fun Element.textList(): List<String> {
     // 用LinkedList方便频繁添加，
     val list = LinkedList<String>()
     val line = StringBuilder()
-    // 过时方法懒得改，
-    @Suppress("DEPRECATION")
-    NodeTraversor(object : NodeVisitor {
-        override fun head(node: Node?, depth: Int) {
+    NodeTraversor.traverse(object : NodeVisitor {
+        override fun head(node: Node, depth: Int) {
             if (node is TextNode) {
                 if (preserveWhitespace(node.parentNode())) {
-                    // 如果是需要保持空格的标签中的文本，按换行符拆成多行，
                     node.ownTextList().toCollection(list)
                 } else {
-                    // 如果是普通的标签中的文本，缓存起来，不算一行，
                     line.append(node.text())
                 }
             } else if (node is Element) {
-                // 添加图片，按自己的格式，
                 if (node.isImage()) {
                     imgText(node)?.let { list.add(it) }
                 }
-                // 如果需要换行，把存起来的line处理掉，
                 if (line.isNotBlank() && (node.isBr() || node.isBlock)) {
                     list.add(line.toString().trim())
                     line.delete(0, line.length)
@@ -100,9 +92,9 @@ fun Element.textList(): List<String> {
             }
         }
 
-        override fun tail(node: Node?, depth: Int) {
+        override fun tail(node: Node, depth: Int) {
         }
-    }).traverse(this)
+    }, this)
     if (line.isNotBlank()) {
         list.add(line.toString().trim())
         line.delete(0, line.length)
@@ -128,21 +120,18 @@ private fun preserveWhitespace(node: Node?): Boolean {
 fun Element.textListSplitWhitespace(): List<String> {
     // 用LinkedList方便频繁添加，
     val list = LinkedList<String>()
-    @Suppress("DEPRECATION")
-    NodeTraversor(object : NodeVisitor {
-        private val line = StringBuilder()
-        override fun head(node: Node?, depth: Int) {
+    NodeTraversor.traverse(object : NodeVisitor {
+        override fun head(node: Node, depth: Int) {
             if (node is TextNode) {
-                // 完全分割所有空白，不需要被分割的span之类也会被分割，
                 node.ownTextListSplitWhitespace().toCollection(list)
             } else if (node is Element && node.isImage()) {
                 imgText(node)?.let { list.add(it) }
             }
         }
 
-        override fun tail(node: Node?, depth: Int) {
+        override fun tail(node: Node, depth: Int) {
         }
-    }).traverse(this)
+    }, this)
     // 转成RandomAccess的ArrayList,
     return list.toList()
 }

@@ -1,23 +1,32 @@
-@file:Suppress("DEPRECATION")
-
 package cc.aoeiuv020.panovel.settings
 
-import android.app.Fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import cc.aoeiuv020.panovel.R
-import kotlinx.android.synthetic.main.content_disclaimer.*
+import androidx.fragment.app.Fragment
+import cc.aoeiuv020.panovel.databinding.ContentDisclaimerBinding
 
 /**
  *
  * Created by AoEiuV020 on 2017.12.09-18:24:40.
  */
 class DisclaimerFragment : Fragment() {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View = inflater.inflate(R.layout.content_disclaimer, container, false)
+    private var _binding: ContentDisclaimerBinding? = null
+    private val binding get() = _binding!!
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        tvDisclaimer.text = activity.assets.open("Disclaimer.txt").reader().readText()
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = ContentDisclaimerBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.tvDisclaimer.text = requireActivity().assets.open("Disclaimer.txt").reader().readText()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

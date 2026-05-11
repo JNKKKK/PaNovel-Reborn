@@ -9,10 +9,10 @@ import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.R
+import cc.aoeiuv020.panovel.databinding.ActivityNovelTextBinding
 import cc.aoeiuv020.panovel.settings.ReaderSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
-import kotlinx.android.synthetic.main.activity_novel_text.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.debug
 
@@ -23,11 +23,12 @@ import org.jetbrains.anko.debug
  */
 @Suppress("MemberVisibilityCanPrivate", "unused")
 abstract class NovelTextBaseFullScreenActivity : AppCompatActivity(), AnkoLogger {
+    protected lateinit var binding: ActivityNovelTextBinding
     private val mHideHandler = Handler()
     @SuppressLint("InlinedApi")
     private val mHidePart2Runnable = Runnable {
         if (ReaderSettings.fullScreen) {
-            flContent.systemUiVisibility =
+            binding.flContent.systemUiVisibility =
                     View.SYSTEM_UI_FLAG_LOW_PROFILE or
                     View.SYSTEM_UI_FLAG_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -37,8 +38,8 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity(), AnkoLogger
         }
     }
     private val mShowPart2Runnable = Runnable {
-        app_bar.show()
-        fullscreen_content_controls.visibility = View.VISIBLE
+        binding.appBar.show()
+        binding.fullscreenContentControls.visibility = View.VISIBLE
     }
     protected var mVisible: Boolean = false
     private val mHideRunnable = Runnable { hide() }
@@ -61,8 +62,9 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity(), AnkoLogger
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_novel_text)
-        setSupportActionBar(toolbar)
+        binding = ActivityNovelTextBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         if (ReaderSettings.fullScreen) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -96,7 +98,7 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity(), AnkoLogger
         if (mVisible) {
             hide()
         } else {
-            if (fullscreen_content_controls.visibility != View.GONE) {
+            if (binding.fullscreenContentControls.visibility != View.GONE) {
                 hide()
             } else {
                 show()
@@ -106,7 +108,7 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity(), AnkoLogger
 
     // 进入全屏但不隐藏菜单栏，
     fun fullScreen() {
-        app_bar.hide()
+        binding.appBar.hide()
         mVisible = false
         mHideHandler.removeCallbacks(mShowPart2Runnable)
         mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY.toLong())
@@ -114,14 +116,14 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity(), AnkoLogger
 
     fun hide() {
         debug { "hide" }
-        fullscreen_content_controls.visibility = View.GONE
+        binding.fullscreenContentControls.visibility = View.GONE
         fullScreen()
     }
 
     protected open fun show() {
         debug { "show" }
         if (ReaderSettings.fullScreen) {
-            flContent.systemUiVisibility =
+            binding.flContent.systemUiVisibility =
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         }

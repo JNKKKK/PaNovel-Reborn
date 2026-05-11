@@ -7,19 +7,17 @@ import android.widget.ProgressBar
 import cc.aoeiuv020.reader.R
 import cc.aoeiuv020.reader.hide
 import cc.aoeiuv020.reader.show
-import kotlinx.android.synthetic.main.simple_view_pager_item.view.*
 import org.jetbrains.anko.*
 import kotlin.properties.Delegates
 
 internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
-    // TODO 这个强转不能留，
     private val ctx = reader.ctx as Activity
     private val requester = reader.requester
     val itemView: View = View.inflate(ctx, R.layout.simple_view_pager_item, null)
     var position: Int = 0
-    private val textRecyclerView = itemView.textRecyclerView
+    private val textRecyclerView: androidx.recyclerview.widget.RecyclerView = itemView.findViewById(R.id.textRecyclerView)
     private val layoutManager: androidx.recyclerview.widget.LinearLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(ctx)
-    private val progressBar: ProgressBar = itemView.progressBar
+    private val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
     val ntrAdapter = PageRecyclerAdapter(reader)
     private var textProgress: Int? = null
     private var index: Int by Delegates.notNull()
@@ -27,8 +25,6 @@ internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
     init {
         textRecyclerView.layoutManager = layoutManager
         textRecyclerView.adapter = ntrAdapter
-        // itemView可能没有初始化高度，所以用decorView,
-        // 更靠谱的是GlobalOnLayoutListener，但要求api >= 16,
         textRecyclerView.apply {
             layoutParams = (layoutParams as ViewGroup.MarginLayoutParams).apply {
                 setMargins(leftMargin,
@@ -50,7 +46,6 @@ internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
         progressBar.show()
         ntrAdapter.clear()
         ntrAdapter.setChapterName(chapter)
-        // TODO: 重复刷新要忽略先刷新的，但不能直接中断线程，可能导致数据异常，
         doAsync({ e ->
             val message = "获取小说文本失败，"
             error(message, e)
@@ -83,7 +78,7 @@ internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
 
     @Suppress("UNUSED_PARAMETER")
     private fun showError(message: String, e: Throwable) {
-        itemView.progressBar.hide()
+        progressBar.hide()
     }
 
     fun notifyMarginsChanged() {
@@ -101,7 +96,6 @@ internal class PageHolder(private val reader: SimpleReader) : AnkoLogger {
 
     fun setTextProgress(textProgress: Int) {
         debug { "setTextProgress $textProgress" }
-        // 存起来，recyclerView可能还没得到数据，
         this.textProgress = textProgress
         textRecyclerView.scrollToPosition(textProgress)
     }

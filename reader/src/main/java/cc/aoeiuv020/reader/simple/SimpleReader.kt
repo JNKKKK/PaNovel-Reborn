@@ -2,23 +2,18 @@ package cc.aoeiuv020.reader.simple
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import cc.aoeiuv020.reader.*
-import kotlinx.android.synthetic.main.simple.view.*
+import cc.aoeiuv020.reader.databinding.SimpleBinding
 
-/**
- *
- * Created by AoEiuV020 on 2017.12.01-02:14:20.
- */
 internal class SimpleReader(override var ctx: Context, novel: String, private val parent: ViewGroup, requester: TextRequester, override var config: ReaderConfig)
     : BaseNovelReader(novel, requester), ConfigChangedListener {
     private val layoutInflater = LayoutInflater.from(ctx)
-    private val contentView: View = layoutInflater.inflate(R.layout.simple, parent, true)
-    private val viewPager: androidx.viewpager.widget.ViewPager = contentView.viewPager
-    private val background: ImageView = contentView.ivBackground
-    private val dtfRoot: DispatchTouchFrameLayout = contentView.dtfRoot
+    private val binding: SimpleBinding = SimpleBinding.inflate(layoutInflater, parent, true)
+    private val viewPager: androidx.viewpager.widget.ViewPager = binding.viewPager
+    private val background: ImageView = binding.ivBackground
+    private val dtfRoot: DispatchTouchFrameLayout = binding.dtfRoot
     private val ntpAdapter: NovelTextPagerAdapter
     override var chapterList: List<String>
         get() = super.chapterList
@@ -64,9 +59,8 @@ internal class SimpleReader(override var ctx: Context, novel: String, private va
     }
 
     override fun destroy() {
-        // 清空viewPager，自动调用destroyItem切断presenter,
         viewPager.adapter = null
-        parent.removeView(contentView)
+        parent.removeView(binding.root)
     }
 
     override fun refreshCurrentChapter() {
@@ -88,4 +82,3 @@ internal class SimpleReader(override var ctx: Context, novel: String, private va
         }
     }
 }
-

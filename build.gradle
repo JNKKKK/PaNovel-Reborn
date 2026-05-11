@@ -2,13 +2,9 @@
 
 buildscript {
     ext {
-        // 统一配置所有安卓应用模块，
         applicationModules = ['app']
-        // 统一配置所有java库模块，
         javaModules = ["api", "local", "baseJar", "IronDB", "refresher", "server", "js"]
-        // 统一配置所有android库模块，
         androidModules = ["pager", "reader", 'filepicker']
-        // 读取所有库的版本信息，
         def versionFile = rootProject.file('version.properties')
         if (versionFile.exists()) {
             def input = versionFile.newInputStream()
@@ -19,7 +15,6 @@ buildscript {
                 ext.set(k, v)
             }
         }
-        // 读取上传仓库相关配置，示例在publish.properties.example,
         def publishFile = rootProject.file('publish.properties')
         hasPublish = publishFile.exists()
         if (hasPublish) {
@@ -31,65 +26,42 @@ buildscript {
     }
     repositories {
         google()
-        //noinspection JcenterRepositoryObsolete
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        //noinspection GradleDependency
         classpath 'com.android.tools.build:gradle:' + studio_version
-        //noinspection DifferentKotlinGradleVersion
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:' + kotlin_version
-        // 支持安卓库打aar包，
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:' + jitpack_android_version
-        // 使用dokka给kotlin模块生成javadoc文档，
-        classpath 'org.jetbrains.dokka:dokka-gradle-plugin:' + dokka_version
-        // 使用dokka给kotlin-android模块生成javadoc文档，
-        classpath 'org.jetbrains.dokka:dokka-android-gradle-plugin:' + dokka_version
-        // 使用bintray-release上传bintray也就是jcenter，
-        classpath 'com.novoda:bintray-release:' + bintray_version
+        classpath 'com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:' + ksp_version
     }
 }
 
 allprojects {
-    // 上传仓库的组名优先从publish.properties中拿，
     group = 'cc.aoeiuv020'
     version = System.env.BUILD_VERSION ?: version_name
     repositories {
         google()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
         //noinspection JcenterRepositoryObsolete
         jcenter()
-        maven { url "https://jitpack.io" }
-        // 我自己的bintray仓库，库同步到jcenter审核前可以从这个仓库获取，
-        maven { url "https://dl.bintray.com/aoeiuv020/maven" }
     }
 
-    // 固定编译器识别编码utf-8,
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
-    }
-    tasks.withType(Javadoc) {
-        // 禁用原生的javadoc，只使用dokka,
-        enabled = false
-        options {
-            encoding 'UTF-8'
-            charSet 'UTF-8'
-            links "http://docs.oracle.com/javase/7/docs/api"
-        }
     }
 }
 
 // app模块，
-// 多个app模块可能导致AndroidStudio3.1.3右侧gradle面板的任务崩溃，原因和细节不明，
-// 不影响AndroidStudio的run, 和gradlew命令行，
 applicationModules.forEach { name ->
     project(name) {
         apply plugin: 'com.android.application'
         apply plugin: 'kotlin-android'
-        apply plugin: 'kotlin-android-extensions'
         apply plugin: 'kotlin-kapt'
+        apply plugin: 'com.google.devtools.ksp'
         apply from: rootProject.file('gradle/signing.gradle')
 
         android {
+            namespace "cc.aoeiuv020.panovel"
             compileSdkVersion compile_version.toInteger()
             flavorDimensions "tier"
             defaultConfig {
@@ -104,29 +76,27 @@ applicationModules.forEach { name ->
             }
             buildTypes {
                 release {
-                    // 删除无用类，
                     minifyEnabled true
-                    // 禁用混淆，
-                    useProguard false
-                    // 删除无用资源，
                     shrinkResources true
-                    proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                 }
             }
+            buildFeatures {
+                viewBinding true
+            }
             compileOptions {
-                sourceCompatibility JavaVersion.VERSION_1_8
-                targetCompatibility JavaVersion.VERSION_1_8
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
+            kotlinOptions {
+                jvmTarget = '17'
             }
 
-            // 高版本as中installRelease不会依赖assembleRelease也就不会复制apk,
             afterEvaluate {
-                // 没配置签名的话，就没有installRelease，
                 if (tasks.findByName('installRelease')) {
                     installRelease.dependsOn 'assembleRelease'
                 }
             }
-            // release打包后复制出安装包和混淆映射mapping文件到release目录下，
-            // 以便发布上传，
             applicationVariants.all { variant ->
                 if (variant.buildType.name == 'release') {
                     variant.assembleProvider.get().doLast {
@@ -134,9 +104,10 @@ applicationModules.forEach { name ->
                             from variant.packageApplicationProvider.get().outputs.files
                             into "${rootDir}/release"
                         }
-                        if (variant.mappingFile != null) {
+                        def mappingFileProvider = variant.mappingFileProvider.get()
+                        if (mappingFileProvider != null && !mappingFileProvider.files.isEmpty()) {
                             copy {
-                                from variant.mappingFile
+                                from mappingFileProvider
                                 into "${rootDir}/release"
                                 rename { String fileName ->
                                     "$rootProject.name-mapping-$versionName-${variant.name}.txt"
@@ -148,41 +119,25 @@ applicationModules.forEach { name ->
             }
         }
 
-        // pc端的单元测试移除无法使用的slf4j-android，
-        // 关键是runtimeOnly依赖不只加入apk中，test也会加上，
-        // 在allprojects设置没用，apply plugin后才存在这些configurations,
         configurations.findAll { it.name.startsWith('test') }.each { conf ->
             conf.exclude group: "org.slf4j", module: "slf4j-android"
         }
 
         dependencies {
-            // support-v4,
             implementation 'androidx.legacy:legacy-support-v4:' + androidx_version
-            // appcompat-v7,
             implementation 'androidx.appcompat:appcompat:' + androidx_version
-            // 单元测试junit,
             testImplementation 'junit:junit:' + junit_version
-            // 单元测试mock，
             testImplementation 'org.mockito:mockito-core:' + mockito_version
-            // 安卓测试,
             androidTestImplementation 'androidx.test.ext:junit:' + test_runner_version
             androidTestImplementation 'androidx.test.espresso:espresso-core:' + test_espresso_version
-            // 安卓分包，
             implementation 'androidx.multidex:multidex:' + multidex_version
-            // kotlin开发语言支持，
-            implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + kotlin_version
-            // kotlin专用的安卓工具集，anko-commons,
+            implementation 'org.jetbrains.kotlin:kotlin-stdlib:' + kotlin_version
             implementation 'org.jetbrains.anko:anko-commons:' + anko_version
-            // 通用日志框架slf4j, 的接口层，
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
-            // slf4j的安卓实现，
             runtimeOnly 'org.slf4j:slf4j-android:' + slf4j_version
-            // slf4j的控制台简单实现，
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            // 支持使用浏览器调试数据库，
             debugImplementation 'com.amitshekhar.android:debug-db:' + debug_db_version
-            // 自己的kotlin通用工具集，
-            implementation 'cc.aoeiuv020:commons:' + a_commons_version
+            implementation project(':baseJar')
         }
     }
 }
@@ -192,95 +147,23 @@ javaModules.forEach { name ->
     project(name) {
         apply plugin: 'java-library'
         apply plugin: 'kotlin'
-        apply plugin: 'maven'
-        apply plugin: 'org.jetbrains.dokka'
-        apply plugin: 'com.novoda.bintray-release'
 
         dependencies {
-            // 单元测试junit,
             testImplementation 'junit:junit:' + junit_version
-            // kotlin开发语言支持，
-            implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + kotlin_version
-            // 通用日志框架slf4j, 的接口层，
+            implementation 'org.jetbrains.kotlin:kotlin-stdlib:' + kotlin_version
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
-            // slf4j的控制台简单实现，
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            // 自己的kotlin通用工具集，
-            implementation 'cc.aoeiuv020:commons:' + a_commons_version
-        }
-
-        sourceCompatibility = "1.7"
-        targetCompatibility = "1.7"
-
-        // 生成源码包，
-        task sourcesJar(type: Jar, dependsOn: classes) {
-            group = 'jar'
-            classifier = 'sources'
-            from sourceSets.main.allSource
-        }
-
-        // 生成dokka日志，
-        task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
-            jdkVersion = 7
-            outputFormat = 'javadoc'
-            outputDirectory = "$buildDir/dokkadoc"
-        }
-
-        // 生成日志包，
-        task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-            group = 'jar'
-            classifier = 'javadoc'
-            from "$buildDir/dokkadoc"
-        }
-
-        // 指定收集上传源码包和日志包，
-        artifacts {
-            archives sourcesJar
-            archives javadocJar
-        }
-
-        // 配置上传bintray也就是jcenter,
-        // 如果没有publish.properties或者没有key属性，就不上传，也就是dryRun=true,
-        publish {
-            // 都是publish.properties优先的，这里赋值避免没有publish.properties时gradle同步失败，
-            userOrg = 'aoeiuv020'
-            bintrayUser = userOrg
-            artifactId = name
-            publishVersion = version
-            desc = "Java library $name."
-            website = 'https://github.com/AoEiuV020/PaNovel'
-            groupId = group
-            if (hasPublish) {
-                dryRun = false
-                // publish.properties里和这个publish闭包参数同名，参考bintray-release官方wiki，
-                // https://github.com/HailouWang/bintray-release/wiki/%E9%85%8D%E7%BD%AEpublish%E9%97%AD%E5%8C%85
-                properties.forEach { key, value ->
-                    if (pub.getProperty(key)?.trim()) {
-                        setProperty(key, pub.getProperty(key))
-                    }
-                }
-                // 字符串转成数组，逗号分隔，
-                // 因为配置文件无法存数组，
-                if (pub.licences?.trim()) {
-                    licences = pub.licences.split(',')
-                }
-            }
-            // 如果没有配置bintrayKey就不上传，
-            if (!bintrayKey?.trim()) {
-                dryRun = true
+            if (name != 'baseJar') {
+                implementation project(':baseJar')
             }
         }
-        // 删除bintray-release插件自带的javadocJar和sourceJar任务，
-        // 因为不支持kotlin, 不支持安卓，
-        publishToMavenLocal.dependsOn('assemble')
-        tasks.whenTaskAdded { task ->
-            if ([
-                    'genereateJavadocsJar',
-                    'genereateSourcesJar'
-            ].any {
-                task.name.startsWith(it)
-            }) {
-                task.enabled = false
+
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
+
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+            kotlinOptions {
+                jvmTarget = '17'
             }
         }
     }
@@ -291,10 +174,6 @@ androidModules.forEach { name ->
     project(name) {
         apply plugin: 'com.android.library'
         apply plugin: 'kotlin-android'
-        apply plugin: 'kotlin-android-extensions'
-        apply plugin: 'com.github.dcendents.android-maven'
-        apply plugin: 'org.jetbrains.dokka-android'
-        apply plugin: 'com.novoda.bintray-release'
 
         android {
             compileSdkVersion compile_version.toInteger()
@@ -310,108 +189,37 @@ androidModules.forEach { name ->
             buildTypes {
                 release {
                     minifyEnabled false
-                    proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                 }
+            }
+
+            buildFeatures {
+                viewBinding true
+            }
+
+            compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
+            kotlinOptions {
+                jvmTarget = '17'
             }
         }
 
-        // pc端的单元测试移除无法使用的slf4j-android，
-        // 关键是runtimeOnly依赖不只加入apk中，test也会加上，
-        // 在allprojects设置没用，apply plugin后才存在这些configurations,
         configurations.findAll { it.name.startsWith('test') }.each { conf ->
             conf.exclude group: "org.slf4j", module: "slf4j-android"
         }
 
         dependencies {
-            // 单元测试junit,
             testImplementation 'junit:junit:' + junit_version
-            // 安卓测试,
             androidTestImplementation 'androidx.test.ext:junit:' + test_runner_version
             androidTestImplementation 'androidx.test.espresso:espresso-core:' + test_espresso_version
-            // kotlin开发语言支持，
-            implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + kotlin_version
-            // kotlin专用的安卓工具集，anko-commons,
+            implementation 'org.jetbrains.kotlin:kotlin-stdlib:' + kotlin_version
             implementation 'org.jetbrains.anko:anko-commons:' + anko_version
-            // 通用日志框架slf4j, 的接口层，
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
-            // slf4j的安卓实现，
             runtimeOnly 'org.slf4j:slf4j-android:' + slf4j_version
-            // slf4j的控制台简单实现，
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            // 自己的kotlin通用工具集，
-            implementation 'cc.aoeiuv020:commons:' + a_commons_version
-        }
-
-        // 生成源码包，
-        task sourcesJar(type: Jar) {
-            group = 'jar'
-            from android.sourceSets.main.java.srcDirs
-            classifier = 'sources'
-        }
-
-        // 生成dokka日志，
-        task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaAndroidTask) {
-            jdkVersion = 7
-            outputFormat = 'javadoc'
-            outputDirectory = "$buildDir/dokkadoc"
-        }
-
-        // 生成日志包，
-        task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-            group = 'jar'
-            classifier = 'javadoc'
-            from "$buildDir/dokkadoc"
-        }
-
-        // 指定收集上传源码包和日志包，
-        artifacts {
-            archives sourcesJar
-            archives javadocJar
-        }
-
-        // 配置上传bintray也就是jcenter,
-        // 如果没有publish.properties或者没有key属性，就不上传，也就是dryRun=true,
-        publish {
-            // 都是publish.properties优先的，这里赋值避免没有publish.properties时gradle同步失败，
-            userOrg = 'aoeiuv020'
-            bintrayUser = userOrg
-            artifactId = name
-            publishVersion = version
-            desc = "Android library $name."
-            website = 'https://github.com/AoEiuV020/PaNovel'
-            groupId = group
-            if (hasPublish) {
-                dryRun = false
-                // publish.properties里和这个publish闭包参数同名，参考bintray-release官方wiki，
-                // https://github.com/HailouWang/bintray-release/wiki/%E9%85%8D%E7%BD%AEpublish%E9%97%AD%E5%8C%85
-                properties.forEach { key, value ->
-                    if (pub.getProperty(key)?.trim()) {
-                        setProperty(key, pub.getProperty(key))
-                    }
-                }
-                // 字符串转成数组，逗号分隔，
-                // 因为配置文件无法存数组，
-                if (pub.licences?.trim()) {
-                    licences = pub.licences.split(',')
-                }
-            }
-            // 如果没有配置bintrayKey就不上传，
-            if (!bintrayKey?.trim()) {
-                dryRun = true
-            }
-        }
-        // 删除bintray-release插件自带的javadocJar和sourceJar任务，
-        // 因为不支持kotlin, 不支持安卓，
-        publishToMavenLocal.dependsOn('assemble')
-        tasks.whenTaskAdded { task ->
-            if ([
-                    'genereateJavadocsJar',
-                    'genereateSourcesJar'
-            ].any {
-                task.name.startsWith(it)
-            }) {
-                task.enabled = false
-            }
+            implementation project(':baseJar')
         }
     }
 }

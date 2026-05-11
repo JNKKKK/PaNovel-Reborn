@@ -108,19 +108,19 @@ class Qlwx : DslJsoupNovelContext() { init {
     interceptor {
         val request = it.request()
         val response = it.proceed(request)
-        val cookies = Cookie.parseAll(response.request().url(), response.headers())
+        val cookies = Cookie.parseAll(response.request.url, response.headers)
         // 可能不准，第一次跳到验证页时肯定是request里没有这个cookie, 相应的response里一定有这个cookie,
         // 校验超时就不好说了，okhttp在cookie超时时不会带上，有的万一的话应该是cookie被影响了，超时信息不见了，
         // 判断responseBody的话影响就比较大了，
         // 判断security_session_mid_verify的话可能这网站什么时候没云锁就糟了，
-        if (cookies.any { it.name() == "yunsuo_session_verify" }) {
+        if (cookies.any { it.name == "yunsuo_session_verify" }) {
             val w = 1080
             val h = 1920
             val d = "$w,$h"
             response(connect(absUrl("/modules/?&security_verify_data=${d.hex()}")))
             // 验证完了重新请求，
             // 搞不好死循环了就糟糕了，
-            response(client.newCall(response.request()))
+            response(client.newCall(response.request))
         } else {
             response
         }

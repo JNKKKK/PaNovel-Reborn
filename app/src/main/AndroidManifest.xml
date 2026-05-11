@@ -46,6 +46,7 @@
             android:theme="@style/FullscreenTheme" />
         <activity
             android:name=".main.MainActivity"
+            android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -73,6 +74,7 @@
             android:label="@string/site_list" />
         <activity
             android:name=".search.SingleSearchActivity"
+            android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>

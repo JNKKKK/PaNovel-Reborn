@@ -52,6 +52,8 @@ class App : MultiDexApplication(), AnkoLogger {
         ctx = applicationContext
         isMainProcess = isMainProcess()
 
+        timber.log.Timber.plant(timber.log.Timber.DebugTree())
+
         initDnsUtils()
 
         initJson()

@@ -15,7 +15,7 @@ import cc.aoeiuv020.panovel.databinding.ActivityFuzzySearchBinding
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.getStringExtra
 import com.google.android.material.snackbar.Snackbar
-import com.miguelcatalan.materialsearchview.MaterialSearchView
+import androidx.appcompat.widget.SearchView
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.ctx
 import org.jetbrains.anko.startActivity
@@ -66,10 +66,10 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        binding.searchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                binding.searchView.hideKeyboard(binding.searchView)
-                search(query)
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                binding.searchView.clearFocus()
+                query?.let { search(it) }
                 return true
             }
 
@@ -110,7 +110,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
     }
 
     private fun showSearch() {
-        binding.searchView.showSearch()
+        binding.searchView.isIconified = false
         binding.searchView.setQuery(presenter.name, false)
     }
 
@@ -180,7 +180,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView, AnkoLogger {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.search -> {
-                binding.searchView.showSearch()
+                binding.searchView.isIconified = false
                 binding.searchView.setQuery(presenter.name, false)
             }
             android.R.id.home -> onBackPressed()

@@ -139,7 +139,7 @@ class FilePickerPreference : Preference, DialogSelectionListener, Preference.OnP
         lateinit var dialogBundle: Bundle
 
         constructor(source: Parcel) : super(source) {
-            dialogBundle = source.readBundle(javaClass.classLoader)
+            dialogBundle = source.readBundle(javaClass.classLoader)!!
         }
 
         override fun writeToParcel(dest: Parcel, flags: Int) {

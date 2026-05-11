@@ -72,14 +72,17 @@ Base classes: `IView` interface + `Presenter<T : IView>` abstract class.
 - AndroidX, Material Design, Glide 4.16.0, OkHttp 4.12.0
 - Room 2.6.1 (KSP), JSoup 1.17.2, Rhino 1.7.14
 - SLF4J logging, GSON serialization, Bugly crash reporting
-- Anko 0.10.8 (logging, dialogs, async — requires JCenter or cached JAR)
+- Timber 5.0.1 (logging), Kotlin Coroutines 1.7.3 (async)
+- Anko replaced with drop-in compat layer (`org.jetbrains.anko.AnkoCompat.kt` in app/reader/pager)
 
 ## Known Issues
 
-The following dependencies are only available from JCenter (now dead) and need cached JARs or replacement:
-- `org.jetbrains.anko:anko-commons:0.10.8` — used in 97 files for doAsync, alert dialogs, AnkoLogger
-- `com.amitshekhar.android:debug-db:1.0.6` — debug-only database browser
-- `com.miguelcatalan:materialsearchview:1.4.0` — search UI widget
+~208 compilation errors remain in `app` module from the Anko compat migration. The main categories:
+- `uiThread` context mismatches (compat's `AnkoAsyncContext` needs refinement)
+- `cc.aoeiuv020.ssl` package (TLSSocketFactory, TrustManagerUtils) — needs inlining
+- Some ViewBinding references not fully migrated in edge-case files
+- `jsonPath.get<Type>()` generic resolution in some call sites
+- `CrashReport` (Bugly) imports need Android-specific context
 
 ## CI/CD
 

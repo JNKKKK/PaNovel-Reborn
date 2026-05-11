@@ -74,14 +74,14 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
             override fun onQueryTextChange(newText: String?): Boolean = false
         })
 
-        binding.rvNovel.layoutManager = if (ListSettings.gridView) {
+        binding.novelItemList.rvNovel.layoutManager = if (ListSettings.gridView) {
             androidx.recyclerview.widget.GridLayoutManager(this, if (ListSettings.largeView) 3 else 5)
         } else {
             androidx.recyclerview.widget.LinearLayoutManager(this)
         }
         presenter = FuzzySearchPresenter()
         presenter.attach(this)
-        binding.rvNovel.adapter = novelListAdapter
+        binding.novelItemList.rvNovel.adapter = novelListAdapter
 
         name = getStringExtra("name", savedInstanceState)
         author = getStringExtra("author", savedInstanceState)
@@ -90,7 +90,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
         site?.let {
             presenter.singleSite(it)
         }
-        binding.srlRefresh.setOnRefreshListener {
+        binding.novelItemList.srlRefresh.setOnRefreshListener {
             // 任何时候刷新都没影响，所以一开始就初始化好，
             forceRefresh()
         }
@@ -118,7 +118,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
     }
 
     private fun search(name: String, author: String? = null) {
-        binding.srlRefresh.isRefreshing = true
+        binding.novelItemList.srlRefresh.isRefreshing = true
         title = name
         this.name = name
         this.author = author
@@ -135,7 +135,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
         name?.let {
             search(it, author)
         } ?: run {
-            binding.srlRefresh.isRefreshing = false
+            binding.novelItemList.srlRefresh.isRefreshing = false
         }
     }
 
@@ -150,22 +150,22 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
 
     fun addResult(list: List<NovelManager>) {
         // 插入有时会导致下滑，原因不明，保存状态解决，
-        val lm = binding.rvNovel.layoutManager ?: return
+        val lm = binding.novelItemList.rvNovel.layoutManager ?: return
         val state = lm.onSaveInstanceState() ?: return
         novelListAdapter.addAll(list)
         lm.onRestoreInstanceState(state)
     }
 
     fun showOnComplete() {
-        binding.srlRefresh.isRefreshing = false
+        binding.novelItemList.srlRefresh.isRefreshing = false
     }
 
     private val snack: Snackbar by lazy {
-        Snackbar.make(binding.rvNovel, "", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.novelItemList.rvNovel, "", Snackbar.LENGTH_SHORT)
     }
 
     fun showError(message: String, e: Throwable) {
-        binding.srlRefresh.isRefreshing = false
+        binding.novelItemList.srlRefresh.isRefreshing = false
         snack.setText(message + e.message)
         snack.show()
     }

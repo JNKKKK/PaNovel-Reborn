@@ -85,7 +85,7 @@ class MigrationPresenter(
                                 view?.showMigrateComplete(from = cachedVersionName, to = currentVersionName)
                             }
                         }
-                        cachedVersionName < currentVersionName -> {
+                        else -> {
                             Timber.d("migrate start <${cachedVersionName.name} to ${currentVersionName.name}>")
                             // 缓存一开始的版本，迁移完成后展示，
                             val beginVersionName = cachedVersionName

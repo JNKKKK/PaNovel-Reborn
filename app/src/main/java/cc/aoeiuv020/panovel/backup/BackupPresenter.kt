@@ -88,18 +88,20 @@ class BackupPresenter : Presenter<BackupActivity>() {
         scope.launch {
             try {
                 val options = view.notNullOrReport().getCheckedOption()
-                val restore: (File) -> Unit = view.notNullOrReport().getSelectedId().let { backupHelperMap[it] }?.let { backupHelper ->
-                    if (backupHelper.ready()) {
-                        Timber.d("import: ${backupHelper.type}")
-                        backupHelper::restore
+                val restore: (File) -> Unit
+                val selectedHelper: BackupHelper? = view.notNullOrReport().getSelectedId().let { backupHelperMap[it] }
+                if (selectedHelper != null) {
+                    if (selectedHelper.ready()) {
+                        Timber.d("import: ${selectedHelper.type}")
+                        restore = { file: File -> selectedHelper.restore(file) }
                     } else {
-                        view?.startConfig(backupHelper)
+                        view?.startConfig(selectedHelper)
                         throw IllegalStateException("先前往配置")
                     }
-                } ?: run {
+                } else {
                     val uri: Uri = view.notNullOrReport().getSelectPath()
                     Timber.d("import: $uri")
-                    return@run { tempFile: File ->
+                    restore = { tempFile: File ->
                         try {
                             ctx.contentResolver.openInputStream(uri)
                         } catch (e: FileNotFoundException) {
@@ -136,18 +138,20 @@ class BackupPresenter : Presenter<BackupActivity>() {
         scope.launch {
             try {
                 val options = view.notNullOrReport().getCheckedOption()
-                val backup: (File) -> Unit = view.notNullOrReport().getSelectedId().let { backupHelperMap[it] }?.let { backupHelper ->
-                    if (backupHelper.ready()) {
-                        Timber.d("export: ${backupHelper.type}")
-                        backupHelper::backup
+                val backup: (File) -> Unit
+                val selectedExportHelper: BackupHelper? = view.notNullOrReport().getSelectedId().let { backupHelperMap[it] }
+                if (selectedExportHelper != null) {
+                    if (selectedExportHelper.ready()) {
+                        Timber.d("export: ${selectedExportHelper.type}")
+                        backup = { file: File -> selectedExportHelper.backup(file) }
                     } else {
-                        view?.startConfig(backupHelper)
+                        view?.startConfig(selectedExportHelper)
                         throw IllegalStateException("先前往配置")
                     }
-                } ?: run {
+                } else {
                     val uri: Uri = view.notNullOrReport().getSelectPath()
                     Timber.d("export: $uri")
-                    return@run { tempFile: File ->
+                    backup = { tempFile: File ->
                         try {
                             ctx.contentResolver.openOutputStream(uri)
                         } catch (e: FileNotFoundException) {

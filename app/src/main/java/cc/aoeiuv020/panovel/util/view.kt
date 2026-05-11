@@ -115,7 +115,7 @@ fun Context.alertColorPicker(initial: Int, callback: (color: Int) -> Unit) =
         .setNegativeButton(android.R.string.cancel) { _, _ -> callback(initial) }
         .build().apply {
             // 去除对话框的灰背景，
-            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         }.safelyShow()
 
 /**

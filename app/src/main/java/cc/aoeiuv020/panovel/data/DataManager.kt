@@ -14,6 +14,7 @@ import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import okhttp3.Cookie
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import timber.log.Timber
 import java.util.*
 import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel as ServerNovel
@@ -186,13 +187,13 @@ object DataManager {
      */
     @MainThread
     fun pullCookiesFromWebView(context: NovelContext) {
-        val httpUrl = HttpUrl.parse(context.site.baseUrl).notNullOrReport()
+        val httpUrl = context.site.baseUrl.toHttpUrl()
         // webView传入cookie一次只能一条，取出一次所有，
         cookie.getCookies(context.site.baseUrl)?.split(";")?.mapNotNull { cookiePair ->
             Timber.d("pull cookie: <$cookiePair>")
             // 取出来的cookiePair只有name=value，Cookie.parse一定能通过，也因此可能有超时信息拿不出来的问题，
             Cookie.parse(httpUrl, cookiePair)?.let { cookie ->
-                cookie.name() to cookie
+                cookie.name to cookie
             }
         }?.let { cookiesList ->
             context.putCookies(cookiesList.toMap())

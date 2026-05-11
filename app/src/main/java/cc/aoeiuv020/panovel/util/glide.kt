@@ -44,7 +44,7 @@ class JarLibraryGlideModule : LibraryGlideModule(), AnkoLogger {
 */
 
 private class JarFactory : ModelLoaderFactory<GlideUrl, InputStream> {
-    override fun build(multiFactory: MultiModelLoaderFactory?): ModelLoader<GlideUrl, InputStream> {
+    override fun build(multiFactory: MultiModelLoaderFactory): ModelLoader<GlideUrl, InputStream> {
         return JarLoader()
     }
 
@@ -54,7 +54,7 @@ private class JarFactory : ModelLoaderFactory<GlideUrl, InputStream> {
 }
 
 private class JarLoader : ModelLoader<GlideUrl, InputStream> {
-    override fun buildLoadData(model: GlideUrl, width: Int, height: Int, options: Options?): ModelLoader.LoadData<InputStream>? {
+    override fun buildLoadData(model: GlideUrl, width: Int, height: Int, options: Options): ModelLoader.LoadData<InputStream>? {
         Timber.d("load $model")
         return ModelLoader.LoadData(model, UrlStreamFetcher(model.toURL()))
     }
@@ -92,7 +92,7 @@ private class UrlStreamFetcher(
     override fun cancel() {
     }
 
-    override fun loadData(priority: Priority?, callback: DataFetcher.DataCallback<in InputStream>) {
+    override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream>) {
         Timber.d("open $model")
         try {
             inputStream = model.openStream()

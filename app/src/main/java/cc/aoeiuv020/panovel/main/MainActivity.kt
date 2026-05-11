@@ -25,8 +25,6 @@ import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.donate.DonateActivity
-import cc.aoeiuv020.panovel.find.qidiantu.QidiantuActivity
-import cc.aoeiuv020.panovel.find.qidiantu.list.QidiantuListActivity
 import cc.aoeiuv020.panovel.history.HistoryFragment
 import cc.aoeiuv020.panovel.migration.Migration
 import cc.aoeiuv020.panovel.migration.MigrationPresenter
@@ -38,9 +36,6 @@ import cc.aoeiuv020.panovel.search.SiteChooseActivity
 import cc.aoeiuv020.panovel.settings.InterfaceSettings
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.settings.SettingsActivity
-import cc.aoeiuv020.panovel.find.shuju.post.QidianshujuPostActivity
-import cc.aoeiuv020.panovel.find.sp7.Sp7Activity
-import cc.aoeiuv020.panovel.find.sp7.list.Sp7ListActivity
 import cc.aoeiuv020.panovel.databinding.ActivityMainBinding
 import cc.aoeiuv020.panovel.util.*
 import com.google.android.material.snackbar.Snackbar
@@ -113,11 +108,11 @@ class MainActivity : AppCompatActivity(), MigrationView {
 
     override fun showDowngrade(from: VersionName, to: VersionName) {
         Timber.d("showDowngrade <${from.name} to ${to.name}>")
-        this@MainActivity.alert {
-            title = getString(R.string.warning)
-            message = getString(R.string.downgrade_warning_placeholder, from.name, to.name)
+        AlertDialog.Builder(this@MainActivity).apply {
+            setTitle(getString(R.string.warning))
+            setMessage(getString(R.string.downgrade_warning_placeholder, from.name, to.name))
             setPositiveButton(android.R.string.ok, null)
-        }.safelyShow()
+        }.create().safelyShow()
     }
 
     override fun showUpgrading(from: VersionName, migration: Migration) {
@@ -145,14 +140,14 @@ class MainActivity : AppCompatActivity(), MigrationView {
         Timber.d("showMigrateError <${from.name} to ${to.name}>")
         migratingDialog?.dismiss()
         migratingDialog = null
-        this@MainActivity.alert {
-            title = getString(R.string.migrate_error_title)
-            message = getString(R.string.migrate_error_message_placeholder, from.name, to.name, migration.message)
+        AlertDialog.Builder(this@MainActivity).apply {
+            setTitle(getString(R.string.migrate_error_title))
+            setMessage(getString(R.string.migrate_error_message_placeholder, from.name, to.name, migration.message))
             setPositiveButton(android.R.string.ok, null)
             setNeutralButton(getString(R.string.ignore)) { _, _ ->
                 migrationPresenter.ignoreMigration(migration)
             }
-        }.safelyShow()
+        }.create().safelyShow()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -177,7 +172,7 @@ class MainActivity : AppCompatActivity(), MigrationView {
         // 异步检查是否有更新，
         Check.asyncCheckVersion(this)
         // 异步获取可能存在的, 我放在网上想推给用户的消息，
-        DevMessage.asyncShowMessage(this)
+        // DevMessage was removed
     }
 
     private fun checkEmpty() {
@@ -272,7 +267,7 @@ class MainActivity : AppCompatActivity(), MigrationView {
         titleContainer.showDividers = LinearLayout.SHOW_DIVIDER_MIDDLE
         titleContainer.dividerDrawable = object : ColorDrawable() {
             override fun getIntrinsicWidth(): Int {
-                return dip(15)
+                return (15 * resources.displayMetrics.density).toInt()
             }
         }
 
@@ -298,9 +293,11 @@ class MainActivity : AppCompatActivity(), MigrationView {
     }
 
     private fun showExplain() {
-        alert(assets.open("Explain.txt").reader().readText(), getString(R.string.explain)) {
+        AlertDialog.Builder(this).apply {
+            setTitle(getString(R.string.explain))
+            setMessage(assets.open("Explain.txt").reader().readText())
             setPositiveButton(android.R.string.ok, null)
-        }.safelyShow()
+        }.create().safelyShow()
     }
 
     private fun scan() {
@@ -309,35 +306,37 @@ class MainActivity : AppCompatActivity(), MigrationView {
         try {
             startActivityForResult(intent, 0)
         } catch (_: ActivityNotFoundException) {
-            toast("没安装zxing二维码扫描器，")
+            android.widget.Toast.makeText(this, "没安装zxing二维码扫描器，", android.widget.Toast.LENGTH_SHORT).show()
         } catch (_: SecurityException) {
-            toast("没权限？这里是调用zxing扫码，")
+            android.widget.Toast.makeText(this, "没权限？这里是调用zxing扫码，", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun open() = alert {
-        titleResource = R.string.open
+    private fun open() {
         val layout = View.inflate(this@MainActivity, R.layout.dialog_editor, null)
-        customView = layout
         val etName = layout.findViewById<android.widget.EditText>(R.id.editText)
         etName.hint = getString(R.string.main_open_hint)
-        setPositiveButton(android.R.string.ok) { _, _ ->
-            val url = etName.text.toString()
-            if (url.isNotEmpty()) {
-                OpenManager.open(this@MainActivity, url, openListener)
+        AlertDialog.Builder(this@MainActivity).apply {
+            setTitle(R.string.open)
+            setView(layout)
+            setPositiveButton(android.R.string.ok) { _, _ ->
+                val url = etName.text.toString()
+                if (url.isNotEmpty()) {
+                    OpenManager.open(this@MainActivity, url, openListener)
+                }
             }
-        }
-        setNeutralButton(R.string.local_novel) { _, _ ->
-            // 调文件管理器选择小说，
-            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                Intent(Intent.ACTION_OPEN_DOCUMENT)
-            } else {
-                Intent(Intent.ACTION_GET_CONTENT)
+            setNeutralButton(R.string.local_novel) { _, _ ->
+                // 调文件管理器选择小说，
+                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    Intent(Intent.ACTION_OPEN_DOCUMENT)
+                } else {
+                    Intent(Intent.ACTION_GET_CONTENT)
+                }
+                intent.type = "*/*"
+                startActivityForResult(intent, 1)
             }
-            intent.type = "*/*"
-            startActivityForResult(intent, 1)
-        }
-    }.safelyShow()
+        }.create().safelyShow()
+    }
 
     private fun subscript() {
         lifecycleScope.launch {
@@ -383,8 +382,7 @@ class MainActivity : AppCompatActivity(), MigrationView {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
-        menu.findItem(R.id.qidiantu).isVisible = OtherSettings.qidiantu
-        menu.findItem(R.id.scan).isVisible = OtherSettings.scan
+        menu.findItem(R.id.scan)?.isVisible = OtherSettings.scan
         return true
     }
 
@@ -397,7 +395,6 @@ class MainActivity : AppCompatActivity(), MigrationView {
             R.id.subscript -> subscript()
             R.id.cacheAll -> downloadAll()
             R.id.source -> SiteChooseActivity.start(this)
-            R.id.qidiantu -> QidiantuListActivity.start(this)
             R.id.donate -> DonateActivity.start(this)
             R.id.explain -> showExplain()
             else -> return super.onOptionsItemSelected(item)

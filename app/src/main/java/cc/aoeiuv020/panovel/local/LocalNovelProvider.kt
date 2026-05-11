@@ -1,6 +1,6 @@
 package cc.aoeiuv020.panovel.local
 
-import cc.aoeiuv020.exception.interrupt
+import cc.aoeiuv020.base.jar.interrupt
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.NovelProvider
 import cc.aoeiuv020.panovel.data.entity.Novel
@@ -22,6 +22,7 @@ class LocalNovelProvider(
     private val parser = when (type) {
         LocalNovelType.TEXT -> TextParser(file, charset(novel.nChapters))
         LocalNovelType.EPUB -> EpubParser(file, charset(novel.nChapters))
+        else -> throw IllegalStateException("本地小说类型<${novel.site}>不支持")
     }
 
     override fun requestNovelChapters(): List<NovelChapter> {

@@ -9,6 +9,7 @@ import cc.aoeiuv020.regex.compileRegex
 import okhttp3.Cookie
 import okhttp3.Headers
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.nio.charset.Charset
 import timber.log.Timber
 import kotlinx.coroutines.*
@@ -43,15 +44,15 @@ class SiteSettingsPresenter(
             try {
                 withContext(Dispatchers.IO) {
                     val oldCookie = context.cookies.values.joinToString("; ") {
-                        it.run { "${name()}=${value()}" }
+                        it.run { "${name}=${value}" }
                     }
                     val newCookie = input(oldCookie)
                             ?: return@withContext null
                     val cookieMap = newCookie.split(";").mapNotNull { cookiePair ->
                         Timber.d("pull cookie: <$cookiePair>")
                         // 取出来的cookiePair只有name=value，Cookie.parse一定能通过，也因此可能有超时信息拿不出来的问题，
-                        Cookie.parse(HttpUrl.parse(context.site.baseUrl).notNullOrReport(), cookiePair)?.let { cookie ->
-                            cookie.name() to cookie
+                        Cookie.parse(context.site.baseUrl.toHttpUrl(), cookiePair)?.let { cookie ->
+                            cookie.name to cookie
                         }
                     }.toMap()
                     context.replaceCookies(cookieMap)
@@ -76,7 +77,14 @@ class SiteSettingsPresenter(
                     }
                     val new = input(old)
                             ?: return@withContext null
-                    val headers: Headers = Headers.of(*new.split(compileRegex("\n|(: *)")).toTypedArray())
+                    val parts = new.split(compileRegex("\n|(: *)")).toTypedArray()
+                    val headers: Headers = Headers.Builder().apply {
+                        var i = 0
+                        while (i + 1 < parts.size) {
+                            add(parts[i], parts[i + 1])
+                            i += 2
+                        }
+                    }.build()
                     context.replaceHeaders(headers)
                     headers
                 } ?: return@launch

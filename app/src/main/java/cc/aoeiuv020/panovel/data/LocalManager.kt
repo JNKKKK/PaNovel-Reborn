@@ -2,7 +2,7 @@ package cc.aoeiuv020.panovel.data
 
 import android.content.Context
 import androidx.annotation.WorkerThread
-import cc.aoeiuv020.exception.interrupt
+import cc.aoeiuv020.base.jar.interrupt
 import cc.aoeiuv020.irondb.Iron
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter

@@ -59,7 +59,7 @@ import androidx.lifecycle.lifecycleScope
 class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
     companion object {
         fun start(ctx: Context, novel: Novel) {
-            start(this@NovelTextActivity, novel.nId)
+            start(ctx, novel.nId)
         }
 
         fun start(ctx: Context, id: Long) {
@@ -69,7 +69,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
         fun start(ctx: Context, novel: Novel, index: Int) {
             ctx.startActivity(Intent(ctx, NovelTextActivity::class.java)
                     .putExtra(Novel.KEY_ID, novel.nId)
-                    .putExtra("index", App.gson.toJson(index)))
+                    .putExtra("index", cc.aoeiuv020.panovel.App.gson.toJson(index)))
         }
     }
 
@@ -163,7 +163,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
             // urlTextView只显示完整地址，以便点击打开，
             // 只支持打开网络地址，本地小说不支持调用其他app打开，
             binding.urlTextView.text?.takeIf { it.startsWith("http") }
-                    ?.also { browse(it.toString()) }
+                    ?.also { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(it.toString()))) }
                     ?: showError("本地小说不支持外部打开，")
         }
         if (ReaderSettings.autoSaveReadStatus > 0) {
@@ -210,8 +210,8 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
             Glide.with(this@NovelTextActivity.applicationContext)
                     .downloadOnly()
                     .load(glideUrl)
-                    .listener(object : RequestListener<File?> {
-                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<File?>?, isFirstResource: Boolean): Boolean {
+                    .listener(object : RequestListener<File> {
+                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<File>, isFirstResource: Boolean): Boolean {
                             exceptionHandler(e.notNullOrReport())
                             // 一般来说就是网络问题，
                             // TODO: smart case? Contracts,
@@ -219,13 +219,13 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
                             return true
                         }
 
-                        override fun onResourceReady(resource: File?, model: Any?, target: Target<File?>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-                            block(resource.notNullOrReport())
+                        override fun onResourceReady(resource: File, model: Any, target: Target<File>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
+                            block(resource)
                             return true
                         }
                     })
                     .into(object : SimpleTarget<File>() {
-                        override fun onResourceReady(resource: File?, transition: Transition<in File>?) {
+                        override fun onResourceReady(resource: File, transition: Transition<in File?>?) {
                         }
                     })
         }
@@ -498,7 +498,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
     @Suppress("UNUSED_PARAMETER")
     fun showNovelNotFound(message: String, e: Throwable) {
         // 两个参数已经打过日志了，这里就不重复了，
-        toast("小说不存在，")
+        android.widget.Toast.makeText(this, "小说不存在，", android.widget.Toast.LENGTH_SHORT).show()
         finish()
     }
 

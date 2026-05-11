@@ -68,7 +68,7 @@ sealed class Donate {
                 }
                 .setNegativeButton(R.string.copy) { _, _ ->
                     val cm: ClipboardManager = getSystemService(context, ClipboardManager::class.java).notNullOrReport()
-                    cm.primaryClip = ClipData.newPlainText("alipayRedCode", redCode)
+                    cm.setPrimaryClip(ClipData.newPlainText("alipayRedCode", redCode))
                     open(context)
                 }
                 .create().safelyShow()

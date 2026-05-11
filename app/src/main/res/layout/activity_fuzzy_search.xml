@@ -40,7 +40,7 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <include layout="@layout/novel_item_list" />
+        <include android:id="@+id/novelItemList" layout="@layout/novel_item_list" />
     </LinearLayout>
 
 </LinearLayout>

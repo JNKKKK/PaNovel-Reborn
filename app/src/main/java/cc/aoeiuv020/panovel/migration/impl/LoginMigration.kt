@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import okhttp3.Cookie
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import timber.log.Timber
 
 /**
@@ -79,7 +80,7 @@ class LoginMigration : Migration() {
                 val cookies: Map<String, String> = gson.fromJson(oldCookiesFile.readText(), object : TypeToken<Map<String, String>>() {}.type)
                 Timber.d("${novelContext.site.name}: $cookies")
                 // 导入旧版本cookies，
-                val httpUrl = HttpUrl.parse(novelContext.site.baseUrl).notNullOrReport()
+                val httpUrl = novelContext.site.baseUrl.toHttpUrl()
                 novelContext.putCookies(cookies.mapValues { (name, value) ->
                     Cookie.parse(httpUrl, "$name=$value").notNullOrReport()
                 })

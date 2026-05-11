@@ -4,25 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PaNovel is an Android novel reader app that scrapes 35+ Chinese novel websites. It also supports local TXT/EPUB files, WebDAV backup, and reading progress sync. Written in Kotlin with some Java modules.
+PaNovel is an Android novel reader app being revived. Goals: **run again, easy to maintain, live longer**.
+
+It supports local TXT/EPUB files, WebDAV backup, reading progress sync, and a pluggable site scraper system (currently only a mock template — all 68 original scrapers were removed because the sites are dead).
 
 ## Build Commands
 
 ```bash
-# Build release APK
-./gradlew assembleRelease
-
 # Build debug APK
 ./gradlew assembleDebug
 
-# Run API module tests (all site scrapers)
-./gradlew api:test --tests "**.site.*"
+# Build release APK
+./gradlew assembleRelease
 
-# Run a single site test
-./gradlew api:test --tests "**.site.BiqugeTest"
+# Compile API module (scraper DSL)
+./gradlew api:compileKotlin
 
-# Compile tests without running
-./gradlew api:compileTestJava
+# Compile local module (TXT/EPUB)
+./gradlew local:compileKotlin
 ```
 
 Requires JDK 21. Uses Gradle 8.7, AGP 8.3.2, Kotlin 1.9.22.
@@ -38,7 +37,7 @@ Requires JDK 21. Uses Gradle 8.7, AGP 8.3.2, Kotlin 1.9.22.
 - `LocalManager` – Local file novel support
 - `DownloadManager` – Download management
 
-Base classes: `IView` interface + `Presenter<T : IView>` abstract class.
+Base classes: `IView` interface + `Presenter<T : IView>` abstract class. Presenters use `CoroutineScope(Dispatchers.Main + SupervisorJob())` for async work.
 
 ## Module Structure
 
@@ -46,10 +45,10 @@ Base classes: `IView` interface + `Presenter<T : IView>` abstract class.
 |--------|------|---------|
 | app | Android | Main application (activities, presenters, fragments) |
 | api | Java | Novel website scrapers (JSoup + Rhino JS parsing) |
-| baseJar | Java | Shared utilities (GSON, OkHttp, regex, string, logging wrappers) |
+| baseJar | Java | Shared utilities (GSON extensions, regex, SSL, jsoup helpers) |
 | IronDB | Java | File-based NoSQL key-value store |
 | js | Java | Rhino JavaScript engine wrapper |
-| local | Java | Local file support (TXT, EPUB) |
+| local | Java | Local file support (TXT, EPUB via epub4j-core) |
 | pager | Android | Pagination library |
 | reader | Android | Novel reader UI |
 | filepicker | Android | File picker UI |
@@ -58,12 +57,16 @@ Base classes: `IView` interface + `Presenter<T : IView>` abstract class.
 
 ## Key Patterns
 
-- Novel site scrapers extend `DslJsoupNovelContext`, `JsNovelContext`, or `OkHttpNovelContext` in `api/src/main/java/cc/aoeiuv020/panovel/api/site/`
+- Novel site scrapers extend `DslJsoupNovelContext` in `api/src/main/java/cc/aoeiuv020/panovel/api/site/`
+- Only `MockSite.kt` exists as a template — add new scrapers by copying it
 - Dependency versions are centralized in `version.properties`
 - App package structure is feature-based: `cc.aoeiuv020.panovel.{bookshelf,download,search,settings,...}`
 - Room database schemas are exported to `app/schemas/` for migration validation
 - ViewBinding is used for view access (no kotlin-android-extensions)
-- Custom utility libraries are inlined in `baseJar/src/main/java/cc/aoeiuv020/` (anull, gson, okhttp, regex, jsonpath, string, log, encrypt, atry)
+- Logging: Timber in Android modules, SLF4J in pure-Java modules
+- Async: Kotlin Coroutines (scope in Presenter base class, lifecycleScope in Activities)
+- Dialogs: AlertDialog.Builder (no DSL wrappers)
+- Navigation: standard Intent with putExtra
 
 ## Tech Stack
 
@@ -71,18 +74,26 @@ Base classes: `IView` interface + `Presenter<T : IView>` abstract class.
 - Target/Compile SDK 34, Min SDK 16, Multidex enabled
 - AndroidX, Material Design, Glide 4.16.0, OkHttp 4.12.0
 - Room 2.6.1 (KSP), JSoup 1.17.2, Rhino 1.7.14
-- SLF4J logging, GSON serialization, Bugly crash reporting
 - Timber 5.0.1 (logging), Kotlin Coroutines 1.7.3 (async)
-- Anko replaced with drop-in compat layer (`org.jetbrains.anko.AnkoCompat.kt` in app/reader/pager)
+- GSON serialization, epub4j-core 4.2.1 (EPUB support)
+- SLF4J for non-Android modules
 
-## Known Issues
+## Migration Status
 
-~208 compilation errors remain in `app` module from the Anko compat migration. The main categories:
-- `uiThread` context mismatches (compat's `AnkoAsyncContext` needs refinement)
-- `cc.aoeiuv020.ssl` package (TLSSocketFactory, TrustManagerUtils) — needs inlining
-- Some ViewBinding references not fully migrated in edge-case files
-- `jsonPath.get<Type>()` generic resolution in some call sites
-- `CrashReport` (Bugly) imports need Android-specific context
+Completed:
+- Gradle 4.10→8.7, AGP 3.3→8.3.2, Kotlin 1.3→1.9.22
+- Removed 68 dead site scrapers (all websites offline)
+- Removed Anko entirely — replaced with Timber + Coroutines + AlertDialog.Builder
+- Replaced all custom cc.aoeiuv020.* utility wrappers with standard library calls
+- Replaced epublib stubs with real epub4j-core from Maven Central
+- OkHttp 3→4 API migration
+- ViewBinding migration from kotlin-android-extensions
+- `./gradlew assembleDebug` passes on JDK 21
+
+Known issues:
+- Bugly crash reporting stubbed out (aar unavailable) — replace with alternative
+- Some restored Presenter files still have old Anko patterns (functional but not fully modernized)
+- No runtime testing done yet — need device/emulator verification
 
 ## CI/CD
 

@@ -78,22 +78,18 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 - GSON serialization, epub4j-core 4.2.1 (EPUB support)
 - SLF4J for non-Android modules
 
-## Migration Status
+## Migration Status (from original codebase)
 
-Completed:
 - Gradle 4.10→8.7, AGP 3.3→8.3.2, Kotlin 1.3→1.9.22
 - Removed 68 dead site scrapers (all websites offline)
 - Removed Anko entirely — replaced with Timber + Coroutines + AlertDialog.Builder
+- Removed Bugly crash reporting — Reporter now logs via Timber only
+- Removed old version migration system (no upgrades from legacy versions)
 - Replaced all custom cc.aoeiuv020.* utility wrappers with standard library calls
 - Replaced epublib stubs with real epub4j-core from Maven Central
 - OkHttp 3→4 API migration
 - ViewBinding migration from kotlin-android-extensions
 - `./gradlew assembleDebug` passes on JDK 21
-
-Known issues:
-- Bugly crash reporting stubbed out (aar unavailable) — replace with alternative
-- Some restored Presenter files still have old Anko patterns (functional but not fully modernized)
-- No runtime testing done yet — need device/emulator verification
 
 ## Release Workflow
 

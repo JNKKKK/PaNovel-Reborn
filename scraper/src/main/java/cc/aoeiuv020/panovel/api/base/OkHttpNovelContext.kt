@@ -143,8 +143,6 @@ abstract class OkHttpNovelContext : NovelContext() {
         if (!check(response.url())) {
             // 可能网络需要登录之类的，会跳到不认识的地址，
             // 可能误伤，比如网站自己换域名，
-            // TODO: 日志要支持发行版上传bugly,
-            // 目前这样如果后面解析失败，上传失败日志时会带上这条日志，
             logger.error("网络被重定向，<{}> -> <{}>", call.request().url, response.url())
 //            throw IOException("网络被重定向，检查网络是否可用，")
         }

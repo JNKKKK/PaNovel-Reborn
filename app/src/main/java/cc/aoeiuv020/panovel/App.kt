@@ -9,7 +9,6 @@ import androidx.multidex.MultiDexApplication
 import com.google.gson.GsonBuilder
 import cc.aoeiuv020.panovel.ad.AdHelper
 import cc.aoeiuv020.panovel.data.DataManager
-import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.AdSettings
 import cc.aoeiuv020.panovel.util.DnsUtils
 import cc.aoeiuv020.ssl.TLSSocketFactory
@@ -61,8 +60,6 @@ class App : MultiDexApplication() {
         initSsl()
 
         initVector()
-
-        initReporter()
 
         initAd()
 
@@ -122,13 +119,6 @@ class App : MultiDexApplication() {
 
     private fun initDataSources() {
         DataManager.init(context)
-    }
-
-    /**
-     * 初始化异常上报封装类，
-     */
-    private fun initReporter() {
-        Reporter.init(context)
     }
 
     private fun initAd() {

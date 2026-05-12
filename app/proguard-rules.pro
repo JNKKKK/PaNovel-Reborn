@@ -47,10 +47,6 @@
 # for DexGuard only
 #-keepresourcexmlelements manifest/application/meta-data@value=GlideModule
 
-#bugly https://bugly.qq.com/docs/user-guide/instruction-manual-android/?v=20170912151050#_5
--dontwarn com.tencent.bugly.**
--keep public class com.tencent.bugly.**{*;}
-
 # firebase
 -keepattributes Signature
 -keepattributes *Annotation*

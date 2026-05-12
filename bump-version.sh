@@ -1,26 +1,22 @@
 #!/bin/sh
-# ./bump-version 下个版本，
-# 改版本号和版本名，然后提交，
+# Usage: ./bump-version.sh 1.2.3
+# Increments version_code and sets version_name in version.properties, then commits.
 set -e
-old=$PWD
-cd $(dirname $0)
-project=$(pwd)
-buildGradleFile="$project/build.gradle"
-versionFile="$project/version.properties"
-
-versionCode=$(sed -n 's/\s*version_code\s*=\s*\(\S*\)/\1/p' $versionFile)
-versionCode=$(expr $versionCode + 1)
-
-sed -i "s/version_code\\s*=\\s*[0-9]*/version_code=$versionCode/" $versionFile
+cd "$(dirname "$0")"
 
 versionName=$1
-sed -i "s/version_name\\s*=\\s*.*/version_name=$versionName/" $versionFile
-changeLogFile=app/src/main/assets/ChangeLog.txt
-sed -i "1G" $changeLogFile
-sed -i "2i$versionName:" $changeLogFile
+if [ -z "$versionName" ]; then
+    echo "Usage: $0 <version>" >&2
+    exit 1
+fi
 
-git add $versionFile
-git add $changeLogFile
-git commit -m "Bumped version number to $versionName"
+versionFile="version.properties"
 
-cd $old
+versionCode=$(sed -n 's/\s*version_code\s*=\s*\(\S*\)/\1/p' "$versionFile")
+versionCode=$(expr "$versionCode" + 1)
+
+sed -i "s/version_code\s*=\s*[0-9]*/version_code=$versionCode/" "$versionFile"
+sed -i "s/version_name\s*=\s*.*/version_name=$versionName/" "$versionFile"
+
+git add "$versionFile"
+git commit -m "Bump version to $versionName"

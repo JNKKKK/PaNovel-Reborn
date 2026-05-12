@@ -63,9 +63,6 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".booklist.BookListActivity" />
         <activity
-            android:name=".donate.DonateActivity"
-            android:label="@string/donate" /> <!-- User defined.  For test only  用户自定义的广播接收器 -->
-        <activity
             android:name=".backup.BackupActivity"
             android:label="@string/backup"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />

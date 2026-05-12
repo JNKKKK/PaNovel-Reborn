@@ -95,6 +95,25 @@ Known issues:
 - Some restored Presenter files still have old Anko patterns (functional but not fully modernized)
 - No runtime testing done yet — need device/emulator verification
 
+## Release Workflow
+
+To release a new version:
+
+```bash
+# 1. Bump version (increments version_code, sets version_name, commits)
+./bump-version.sh 1.2.3
+
+# 2. Push to remote
+git push
+
+# 3. Create GitHub release (creates tag, uploads release notes in one step)
+gh release create v1.2.3 --title "v1.2.3" --notes "what changed"
+```
+
+The app checks for updates by hitting `https://api.github.com/repos/JNKKKK/PaNovel/releases/latest`. It reads `tag_name` for the version and `body` for the changelog shown to users. No `ChangeLog.txt` maintenance needed for updates.
+
+Repository: https://github.com/JNKKKK/PaNovel
+
 ## CI/CD
 
 - GitHub Actions: builds on push/PR (`.github/workflows/main.yml`)

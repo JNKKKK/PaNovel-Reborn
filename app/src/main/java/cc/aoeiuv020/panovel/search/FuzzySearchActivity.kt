@@ -15,8 +15,9 @@ import cc.aoeiuv020.panovel.databinding.ActivityFuzzySearchBinding
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.getStringExtra
 import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.widget.SearchView
 import android.content.Intent
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 
 
 class FuzzySearchActivity : AppCompatActivity(), IView {
@@ -63,16 +64,18 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                binding.searchView.clearFocus()
-                query?.let { search(it) }
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean = false
-        })
+        binding.etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val query = binding.etSearch.text?.toString()?.trim()
+                if (!query.isNullOrEmpty()) {
+                    hideKeyboard()
+                    search(query)
+                }
+                true
+            } else false
+        }
 
         binding.novelItemList.rvNovel.layoutManager = if (ListSettings.gridView) {
             androidx.recyclerview.widget.GridLayoutManager(this, if (ListSettings.largeView) 3 else 5)
@@ -98,7 +101,7 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
         // 如果传入了名字，就直接开始搜索，
         name?.let { nameNonnull ->
             search(nameNonnull, author)
-        } ?: binding.searchView.post { showSearch() }
+        } ?: binding.etSearch.post { showSearch() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -108,8 +111,15 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
     }
 
     private fun showSearch() {
-        binding.searchView.isIconified = false
-        binding.searchView.setQuery(presenter.name, false)
+        binding.etSearch.setText(presenter.name)
+        binding.etSearch.requestFocus()
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(binding.etSearch, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
     }
 
     override fun onDestroy() {
@@ -178,8 +188,13 @@ class FuzzySearchActivity : AppCompatActivity(), IView {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.search -> {
-                binding.searchView.isIconified = false
-                binding.searchView.setQuery(presenter.name, false)
+                val query = binding.etSearch.text?.toString()?.trim()
+                if (!query.isNullOrEmpty()) {
+                    hideKeyboard()
+                    search(query)
+                } else {
+                    showSearch()
+                }
             }
             android.R.id.home -> onBackPressed()
             else -> return super.onOptionsItemSelected(item)

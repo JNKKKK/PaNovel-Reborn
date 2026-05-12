@@ -24,7 +24,6 @@ import cc.aoeiuv020.panovel.bookshelf.BookshelfFragment
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
-import cc.aoeiuv020.panovel.donate.DonateActivity
 import cc.aoeiuv020.panovel.history.HistoryFragment
 import cc.aoeiuv020.panovel.migration.Migration
 import cc.aoeiuv020.panovel.migration.MigrationPresenter
@@ -395,7 +394,6 @@ class MainActivity : AppCompatActivity(), MigrationView {
             R.id.subscript -> subscript()
             R.id.cacheAll -> downloadAll()
             R.id.source -> SiteChooseActivity.start(this)
-            R.id.donate -> DonateActivity.start(this)
             R.id.explain -> showExplain()
             else -> return super.onOptionsItemSelected(item)
         }

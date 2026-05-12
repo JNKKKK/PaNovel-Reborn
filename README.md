@@ -24,6 +24,3 @@ kotlin + mvp + room
 [AspectRatioImageView](https://github.com/santalu/aspect-ratio-imageview)
 [jchardet](http://jchardet.sourceforge.net/index.html)
 
-![img](screenshots/text.jpg)
-![img](screenshots/epub.jpg)
-![img](screenshots/bookshelf.jpg)

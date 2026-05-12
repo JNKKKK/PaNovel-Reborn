@@ -7,7 +7,6 @@ import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel
 import cc.aoeiuv020.panovel.server.service.NovelService
 import cc.aoeiuv020.panovel.server.service.impl.NovelServiceImpl
 import cc.aoeiuv020.panovel.share.PasteUbuntu
-import kotlinx.serialization.json.*
 import org.slf4j.LoggerFactory
 import java.net.URL
 import java.util.*
@@ -94,22 +93,7 @@ class Refresher(
                     }
                     paste.download(url)
                 }
-                val bookListJson = AppJson.parseToJsonElement(text).jsonObject
-                val version = bookListJson["version"]?.jsonPrimitive?.intOrNull
-                val bookListBean: BookListV3 = when (version) {
-                    3 -> AppJson.decodeFromString(text)
-                    2 -> {
-                        AppJson.decodeFromString<BookListV2>(text).let {
-                            BookListV3(it.name, it.list, it.version, UUID.randomUUID().toString())
-                        }
-                    }
-                    else -> {
-                        val bookListBean1: BookListV1 = AppJson.decodeFromString(text)
-                        BookListV3(bookListBean1.name, bookListBean1.list.map {
-                            NovelMinimal(site = it.site, author = it.author, name = it.name, detail = it.requester.extra)
-                        }, 3, UUID.randomUUID().toString())
-                    }
-                }
+                val bookListBean: SharedBookList = AppJson.decodeFromString(text)
                 bookListBean.list.forEach {
                     logger.info("获取到书架小说 {}", it)
                     val novel = Novel().apply {

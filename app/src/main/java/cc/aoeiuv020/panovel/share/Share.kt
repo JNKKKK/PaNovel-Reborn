@@ -15,8 +15,6 @@ import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.bumptech.glide.Glide
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
-import java.util.*
 
 object Share {
     private val paste = PasteUbuntu()
@@ -32,26 +30,12 @@ object Share {
     }
 
     fun exportBookList(bookList: BookList, novelList: List<NovelMinimal>): String {
-        val bookListBean = BookListV3(bookList.name, novelList, VERSION, bookList.uuid)
+        val bookListBean = SharedBookList(bookList.name, novelList, VERSION, bookList.uuid)
         return AppJson.encodeToString(bookListBean)
     }
 
-    fun importBookList(text: String): BookListV3 {
-        val bookListJson = AppJson.parseToJsonElement(text).jsonObject
-        val version = bookListJson["version"]?.jsonPrimitive?.intOrNull
-        return when (version) {
-            3 -> AppJson.decodeFromString<BookListV3>(text)
-            2 -> {
-                val v2 = AppJson.decodeFromString<BookListV2>(text)
-                BookListV3(v2.name, v2.list, v2.version, UUID.randomUUID().toString())
-            }
-            else -> {
-                val v1 = AppJson.decodeFromString<BookListV1>(text)
-                BookListV3(v1.name, v1.list.map {
-                    NovelMinimal(site = it.site, author = it.author, name = it.name, detail = it.requester.extra)
-                }, VERSION, UUID.randomUUID().toString())
-            }
-        }
+    fun importBookList(text: String): SharedBookList {
+        return AppJson.decodeFromString<SharedBookList>(text)
     }
 
     fun receiveBookList(url: String): Int {

@@ -3,3 +3,19 @@ dependencies {
     implementation project(':core')
     implementation project(':rhino')
 }
+
+test {
+    useJUnit {
+        if (!System.getProperty('test.integration', 'false').toBoolean()) {
+            excludeCategories 'cc.aoeiuv020.panovel.api.SiteIntegrationTest'
+        }
+    }
+}
+
+tasks.register('siteTest', Test) {
+    description = 'Run site integration tests (requires internet)'
+    group = 'verification'
+    useJUnit {
+        includeCategories 'cc.aoeiuv020.panovel.api.SiteIntegrationTest'
+    }
+}

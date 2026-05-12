@@ -22,6 +22,15 @@ It supports local TXT/EPUB files, WebDAV backup, reading progress sync, and a pl
 
 # Compile local module (TXT/EPUB)
 ./gradlew local:compileKotlin
+
+# Run scraper unit tests (no network required)
+./gradlew scraper:test
+
+# Run site integration tests (requires internet, hits live sites)
+./gradlew scraper:siteTest
+
+# Run all scraper tests including site integration
+./gradlew scraper:test -Dtest.integration=true
 ```
 
 Requires JDK 21. Uses Gradle 8.7, AGP 8.3.2, Kotlin 1.9.22.

@@ -25,9 +25,8 @@ import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.history.HistoryFragment
-import cc.aoeiuv020.panovel.migration.Migration
-import cc.aoeiuv020.panovel.migration.MigrationPresenter
-import cc.aoeiuv020.panovel.migration.MigrationView
+import cc.aoeiuv020.panovel.api.NovelContext
+import cc.aoeiuv020.panovel.settings.SiteSettings
 import cc.aoeiuv020.panovel.open.OpenManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.search.FuzzySearchActivity
@@ -36,7 +35,10 @@ import cc.aoeiuv020.panovel.settings.InterfaceSettings
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.settings.SettingsActivity
 import cc.aoeiuv020.panovel.databinding.ActivityMainBinding
-import cc.aoeiuv020.panovel.util.*
+import cc.aoeiuv020.panovel.util.cancelAllNotify
+import cc.aoeiuv020.panovel.util.initNotificationChannel
+import cc.aoeiuv020.panovel.util.loading
+import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
 import net.lucode.hackware.magicindicator.ViewPagerHelper
 import net.lucode.hackware.magicindicator.buildins.UIUtil
@@ -53,11 +55,10 @@ import androidx.lifecycle.lifecycleScope
  *
  * Created by AoEiuV020 on 2017.10.15-15:53:19.
  */
-class MainActivity : AppCompatActivity(), MigrationView {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     lateinit var progressDialog: ProgressDialog
-    private var migratingDialog: ProgressDialog? = null
     private val bookshelfFragment: BookshelfFragment?
         get() = supportFragmentManager.fragments.firstOrNull { it is BookshelfFragment } as BookshelfFragment?
     private val bookListFragment: BookListFragment?
@@ -99,54 +100,8 @@ class MainActivity : AppCompatActivity(), MigrationView {
         }
     }
 
-    private lateinit var migrationPresenter: MigrationPresenter
-
     fun refreshBookshelf() {
         bookshelfFragment?.refresh()
-    }
-
-    override fun showDowngrade(from: VersionName, to: VersionName) {
-        Timber.d("showDowngrade <${from.name} to ${to.name}>")
-        AlertDialog.Builder(this@MainActivity).apply {
-            setTitle(getString(R.string.warning))
-            setMessage(getString(R.string.downgrade_warning_placeholder, from.name, to.name))
-            setPositiveButton(android.R.string.ok, null)
-        }.create().safelyShow()
-    }
-
-    override fun showUpgrading(from: VersionName, migration: Migration) {
-        val to = migration.to
-        Timber.d("showUpgrading <${from.name} to ${to.name}>")
-        (migratingDialog ?: ProgressDialog(this@MainActivity).also { migratingDialog = it }).apply {
-            setTitle(getString(R.string.migrating_title))
-            setMessage(getString(R.string.migrating_message_placeholder, from.name, to.name, migration.message))
-            safelyShow()
-        }
-    }
-
-    override fun showMigrateComplete(from: VersionName, to: VersionName) {
-        Timber.d("showMigrateComplete,")
-        migratingDialog?.dismiss()
-        migratingDialog = null
-
-        // 版本迁移数据结束了再加载控件，
-        // TODO: 专门开个Splash页面比较好，
-        initWidget()
-    }
-
-    override fun showMigrateError(from: VersionName, migration: Migration) {
-        val to = migration.to
-        Timber.d("showMigrateError <${from.name} to ${to.name}>")
-        migratingDialog?.dismiss()
-        migratingDialog = null
-        AlertDialog.Builder(this@MainActivity).apply {
-            setTitle(getString(R.string.migrate_error_title))
-            setMessage(getString(R.string.migrate_error_message_placeholder, from.name, to.name, migration.message))
-            setPositiveButton(android.R.string.ok, null)
-            setNeutralButton(getString(R.string.ignore)) { _, _ ->
-                migrationPresenter.ignoreMigration(migration)
-            }
-        }.create().safelyShow()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -159,10 +114,8 @@ class MainActivity : AppCompatActivity(), MigrationView {
 
         progressDialog = ProgressDialog(this)
 
-        migrationPresenter = MigrationPresenter(this).apply {
-            attach(this@MainActivity)
-            start()
-        }
+        initWidget()
+        syncSites()
         checkEmpty()
 
         // 异步检查签名，
@@ -172,6 +125,22 @@ class MainActivity : AppCompatActivity(), MigrationView {
         Check.asyncCheckVersion(this)
         // 异步获取可能存在的, 我放在网上想推给用户的消息，
         // DevMessage was removed
+    }
+
+    private fun syncSites() {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    if (NovelContext.sitesVersion > SiteSettings.cachedVersion) {
+                        DataManager.syncSites()
+                        SiteSettings.cachedVersion = NovelContext.sitesVersion
+                    }
+                }
+            } catch (e: Exception) {
+                Reporter.post("同步网站列表失败", e)
+                Timber.e(e, "同步网站列表失败")
+            }
+        }
     }
 
     private fun checkEmpty() {
@@ -284,7 +253,6 @@ class MainActivity : AppCompatActivity(), MigrationView {
     }
 
     override fun onDestroy() {
-        migratingDialog?.dismiss()
         if (::progressDialog.isInitialized) {
             progressDialog.dismiss()
         }
@@ -409,7 +377,7 @@ class MainActivity : AppCompatActivity(), MigrationView {
         snack.show()
     }
 
-    override fun showError(message: String, e: Throwable) {
+    fun showError(message: String, e: Throwable) {
         progressDialog.dismiss()
         snack.setText(message + e.message)
         snack.show()

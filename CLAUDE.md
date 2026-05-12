@@ -110,6 +110,9 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 - Removed global `App.context` — replaced with `PrefContext` + `AppContainer`
 - Fixed `PendingIntent` flags for Android 12+ compatibility
 - IronDB rewritten to use `KSerializer<T>` instead of `java.lang.reflect.Type`
+- Removed ad system entirely (GDT SDK, splash ads, list ads, AdSettings)
+- Consolidated backup to single `BackupImpl` (removed versioned V1-V3 importers)
+- Simplified book list sharing to single `SharedBookList` (removed V1/V2 legacy formats)
 - `./gradlew assembleDebug` passes on JDK 21
 
 ## Release Workflow

@@ -33,15 +33,6 @@ class JarGlideModule : com.bumptech.glide.module.GlideModule {
     }
 }
 
-/*
-@GlideModule
-class JarLibraryGlideModule : LibraryGlideModule(), AnkoLogger {
-    override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
-        Timber.i("Glide registerComponents: JarGlideModule")
-        registry.append(String::class.java, InputStream::class.java, JarFactory())
-    }
-}
-*/
 
 private class JarFactory : ModelLoaderFactory<GlideUrl, InputStream> {
     override fun build(multiFactory: MultiModelLoaderFactory): ModelLoader<GlideUrl, InputStream> {

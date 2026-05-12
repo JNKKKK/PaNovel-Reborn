@@ -1,26 +1,42 @@
-# 爬小说
-我们不生产小说，我们只做网站的搬运工，  
-[![img](https://img.shields.io/github/release/AoEiuV020/PaNovel.svg)](https://github.com/AoEiuV020/PaNovel/releases)
-[![CI](https://github.com/AoEiuV020/PaNovel/workflows/CI/badge.svg)](https://github.com/AoEiuV020/PaNovel/actions)
-[![Chat](https://img.shields.io/badge/Telegram-Chat-blue.svg?logo=telegram)](https://t.me/PaNovelGroup)
+# PaNovel
 
-## 应用简介
-这是有理想的小说神器，目前支持<35>个网站，
-支持阅读本地.txt以及.epub小说，
+本项目基于原始 [PaNovel](https://github.com/AoEiuV020/PaNovel) 项目复活维护。
 
-【库】  
-kotlin + mvp + room  
-[jsoup](https://github.com/jhy/jsoup)
-[glide](https://github.com/bumptech/glide)
-[anko](https://github.com/Kotlin/anko)
-[MaterialSearchView](https://github.com/MiguelCatalan/MaterialSearchView)
-[slf4j](https://github.com/qos-ch/slf4j)
-[gson](https://github.com/google/gson)
-[ColorPicker](https://github.com/QuadFlask/colorpicker)
-[MagicIndicator](https://github.com/hackware1993/MagicIndicator)
-[NovelReader](https://github.com/newbiechen1024/NovelReader)
-[Bugly](https://github.com/BuglyDevTeam/Bugly-Android)
-[Zip4j](https://mvnrepository.com/artifact/net.lingala.zip4j/zip4j)
-[AspectRatioImageView](https://github.com/santalu/aspect-ratio-imageview)
-[jchardet](http://jchardet.sourceforge.net/index.html)
+一款开源的 Android 小说阅读器，支持在线小说源和本地文件阅读。
 
+## 功能
+
+- 本地 TXT / EPUB 文件阅读
+- 可插拔的小说源系统（网站爬虫）
+- WebDAV 备份与阅读进度同步
+- 书架管理、书单、搜索
+- 自定义阅读界面（字体、背景、边距、翻页动画等）
+- 下载章节离线阅读
+
+## 构建
+
+需要 JDK 21。
+
+```bash
+./gradlew assembleDebug
+```
+
+## 技术栈
+
+Kotlin 1.9 · Gradle 8.7 · AGP 8.3 · Room · Coroutines · JSoup · OkHttp 4 · Glide · Timber
+
+## 项目结构
+
+| 模块 | 用途 |
+|------|------|
+| app | 主应用（Activity、Presenter、Fragment） |
+| scraper | 小说网站爬虫（JSoup + Rhino） |
+| core | 共享工具库 |
+| rhino | JavaScript 引擎封装 |
+| local | 本地文件支持（TXT、EPUB） |
+| reader | 阅读器 UI |
+| pager | 翻页库 |
+| server | 服务端通信 |
+| IronDB | 文件型键值存储 |
+| filepicker | 文件选择器 |
+| batchRefresher | 批量刷新 CLI 工具 |

@@ -23,36 +23,30 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Parcel
 import android.os.Parcelable
-import android.preference.Preference
 import android.util.AttributeSet
-import android.view.View
+import androidx.preference.Preference
 import cc.aoeiuv020.filepicker.controller.DialogSelectionListener
 import cc.aoeiuv020.filepicker.model.DialogConfigs
 import cc.aoeiuv020.filepicker.model.DialogProperties
 import java.io.File
 
-@Suppress("RedundantOverride", "MemberVisibilityCanBePrivate", "unused", "SpellCheckingInspection", "LocalVariableName", "RemoveEmptySecondaryConstructorBody")
-class FilePickerPreference : Preference, DialogSelectionListener, Preference.OnPreferenceClickListener {
+@Suppress("MemberVisibilityCanBePrivate", "unused", "SpellCheckingInspection", "LocalVariableName")
+class FilePickerPreference : Preference, DialogSelectionListener {
     private var mDialog: FilePickerDialog? = null
     private var properties: DialogProperties = DialogProperties()
     private var titleText: String? = null
 
     constructor(context: Context) : super(context) {
-        init()
+        properties.offset = File(defaultPath)
     }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init()
         initProperties(attrs)
+        properties.offset = File(defaultPath)
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        init()
         initProperties(attrs)
-    }
-
-    private fun init() {
-        onPreferenceClickListener = this
         properties.offset = File(defaultPath)
     }
 
@@ -62,10 +56,9 @@ class FilePickerPreference : Preference, DialogSelectionListener, Preference.OnP
                 .replace("\${sdcard}", Environment.getExternalStorageDirectory().absolutePath)
     }
 
-    override fun onSetInitialValue(restorePersistedValue: Boolean, defaultValue: Any?) {
-        // 当前值为空时给个全局的默认值，
+    override fun onSetInitialValue(defaultValue: Any?) {
         val defaultString: String = (defaultValue as? String) ?: defaultPath
-        val value = if (restorePersistedValue) this.getPersistedString(defaultString) else defaultString
+        val value = getPersistedString(defaultString)
         properties.offset = File(value.split(':').first())
         setProperties(properties)
     }
@@ -78,12 +71,8 @@ class FilePickerPreference : Preference, DialogSelectionListener, Preference.OnP
                 ?: context.filesDir
                 ).absolutePath
 
-    override fun onBindView(view: View) {
-        super.onBindView(view)
-    }
-
-    override fun onSaveInstanceState(): Parcelable {
-        val superState = super.onSaveInstanceState()
+    override fun onSaveInstanceState(): Parcelable? {
+        val superState = super.onSaveInstanceState() ?: return null
         if (mDialog == null || !mDialog!!.isShowing) {
             return superState
         }
@@ -124,9 +113,8 @@ class FilePickerPreference : Preference, DialogSelectionListener, Preference.OnP
         callChangeListener(dFiles)
     }
 
-    override fun onPreferenceClick(preference: Preference): Boolean {
+    override fun onClick() {
         showDialog(null)
-        return false
     }
 
     fun setProperties(properties: DialogProperties) {
@@ -134,7 +122,7 @@ class FilePickerPreference : Preference, DialogSelectionListener, Preference.OnP
         mDialog?.properties = properties
     }
 
-    private class SavedState : Preference.BaseSavedState {
+    private class SavedState : BaseSavedState {
         lateinit var dialogBundle: Bundle
 
         constructor(source: Parcel) : super(source) {

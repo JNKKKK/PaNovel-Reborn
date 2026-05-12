@@ -1,5 +1,6 @@
 package cc.aoeiuv020.irondb
 
+import kotlinx.serialization.Serializable
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -7,9 +8,6 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 
-/**
- * Created by AoEiuV020 on 2018.05.27-17:12:07.
- */
 class IronTest {
     @Rule
     @JvmField
@@ -36,8 +34,8 @@ class IronTest {
     @Test
     fun listTest() {
         val list = listOf(
-                Student(id = 10L, name = "AoEiuV020", age = 23),
-                Student(name = "name", age = -1)
+            Student(id = 10L, name = "AoEiuV020", age = 23),
+            Student(name = "name", age = -1)
         )
         assertFalse(database.keysContainer().contains("list"))
         database.write("list", list)
@@ -58,9 +56,10 @@ class IronTest {
         assertTrue(database.keysContainer().contains("sub"))
     }
 
+    @Serializable
     data class Student(
-            var id: Long? = null,
-            val name: String,
-            val age: Int
+        var id: Long? = null,
+        val name: String,
+        val age: Int
     )
 }

@@ -1,33 +1,21 @@
-@file:Suppress("DEPRECATION")
-
 package cc.aoeiuv020.panovel.settings
 
-import android.app.ProgressDialog
 import android.os.Bundle
-import android.preference.Preference
-import android.preference.PreferenceFragment
+import androidx.appcompat.app.AlertDialog
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.util.safelyShow
+import cc.aoeiuv020.panovel.util.ProgressDialogCompat
 import timber.log.Timber
 import kotlinx.coroutines.*
 
-/**
- *
- * Created by AoEiuV020 on 2017.11.25-16:15:29.
- */
-class CacheClearPreferenceFragment : PreferenceFragment() {
+class CacheClearPreferenceFragment : PreferenceFragmentCompat() {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        addPreferencesFromResource(R.xml.pref_cache_clear)
-        setHasOptionsMenu(true)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.pref_cache_clear, rootKey)
 
         val map = mapOf("cache" to {
             DataManager.cleanAllCache()
@@ -41,38 +29,37 @@ class CacheClearPreferenceFragment : PreferenceFragment() {
             DataManager.cleanHistory()
         })
 
-        val listener: Preference.OnPreferenceClickListener = Preference.OnPreferenceClickListener { p ->
-            map[p.key]?.also { clear ->
-                android.app.AlertDialog.Builder(activity).apply {
-                    setTitle(getString(R.string.confirm_clear))
-                    setMessage(p.title.toString())
-                    setPositiveButton(android.R.string.yes) { _, _ ->
-                        val dialog = ProgressDialog(activity).apply {
-                            setMessage(getString(R.string.removing, p.title))
-                            safelyShow()
-                        }
-                        scope.launch {
-                            try {
-                                withContext(Dispatchers.IO) {
-                                    clear.invoke()
+        map.keys.forEach { key ->
+            findPreference<Preference>(key)?.onPreferenceClickListener =
+                Preference.OnPreferenceClickListener { p ->
+                    map[p.key]?.also { clear ->
+                        AlertDialog.Builder(requireContext()).apply {
+                            setTitle(getString(R.string.confirm_clear))
+                            setMessage(p.title.toString())
+                            setPositiveButton(android.R.string.yes) { _, _ ->
+                                val dialog = ProgressDialogCompat(requireContext()).apply {
+                                    setMessage(getString(R.string.removing, p.title))
+                                    show()
                                 }
-                                dialog.dismiss()
-                            } catch (e: Exception) {
-                                val message = "清除失败，"
-                                Reporter.post(message, e)
-                                Timber.e(e, message)
-                                dialog.dismiss()
+                                scope.launch {
+                                    try {
+                                        withContext(Dispatchers.IO) {
+                                            clear.invoke()
+                                        }
+                                        dialog.dismiss()
+                                    } catch (e: Exception) {
+                                        val message = "清除失败，"
+                                        Reporter.post(message, e)
+                                        Timber.e(e, message)
+                                        dialog.dismiss()
+                                    }
+                                }
                             }
-                        }
+                            setNegativeButton(android.R.string.cancel, null)
+                        }.show()
                     }
-                    setNegativeButton(android.R.string.cancel, null)
-                }.create().safelyShow()
-            }
-            true
-        }
-        repeat(preferenceScreen.preferenceCount) {
-            val p = preferenceScreen.getPreference(it)
-            p.onPreferenceClickListener = listener
+                    true
+                }
         }
     }
 

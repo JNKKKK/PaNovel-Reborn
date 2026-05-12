@@ -1,13 +1,9 @@
-@file:Suppress("DEPRECATION")
-
 package cc.aoeiuv020.panovel.util
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
-import android.preference.PreferenceFragment
-import cc.aoeiuv020.panovel.App
-import com.google.gson.Gson
+import androidx.preference.PreferenceFragmentCompat
 import timber.log.Timber
 import java.io.File
 import kotlin.properties.ReadWriteProperty
@@ -25,11 +21,11 @@ import kotlin.reflect.KProperty
 interface Pref {
     val name: String
     val context: Context
-        get() = App.context
+        get() = PrefContext.appContext
     val sharedPreferencesName: String
-        get() = App.context.packageName + "_$name"
+        get() = PrefContext.appContext.packageName + "_$name"
     val sharedPreferences: SharedPreferences
-        get() = App.context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
+        get() = PrefContext.appContext.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
 }
 
 abstract class SubPref(
@@ -43,7 +39,7 @@ abstract class SubPref(
  * 给这个设置页面绑定这个Pref,
  * 但是默认值没法处理，两边都要写，
  */
-fun PreferenceFragment.attach(pref: Pref) {
+fun PreferenceFragmentCompat.attach(pref: Pref) {
     preferenceManager.sharedPreferencesName = pref.sharedPreferencesName
 }
 
@@ -94,7 +90,7 @@ class UriDelegate(
     }
 
     private fun getFile(thisRef: Pref, property: KProperty<*>): File {
-        return App.context.filesDir.resolve(KEY_URI_DELEGATE)
+        return PrefContext.appContext.filesDir.resolve(KEY_URI_DELEGATE)
                 .resolve(thisRef.name)
                 .apply { mkdirs() }
                 .resolve(key ?: property.name)
@@ -126,7 +122,7 @@ class UriDelegate(
             }
         } else {
             file.outputStream().use { output ->
-                App.context.contentResolver.openInputStream(value)!!.use { input ->
+                PrefContext.appContext.contentResolver.openInputStream(value)!!.use { input ->
                     input.copyTo(output)
                 }
                 output.flush()
@@ -238,44 +234,40 @@ sealed class PrefDelegate<T>(
             private val type: Class<T>
     ) : PrefDelegate<T>(key) {
         companion object {
-            val gson: Gson = Gson()
-
             inline fun <reified T : kotlin.Enum<*>> new(default: T, key: kotlin.String? = null) = Enum(default, key, T::class.java)
         }
 
         override fun getValue(sp: SharedPreferences, key: kotlin.String): T {
-            // 没有引号的字符串gson也可以解析的，
-            return sp.getString(key, null)?.let { gson.fromJson(it, type) } ?: default
+            val stored = sp.getString(key, null) ?: return default
+            return type.enumConstants?.firstOrNull { it.name == stored } ?: default
         }
 
         override fun setValue(editor: SharedPreferences.Editor, key: kotlin.String, value: T) {
-            // 不能用gson转String, 会带上引号”，
-            editor.putString(key, value.toString())
+            editor.putString(key, value.name)
         }
     }
 
-    /**
-     * 读写用gson转成字符串，非空，
-     *
-     * T要指定为kotlin.Any，否则会被当成可空，
-     */
     class Any<T : kotlin.Any>(
             private val default: T,
             key: kotlin.String? = null,
-            private val type: Class<T>
+            private val serializer: kotlinx.serialization.KSerializer<T>
     ) : PrefDelegate<T>(key) {
         companion object {
-            val gson: Gson = Gson()
-
-            inline fun <reified T : kotlin.Any> new(default: T, key: kotlin.String? = null) = Any(default, key, T::class.java)
+            inline fun <reified T : kotlin.Any> new(default: T, key: kotlin.String? = null) =
+                Any(default, key, kotlinx.serialization.serializer<T>())
         }
 
         override fun getValue(sp: SharedPreferences, key: kotlin.String): T {
-            return sp.getString(key, null)?.let { gson.fromJson(it, type) } ?: default
+            val stored = sp.getString(key, null) ?: return default
+            return try {
+                cc.aoeiuv020.json.AppJson.decodeFromString(serializer, stored)
+            } catch (_: Exception) {
+                default
+            }
         }
 
         override fun setValue(editor: SharedPreferences.Editor, key: kotlin.String, value: T) {
-            editor.putString(key, gson.toJson(value))
+            editor.putString(key, cc.aoeiuv020.json.AppJson.encodeToString(serializer, value))
         }
     }
 }

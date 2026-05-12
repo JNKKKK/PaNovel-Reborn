@@ -1,8 +1,8 @@
 package cc.aoeiuv020.panovel.backup
 
 import android.content.Context
-import cc.aoeiuv020.panovel.App
 import cc.aoeiuv020.panovel.backup.impl.BackupV1
+import cc.aoeiuv020.panovel.util.PrefContext
 import cc.aoeiuv020.panovel.backup.impl.BackupV2
 import cc.aoeiuv020.panovel.backup.impl.BackupV3
 import cc.aoeiuv020.panovel.backup.impl.BackupV4
@@ -23,7 +23,7 @@ class BackupManager {
         const val CURRENT_VERSION = 4
     }
 
-    private val context: Context = App.context
+    private val context: Context = PrefContext.appContext
 
     private fun getTempFile() =
             context.cacheDir.resolve(NAME_TEMP)

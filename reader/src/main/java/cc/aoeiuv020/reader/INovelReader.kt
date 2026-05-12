@@ -1,8 +1,8 @@
 package cc.aoeiuv020.reader
 
 import android.content.Context
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 /**
  *
@@ -37,7 +37,7 @@ abstract class BaseNovelReader(override var novel: String, override var requeste
     override var readingListener: ReadingListener? = null
     override var menuListener: MenuListener? = null
     override var chapterList: List<String> = emptyList()
-    val ioExecutorService: ExecutorService = Executors.newCachedThreadPool()
+    val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     override fun scrollNext(): Boolean = false
     override fun scrollPrev(): Boolean = false

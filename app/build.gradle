@@ -22,7 +22,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:' + constraint_layout_version
     implementation 'com.google.android.material:material:' + androidx_version
     implementation 'androidx.cardview:cardview:' + androidx_version
-    implementation 'androidx.preference:preference:' + androidx_version
+    implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:' + androidx_version
     implementation 'androidx.vectordrawable:vectordrawable:' + androidx_version
     implementation 'com.github.bumptech.glide:glide:' + glide_version

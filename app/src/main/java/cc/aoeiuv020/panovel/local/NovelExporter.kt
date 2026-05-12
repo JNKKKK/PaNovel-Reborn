@@ -3,7 +3,7 @@ package cc.aoeiuv020.panovel.local
 import android.app.PendingIntent
 import android.content.Context
 import androidx.core.app.NotificationCompat
-import cc.aoeiuv020.panovel.App
+import cc.aoeiuv020.panovel.util.PrefContext
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.backup.BackupPresenter
 import cc.aoeiuv020.panovel.data.DataManager
@@ -16,9 +16,8 @@ import cc.aoeiuv020.panovel.util.notNullOrReport
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import android.content.Intent
-import android.os.Handler
-import android.os.Looper
 import timber.log.Timber
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -55,7 +54,7 @@ class NovelExporter(
             // 太早了Intent不能用，<-- 我也不知道这在说什么，
             val notificationBuilder: NotificationCompat.Builder by lazy {
                 val intent = Intent(context, MainActivity::class.java)
-                val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+                val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
                 val notificationBuilder = NotificationCompat.Builder(context, NotificationChannelId.export)
                         .setOnlyAlertOnce(true)
                         .setAutoCancel(true)
@@ -67,14 +66,14 @@ class NovelExporter(
                 notificationBuilder
             }
             val proxy = NotifyLoopProxy(context)
-            val mainHandler = Handler(Looper.getMainLooper())
-            mainHandler.post {
+            val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+            scope.launch {
                 notificationBuilder.setProgress(0, 0, true)
                 proxy.start(notificationBuilder.build())
             }
             NovelExporter(type, charset, file) { current, total ->
                 Timber.d("exporting $current/$total")
-                mainHandler.post {
+                scope.launch {
                     if (current == total) {
                         notificationBuilder.setContentTitle(context.getString(R.string.export_title_complete_placeholder, novel.name))
                         notificationBuilder.setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(R.string.export_complete_big_placeholder, file.path)))
@@ -125,7 +124,7 @@ class NovelExporter(
 
             override fun openImage(url: URL): InputStream? {
                 return if (url.isHttp()) {
-                    Glide.with(App.context)
+                    Glide.with(PrefContext.appContext)
                             .asFile()
                             .load(url.toString())
                             .apply(RequestOptions().onlyRetrieveFromCache(true))

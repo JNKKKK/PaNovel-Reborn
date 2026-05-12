@@ -1,10 +1,9 @@
-@file:Suppress("DEPRECATION", "unused")
+@file:Suppress("unused")
 
 package cc.aoeiuv020.panovel.util
 
 import android.app.Activity
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Bitmap
@@ -28,6 +27,7 @@ import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.report.Reporter
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
+import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
 
@@ -36,16 +36,12 @@ import java.util.concurrent.TimeUnit
  * Created by AoEiuV020 on 2017.10.02-21:50:34.
  */
 
-/**
- * 这个自带"加载中.."
- */
-fun Context.loading(dialog: ProgressDialog, id: Int) =
+fun Context.loading(dialog: ProgressDialogCompat, id: Int) =
     loading(dialog, getString(R.string.loading, getString(id)))
 
-fun Context.loading(dialog: ProgressDialog, str: String) = dialog.apply {
-    setTitle(null)
-    setMessage(str)
-    show()
+fun Context.loading(dialog: ProgressDialogCompat, str: String) {
+    dialog.setMessage(str)
+    dialog.show()
 }
 
 fun Context.alertError(dialog: AlertDialog, str: String, e: Throwable) =
@@ -223,106 +219,71 @@ fun Context.confirm(
 
 }
 
-/**
- * 异步线程弹单选框并等待用户选择，
- *
- * @return 返回用户选择的元素序号，取消就返回null,
- */
 @WorkerThread
 fun Context.uiSelect(
-    // 要选择的是什么，展示在对话框标题，
     name: String,
     items: Array<String>,
     default: Int,
-    // 默认就等一分钟，
     timeout: Long = TimeUnit.MINUTES.toMillis(1)
-): Int? {
-    val thread = Thread.currentThread()
-    var result: Int? = null
-    var sleeping = false
-    synchronized(thread) {
-        var dialog: DialogInterface? = null
-        android.os.Handler(android.os.Looper.getMainLooper()).post {
-            dialog = AlertDialog.Builder(this@uiSelect).apply {
-                setTitle(this@uiSelect.getString(R.string.select_placeholder, name))
-                setSingleChoiceItems(items, default) { dialog, which ->
-                    dialog.dismiss()
-                    result = which
-                    if (sleeping) {
-                        thread.interrupt()
+): Int? = runBlocking {
+    withTimeoutOrNull(timeout) {
+        suspendCancellableCoroutine { cont ->
+            val mainScope = CoroutineScope(Dispatchers.Main)
+            mainScope.launch {
+                var dialog: DialogInterface? = null
+                dialog = AlertDialog.Builder(this@uiSelect).apply {
+                    setTitle(this@uiSelect.getString(R.string.select_placeholder, name))
+                    setSingleChoiceItems(items, default) { d, which ->
+                        d.dismiss()
+                        if (cont.isActive) cont.resume(which, null)
                     }
-                }
-                setOnCancelListener {
-                    if (sleeping) {
-                        thread.interrupt()
+                    setOnCancelListener {
+                        if (cont.isActive) cont.resume(null, null)
                     }
+                }.create().safelyShow()
+                cont.invokeOnCancellation {
+                    dialog?.dismiss()
                 }
-            }.create().safelyShow()
-        }
-        try {
-            sleeping = true
-            Thread.sleep(timeout)
-            sleeping = false
-            // dialog可以异步dismiss,
-            dialog?.dismiss()
-        } catch (_: InterruptedException) {
+            }
         }
     }
-    return result
 }
 
-/**
- * 在异步线程调用，在ui线程弹对话框并等待用户输入，
- */
 @WorkerThread
 fun Context.uiInput(
-    // 要输入的是什么，展示在对话框标题，
     name: String,
     default: String,
-    // 默认就等一分钟，
     timeout: Long = TimeUnit.MINUTES.toMillis(1),
     multiLine: Boolean = false
-): String? {
-    // TODO: 考虑试试kotlin的协程，
-    val thread = Thread.currentThread()
-    var result: String? = null
-    var sleeping = false
-    synchronized(thread) {
-        var dialog: DialogInterface? = null
-        android.os.Handler(android.os.Looper.getMainLooper()).post {
-            val layout = View.inflate(this@uiInput, R.layout.dialog_editor, null)
-            val etName = layout.findViewById<EditText>(R.id.editText)
-            if (multiLine) {
-                etName.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+): String? = runBlocking {
+    withTimeoutOrNull(timeout) {
+        suspendCancellableCoroutine { cont ->
+            val mainScope = CoroutineScope(Dispatchers.Main)
+            mainScope.launch {
+                val layout = View.inflate(this@uiInput, R.layout.dialog_editor, null)
+                val etName = layout.findViewById<EditText>(R.id.editText)
+                if (multiLine) {
+                    etName.inputType =
+                        InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                }
+                etName.setText(default)
+                var dialog: DialogInterface? = null
+                dialog = AlertDialog.Builder(this@uiInput)
+                    .setTitle(this@uiInput.getString(R.string.input_placeholder, name))
+                    .setView(layout)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        if (cont.isActive) cont.resume(etName.text.toString(), null)
+                    }
+                    .setOnCancelListener {
+                        if (cont.isActive) cont.resume(null, null)
+                    }
+                    .create().safelyShow()
+                cont.invokeOnCancellation {
+                    dialog?.dismiss()
+                }
             }
-            etName.setText(default)
-            dialog = AlertDialog.Builder(this@uiInput)
-                .setTitle(this@uiInput.getString(R.string.input_placeholder, name))
-                .setView(layout)
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    result = etName.text.toString()
-                    if (sleeping) {
-                        thread.interrupt()
-                    }
-                }
-                .setOnCancelListener {
-                    if (sleeping) {
-                        thread.interrupt()
-                    }
-                }
-                .create().safelyShow()
-        }
-        try {
-            sleeping = true
-            Thread.sleep(timeout)
-            sleeping = false
-            // dialog可以异步dismiss,
-            dialog?.dismiss()
-        } catch (_: InterruptedException) {
         }
     }
-    return result
 }
 
 @UiThread

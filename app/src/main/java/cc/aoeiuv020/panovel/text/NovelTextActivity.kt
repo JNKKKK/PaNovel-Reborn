@@ -1,24 +1,18 @@
-@file:Suppress("DEPRECATION")
-
 package cc.aoeiuv020.panovel.text
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.annotation.SuppressLint
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.view.*
 import android.widget.ImageView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
-import cc.aoeiuv020.gson.toBean
-import cc.aoeiuv020.gson.toJson
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
@@ -69,12 +63,41 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         fun start(context: Context, novel: Novel, index: Int) {
             context.startActivity(Intent(context, NovelTextActivity::class.java)
                     .putExtra(Novel.KEY_ID, novel.nId)
-                    .putExtra("index", cc.aoeiuv020.panovel.App.gson.toJson(index)))
+                    .putExtra("index", index))
         }
     }
 
     private lateinit var alertDialog: AlertDialog
-    private lateinit var progressDialog: ProgressDialog
+    private lateinit var progressDialog: ProgressDialogCompat
+
+    private val backgroundImageLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            try {
+                reader.config.backgroundImage = it
+            } catch (e: SecurityException) {
+                Timber.e(e, "读取背景图失败")
+                cacheUri = it
+                ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), 0)
+            } catch (e: FileNotFoundException) {
+                Timber.e(e, "神奇，图片找不到，")
+            }
+        }
+    }
+
+    private val fontLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            try {
+                ReaderSettings.font = it
+                setFont(ReaderSettings.tfFont)
+            } catch (e: SecurityException) {
+                Timber.e(e, "读取字体失败")
+                cacheUri = it
+                ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), 1)
+            } catch (e: FileNotFoundException) {
+                Timber.e(e, "神奇，图片找不到，")
+            }
+        }
+    }
     lateinit var presenter: NovelTextPresenter
     private var chaptersAsc: List<NovelChapter> = listOf()
     private var navigation: NovelTextNavigation? = null
@@ -93,14 +116,8 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         _novel ?: return
-        outState.apply {
-            // pause时有本地持久化阅读进度，
-            // 不是很清楚要否必要存在state里，
-            // 防止的是android恢复了intent的数据，初始化阅读器时就跳到intent持有的index章节了，
-            // onCreate先读取state里的index，存在就无视intent,
-            putString("index", novel.readAtChapterIndex.toJson())
-            putString("text", novel.readAtTextIndex.toJson())
-        }
+        outState.putInt("index", novel.readAtChapterIndex)
+        outState.putInt("text", novel.readAtTextIndex)
     }
 
 
@@ -108,7 +125,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         super.onCreate(savedInstanceState)
 
         alertDialog = AlertDialog.Builder(this).create()
-        progressDialog = ProgressDialog(this)
+        progressDialog = ProgressDialogCompat(this)
 
         val id = intent?.getLongExtra(Novel.KEY_ID, -1L)
         Timber.d("receive id: $id")
@@ -119,12 +136,9 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         }
         title = id.toString()
 
-        // 进度，读取顺序， savedInstanceState > intent > DataManager
-        // intent传入的index，activity死了再开，应该会恢复这个intent, 不能让intent覆盖了死前的阅读进度，
-        // 用getString读Int不需要默认值，
-        // 出现过存在savedInstanceState但是getString("index")为null的不明状况，干脆都加问号?,
-        index = getStringExtra("index", savedInstanceState)?.toBean()
-        text = getStringExtra("text", savedInstanceState)?.toBean()
+        index = savedInstanceState?.getInt("index", Int.MIN_VALUE)?.takeIf { it != Int.MIN_VALUE }
+                ?: intent?.getIntExtra("index", Int.MIN_VALUE)?.takeIf { it != Int.MIN_VALUE }
+        text = savedInstanceState?.getInt("text", Int.MIN_VALUE)?.takeIf { it != Int.MIN_VALUE }
 
         presenter = NovelTextPresenter(id)
 
@@ -135,13 +149,14 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         presenter.start()
     }
 
-    // 不能lambda， lambda不能this调用Runnable自己，
-    private val autoSaveReadStatusRunnable = object : Runnable {
-        override fun run() {
-            // 查询到小说对象才会开始线程，所以这里novel对象必然存在，
-            presenter.saveReadStatus(novel)
-            // 循环调用自己，
-            handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1) * ReaderSettings.autoSaveReadStatus)
+    private var autoSaveJob: Job? = null
+
+    private fun startAutoSave() {
+        autoSaveJob = lifecycleScope.launch {
+            while (isActive) {
+                delay(TimeUnit.SECONDS.toMillis(1) * ReaderSettings.autoSaveReadStatus)
+                presenter.saveReadStatus(novel)
+            }
         }
     }
 
@@ -167,11 +182,8 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                     ?: showError("本地小说不支持外部打开，")
         }
         if (ReaderSettings.autoSaveReadStatus > 0) {
-            // 启动自动保存阅读进度循环，
-            handler.post(autoSaveReadStatusRunnable)
+            startAutoSave()
         } else {
-            // 进来就至少更新一次阅读时间，确保退到书架页查询时这本小说的阅读时间是最新，
-            // 退出时还有更新一次，
             presenter.saveReadStatus(novel)
         }
 
@@ -335,28 +347,12 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         }
     }
 
-    /**
-     * 选择图片，
-     * 选择后修改当前背景图，但不保存，
-     */
     private fun requestBackgroundImage() {
-        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Intent(Intent.ACTION_OPEN_DOCUMENT)
-        } else {
-            Intent(Intent.ACTION_GET_CONTENT)
-        }
-        intent.type = "image/*"
-        startActivityForResult(intent, 0)
+        backgroundImageLauncher.launch(arrayOf("image/*"))
     }
 
     fun requestFont() {
-        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Intent(Intent.ACTION_OPEN_DOCUMENT)
-        } else {
-            Intent(Intent.ACTION_GET_CONTENT)
-        }
-        intent.type = "*/*"
-        startActivityForResult(intent, 1)
+        fontLauncher.launch(arrayOf("*/*"))
     }
 
     fun resetFont() {
@@ -366,38 +362,6 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
 
     private var cacheUri: Uri? = null
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            0 -> data?.data?.let { uri ->
-                try {
-                    // 不在这里做永久保存，
-                    reader.config.backgroundImage = uri
-                } catch (e: SecurityException) {
-                    Timber.e(e, "读取背景图失败")
-                    cacheUri = uri
-                    ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), requestCode)
-                } catch (e: FileNotFoundException) {
-                    // 不明原因，
-                    // https://bugly.qq.com/v2/crash-reporting/crashes/be0d684a75/1705?pid=1
-                    Timber.e(e, "神奇，图片找不到，")
-                }
-            }
-            1 -> data?.data?.let { uri ->
-                try {
-                    ReaderSettings.font = uri
-                    setFont(ReaderSettings.tfFont)
-                } catch (e: SecurityException) {
-                    Timber.e(e, "读取字体失败")
-                    cacheUri = uri
-                    ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), requestCode)
-                } catch (e: FileNotFoundException) {
-                    // 不明原因，
-                    // https://bugly.qq.com/v2/crash-reporting/crashes/be0d684a75/1705?pid=1
-                    Timber.e(e, "神奇，图片找不到，")
-                }
-            }
-        }
-    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
@@ -443,8 +407,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     }
 
     override fun onDestroy() {
-        // 删除循环自动保存阅读自动的回调，
-        handler.removeCallbacks(autoSaveReadStatusRunnable)
+        autoSaveJob?.cancel()
         if (::presenter.isInitialized) {
             presenter.detach()
         }
@@ -736,11 +699,6 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                 }.safelyShow()
     }
 
-    /**
-     * 用于延迟通知下载过程，
-     * 以及循环通知保存阅读进度，
-     */
-    private val handler: Handler = Handler()
 
     fun download() {
         val index = reader.currentChapter

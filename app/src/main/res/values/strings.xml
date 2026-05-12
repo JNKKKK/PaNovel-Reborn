@@ -72,7 +72,6 @@
     <string name="add">添加</string>
     <string name="open_source_licenses">开源许可</string>
     <string name="library">库</string>
-    <string name="ad_enabled">展示广告</string>
     <string name="full_screen_delay">全屏延迟(ms)</string>
     <string name="back_press_out_of_fullScreen">返回键退出全屏</string>
     <string name="donate">捐赠</string>
@@ -294,7 +293,6 @@
     <string name="backup_btn_test">测试</string>
     <string name="tip_data_empty">啥也没有，是否需要导入备份或者搜索</string>
     <string name="label_telegram_group">TG群：</string>
-    <string name="pref_ad">广告</string>
     <string name="qidianshuju">起点数据</string>
     <string name="qidian">起点</string>
     <string name="qidian_not_found">未安装起点app无法直接跳转</string>

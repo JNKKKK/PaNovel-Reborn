@@ -3,8 +3,8 @@ package cc.aoeiuv020.panovel.backup
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import cc.aoeiuv020.panovel.App
 import cc.aoeiuv020.panovel.Presenter
+import cc.aoeiuv020.panovel.util.PrefContext
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.backup.webdav.BackupWebDavHelper
 import cc.aoeiuv020.panovel.report.Reporter
@@ -34,7 +34,7 @@ class BackupPresenter : Presenter<BackupActivity>() {
         }
     }
 
-    private val context = App.context
+    private val context = PrefContext.appContext
 
     private val backupManager = BackupManager()
     private val backupHelperMap: Map<Int, BackupHelper> = mapOf(R.id.rbDefaultWebDav to BackupWebDavHelper())

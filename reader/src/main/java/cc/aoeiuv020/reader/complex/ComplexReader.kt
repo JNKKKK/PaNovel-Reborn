@@ -7,6 +7,7 @@ import cc.aoeiuv020.reader.BaseNovelReader
 import cc.aoeiuv020.reader.ReaderConfig
 import cc.aoeiuv020.reader.TextRequester
 import cc.aoeiuv020.reader.toIMargins
+import kotlinx.coroutines.*
 
 /**
  *
@@ -16,7 +17,8 @@ class ComplexReader(override var context: Context, novel: String, private val pa
     : BaseNovelReader(novel, requester) {
     private val pageView: Pager = Pager(context)
     private val drawer = ReaderDrawer(this, novel, requester)
-    val autoRefreshThread: AutoRefreshThread = AutoRefreshThread()
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var autoRefreshJob: Job? = null
     override val maxTextProgress: Int
         get() = drawer.pagesCache[currentChapter]?.lastIndex ?: 0
     override var currentChapter: Int
@@ -61,7 +63,27 @@ class ComplexReader(override var context: Context, novel: String, private val pa
         }
         parent.addView(pageView)
 
-        autoRefreshThread.start()
+        startAutoRefresh()
+    }
+
+    private var autoRefreshLeftTime = config.autoRefreshInterval
+
+    fun resetAutoRefresh() {
+        autoRefreshLeftTime = config.autoRefreshInterval
+    }
+
+    private fun startAutoRefresh() {
+        if (config.autoRefreshInterval == 0) return
+        autoRefreshJob = scope.launch {
+            while (isActive) {
+                delay(1000)
+                autoRefreshLeftTime--
+                if (autoRefreshLeftTime == 0) {
+                    drawer.pager?.refresh()
+                    resetAutoRefresh()
+                }
+            }
+        }
     }
 
     override fun refreshCurrentChapter() {
@@ -72,41 +94,8 @@ class ComplexReader(override var context: Context, novel: String, private val pa
     override fun scrollPrev(): Boolean = pageView.scrollPrev()
 
     override fun destroy() {
-        autoRefreshThread.cancel()
+        scope.cancel()
         pageView.drawer.detach()
         parent.removeView(pageView)
-    }
-
-    inner class AutoRefreshThread : Thread() {
-        var canceled = false
-        var leftTime = config.autoRefreshInterval
-        fun reset() {
-            leftTime = config.autoRefreshInterval
-        }
-
-        fun cancel() {
-            canceled = true
-            interrupt()
-        }
-
-        override fun run() {
-            if (leftTime == 0) {
-                // 间隔设置为0表示不刷新，直接结束这个方法就好，
-                return
-            }
-            while (!canceled) {
-                try {
-                    sleep(1000)
-                } catch (_: Exception) {
-                }
-                if (!canceled) {
-                    leftTime--
-                    if (leftTime == 0) {
-                        drawer.pager?.refresh()
-                        reset()
-                    }
-                }
-            }
-        }
     }
 }

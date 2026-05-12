@@ -4,191 +4,120 @@ package cc.aoeiuv020.panovel.settings
 
 import android.content.Context
 import android.content.res.TypedArray
-import android.os.Build
 import android.util.AttributeSet
-import android.view.View
-import android.widget.TextView
-import androidx.annotation.RequiresApi
+import androidx.preference.EditTextPreference as AndroidXEditTextPreference
+import androidx.preference.ListPreference as AndroidXListPreference
 
-
-/**
- *
- * Created by AoEiuV020 on 2017.10.15-20:55:31.
- */
-/**
- * 实现控件右边显示当前值，
- */
-class ListPreference : android.preference.ListPreference {
-    constructor(context: Context)
-            : super(context)
-
-    constructor(context: Context, attrs: AttributeSet?)
-            : super(context, attrs)
-
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int)
-            : super(context, attrs, defStyleAttr)
-
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int)
-            : super(context, attrs, defStyleAttr, defStyleRes)
-
-    init {
-        widgetLayoutResource = android.R.layout.simple_list_item_1
-    }
-
-    // 自动设置默认值，这里存起来，下面onBindView能拿到，
-    override fun onGetDefaultValue(a: TypedArray?, index: Int): Any? {
+class ListPreference @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : AndroidXListPreference(context, attrs) {
+    override fun onGetDefaultValue(a: TypedArray, index: Int): Any? {
         return super.onGetDefaultValue(a, index)?.also {
-            // 直接保存字符串，如果字符串不存在列表里，只是entry==null,
             value = it.toString()
         }
     }
 
-    override fun onBindView(view: View) {
-        super.onBindView(view)
-        val tv = view.findViewById<TextView>(android.R.id.text1)
-        tv.text = entry
+    override fun getSummary(): CharSequence? {
+        return entry ?: super.getSummary()
     }
 }
 
-/**
- * 实现控件右边显示当前值，
- */
-open class EditTextPreference : android.preference.EditTextPreference {
-
-    constructor(context: Context)
-            : super(context)
-
-    constructor(context: Context, attrs: AttributeSet?)
-            : super(context, attrs)
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int)
-            : super(context, attrs, defStyleAttr)
-
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int)
-            : super(context, attrs, defStyleAttr, defStyleRes)
-
-    init {
-        widgetLayoutResource = android.R.layout.simple_list_item_1
-    }
-
-    // 自动设置默认值，这里存起来，下面onBindView能拿到，
-    override fun onGetDefaultValue(a: TypedArray?, index: Int): Any? {
-        // 不知道是否会进来null, 以防万一用?.also,
+open class EditTextPreference @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : AndroidXEditTextPreference(context, attrs) {
+    override fun onGetDefaultValue(a: TypedArray, index: Int): Any? {
         return super.onGetDefaultValue(a, index)?.also {
             text = it.toString()
         }
     }
 
-    override fun onBindView(view: View) {
-        super.onBindView(view)
-        val tv: TextView = view.findViewById(android.R.id.text1)
-        tv.text = text
+    override fun getSummary(): CharSequence? {
+        return text ?: super.getSummary()
     }
 }
 
-/**
- * 实现保存Int的EditTextPreference，
- */
-class IntEditTextPreference : EditTextPreference {
-    constructor(context: Context)
-            : super(context)
+class IntEditTextPreference @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : EditTextPreference(context, attrs) {
 
-    constructor(context: Context, attrs: AttributeSet?)
-            : super(context, attrs)
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int)
-            : super(context, attrs, defStyleAttr)
-
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int)
-            : super(context, attrs, defStyleAttr, defStyleRes)
-
-
-    override fun persistString(string: String): Boolean {
-        val value = try {
-            // 主要也就是string==""的情况，
-            string.toInt()
+    override fun persistString(value: String?): Boolean {
+        val intVal = try {
+            value?.toInt() ?: return false
         } catch (e: NumberFormatException) {
-            // 格式出错无视就好，
             return false
         }
-        return persistInt(value)
+        return persistInt(intVal)
     }
 
     override fun getPersistedString(defaultReturnValue: String?): String {
-        return getPersistedInt(defaultReturnValue?.takeIf(String::isNotEmpty)?.toInt()
-                ?: 0).toString()
+        val defaultInt = defaultReturnValue?.takeIf(String::isNotEmpty)?.toIntOrNull() ?: 0
+        return getPersistedInt(defaultInt).toString()
     }
-
 }
 
-/**
- * 实现保存Float的EditTextPreference，
- */
-class FloatEditTextPreference : EditTextPreference {
-    constructor(context: Context)
-            : super(context)
+class FloatEditTextPreference @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : EditTextPreference(context, attrs) {
 
-    constructor(context: Context, attrs: AttributeSet?)
-            : super(context, attrs)
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int)
-            : super(context, attrs, defStyleAttr)
-
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int)
-            : super(context, attrs, defStyleAttr, defStyleRes)
-
-
-    override fun persistString(string: String): Boolean {
-        val value = try {
-            // 主要也就是string==""的情况，
-            string.toFloat()
+    override fun persistString(value: String?): Boolean {
+        val floatVal = try {
+            value?.toFloat() ?: return false
         } catch (e: NumberFormatException) {
-            // 格式出错无视就好，
             return false
         }
-        return persistFloat(value)
+        return persistFloat(floatVal)
     }
 
     override fun getPersistedString(defaultReturnValue: String?): String {
-        return getPersistedFloat(defaultReturnValue?.takeIf(String::isNotEmpty)?.toFloat()
-                ?: 0f).toString()
+        val defaultFloat = defaultReturnValue?.takeIf(String::isNotEmpty)?.toFloatOrNull() ?: 0f
+        return getPersistedFloat(defaultFloat).toString()
     }
-
 }
 
-/**
- * 实现装载默认值，
- */
-class ColorPickerPreference : com.flask.colorpicker.ColorPickerPreference {
-    constructor(context: Context)
-            : super(context)
+class ColorPickerPreference @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : androidx.preference.Preference(context, attrs) {
+    private var currentColor: Int = 0
 
-    constructor(context: Context, attrs: AttributeSet?)
-            : super(context, attrs)
+    init {
+        widgetLayoutResource = android.R.layout.simple_list_item_1
+    }
 
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int)
-            : super(context, attrs, defStyleAttr)
-
-    override fun onGetDefaultValue(a: TypedArray?, index: Int): Any? {
-        val defaultString = a?.getString(index) ?: return null
-        // 支持大写，
-        return defaultString.toLowerCase().let {
+    override fun onGetDefaultValue(a: TypedArray, index: Int): Any? {
+        val defaultString = a.getString(index) ?: return null
+        return defaultString.lowercase().let {
             if (it.startsWith("0x")) {
-                // 支持16进制，正常手写都是用16进制的，
-                // 过大不能直接转Int, 先转Long, 再Int,
                 it.removePrefix("0x").toLong(radix = 16)
             } else {
-                // 也要支持10进制，修改时保存的是10进制，
                 it.toLong()
             }
-        }.toInt().also {
-            // 调一下才会把默认值显示在右边，
-            setValue(it)
-        }
+        }.toInt()
+    }
+
+    override fun onSetInitialValue(defaultValue: Any?) {
+        currentColor = getPersistedInt((defaultValue as? Int) ?: 0)
+    }
+
+    fun setValue(color: Int) {
+        currentColor = color
+        persistInt(color)
+        notifyChanged()
+    }
+
+    override fun onClick() {
+        com.flask.colorpicker.builder.ColorPickerDialogBuilder.with(context)
+            .initialColor(currentColor)
+            .wheelType(com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.CIRCLE)
+            .setPositiveButton(android.R.string.ok) { _, color, _ ->
+                setValue(color)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .build()
+            .show()
     }
 }

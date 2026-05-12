@@ -3,18 +3,15 @@ package cc.aoeiuv020.panovel.server.dal.model
 import cc.aoeiuv020.panovel.server.common.ErrorCode
 import cc.aoeiuv020.panovel.server.common.toBean
 import cc.aoeiuv020.panovel.server.common.toJson
-import java.lang.reflect.Type
+import kotlinx.serialization.Serializable
 
-/**
- *
- * Created by AoEiuV020 on 2018.04.02-11:21:33.
- */
+@Serializable
 class MobResponse(
         var code: Int = ErrorCode.UNKNOWN_ERROR.code,
         val data: String = "{}"
 ) {
     companion object {
-        fun success(data: Any = Any()): MobResponse {
+        inline fun <reified T> success(data: T): MobResponse {
             return MobResponse(ErrorCode.SUCCESS.code, data.toJson())
         }
 
@@ -25,10 +22,6 @@ class MobResponse(
 
     inline fun <reified T> getRealData(): T {
         return data.toBean()
-    }
-
-    fun <T> getRealData(type: Type): T {
-        return data.toBean(type)
     }
 
     fun isSuccess(): Boolean {

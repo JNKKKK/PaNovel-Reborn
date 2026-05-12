@@ -3,16 +3,19 @@ package cc.aoeiuv020.panovel.text
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.databinding.ActivityNovelTextBinding
 import cc.aoeiuv020.panovel.settings.ReaderSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
@@ -23,9 +26,12 @@ import timber.log.Timber
 @Suppress("MemberVisibilityCanPrivate", "unused")
 abstract class NovelTextBaseFullScreenActivity : AppCompatActivity() {
     protected lateinit var binding: ActivityNovelTextBinding
-    private val mHideHandler = Handler()
+    private var hideJob: Job? = null
+    private var showJob: Job? = null
+    private var delayedHideJob: Job? = null
+
     @SuppressLint("InlinedApi")
-    private val mHidePart2Runnable = Runnable {
+    private fun applyFullScreenFlags() {
         if (ReaderSettings.fullScreen) {
             binding.flContent.systemUiVisibility =
                     View.SYSTEM_UI_FLAG_LOW_PROFILE or
@@ -36,19 +42,13 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity() {
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
         }
     }
-    private val mShowPart2Runnable = Runnable {
+
+    private fun showControls() {
         binding.appBar.show()
         binding.fullscreenContentControls.visibility = View.VISIBLE
     }
+
     protected var mVisible: Boolean = false
-    private val mHideRunnable = Runnable { hide() }
-    private val mDelayHideTouchListener = View.OnTouchListener { _, _ ->
-        @Suppress("ConstantConditionIf")
-        if (AUTO_HIDE) {
-            delayedHide(AUTO_HIDE_DELAY_MILLIS)
-        }
-        false
-    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -105,12 +105,14 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity() {
         }
     }
 
-    // 进入全屏但不隐藏菜单栏，
     fun fullScreen() {
         binding.appBar.hide()
         mVisible = false
-        mHideHandler.removeCallbacks(mShowPart2Runnable)
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY.toLong())
+        showJob?.cancel()
+        hideJob = lifecycleScope.launch {
+            delay(UI_ANIMATION_DELAY.toLong())
+            applyFullScreenFlags()
+        }
     }
 
     fun hide() {
@@ -127,13 +129,19 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity() {
                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         }
         mVisible = true
-        mHideHandler.removeCallbacks(mHidePart2Runnable)
-        mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY.toLong())
+        hideJob?.cancel()
+        showJob = lifecycleScope.launch {
+            delay(UI_ANIMATION_DELAY.toLong())
+            showControls()
+        }
     }
 
     private fun delayedHide(delayMillis: Int) {
-        mHideHandler.removeCallbacks(mHideRunnable)
-        mHideHandler.postDelayed(mHideRunnable, delayMillis.toLong())
+        delayedHideJob?.cancel()
+        delayedHideJob = lifecycleScope.launch {
+            delay(delayMillis.toLong())
+            hide()
+        }
     }
 
     companion object {

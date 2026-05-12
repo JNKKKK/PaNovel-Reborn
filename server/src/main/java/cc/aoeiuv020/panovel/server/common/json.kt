@@ -1,20 +1,7 @@
 package cc.aoeiuv020.panovel.server.common
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
+import cc.aoeiuv020.json.AppJson
+import kotlinx.serialization.encodeToString
 
-/**
- *
- * Created by AoEiuV020 on 2018.04.05-10:35:13.
- */
-val gson: Gson = GsonBuilder()
-        .create()
-
-inline fun <reified T> type(): Type = object : TypeToken<T>() {}.type
-inline fun <reified T> String.toBean(): T = toBean(type<T>())
-fun <T> String.toBean(type: Type): T = gson.fromJson(this, type)
-        ?: throw IllegalStateException("empty json")
-
-fun Any.toJson(): String = gson.toJson(this)
+inline fun <reified T> String.toBean(): T = AppJson.decodeFromString(this)
+inline fun <reified T> T.toJson(): String = AppJson.encodeToString(this)

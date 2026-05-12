@@ -4,7 +4,6 @@ import cc.aoeiuv020.panovel.server.ServerAddress
 import cc.aoeiuv020.panovel.server.common.bookId
 import cc.aoeiuv020.panovel.server.common.toBean
 import cc.aoeiuv020.panovel.server.common.toJson
-import cc.aoeiuv020.panovel.server.common.type
 import cc.aoeiuv020.panovel.server.dal.model.*
 import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel
 import cc.aoeiuv020.panovel.server.service.NovelService
@@ -14,7 +13,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.reflect.Type
 import java.util.concurrent.TimeUnit
 
 /**
@@ -50,11 +48,8 @@ class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService 
         }
     }
 
-    private inline fun <reified T> post(url: String, any: Any): T =
-            post(url, any, type<T>())
-
-    private fun <T> post(url: String, any: Any, type: Type): T {
-        val mobRequest = MobRequest(any.toJson())
+    private inline fun <reified I, reified R> postTyped(url: String, input: I): R {
+        val mobRequest = MobRequest(input.toJson())
         val requestBody = mobRequest.toJson()
                 .toRequestBody("application/json".toMediaType())
         val request = Request.Builder()
@@ -62,48 +57,46 @@ class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService 
                 .post(requestBody)
                 .build()
         val call = client.newCall(request)
-        // .string()会关闭body,
         val response: MobResponse = call.execute().body!!.string()!!
                 .toBean()
         if (!response.isSuccess()) {
-            // 只能说可能是上传的参数不对，
             throw IllegalStateException("请求失败: ${response.data}")
         }
-        return response.getRealData(type)
+        return response.getRealData()
     }
 
     override fun uploadUpdate(novel: Novel): Boolean {
         logger.debug("uploadUpdate <{}.{}.{}>", novel.site, novel.author, novel.name)
-        return post(serverAddress.updateUploadUrl, novel)
+        return postTyped(serverAddress.updateUploadUrl, novel)
     }
 
     override fun needRefreshNovelList(count: Int): List<Novel> {
         logger.debug("needRefreshNovelList count = {}", count)
-        return post(serverAddress.needRefreshNovelListUrl, count)
+        return postTyped(serverAddress.needRefreshNovelListUrl, count)
     }
 
     override fun queryList(novelMap: Map<Long, Novel>): Map<Long, QueryResponse> {
         logger.debug("queryList {}", novelMap.map { "${it.key}=<${it.value.run { "$site.$author.$name" }}>" })
-        return post(serverAddress.queryListUrl, novelMap)
+        return postTyped(serverAddress.queryListUrl, novelMap)
     }
 
     override fun touch(novel: Novel): Boolean {
         logger.debug("touch {}", novel.bookId)
-        return post(serverAddress.touchUrl, novel)
+        return postTyped(serverAddress.touchUrl, novel)
     }
 
     override fun minVersion(): String {
         logger.debug("minVersion")
-        return post(serverAddress.minVersionUrl, Any())
+        return postTyped(serverAddress.minVersionUrl, "")
     }
 
     override fun config(): Config {
         logger.debug("config")
-        return post(serverAddress.config, Any())
+        return postTyped(serverAddress.config, "")
     }
 
     override fun message(): Message {
         logger.debug("message")
-        return post(serverAddress.message, Any())
+        return postTyped(serverAddress.message, "")
     }
 }

@@ -1,8 +1,6 @@
-@file:Suppress("DEPRECATION")
-
 package cc.aoeiuv020.panovel.booklist
 
-import android.app.ProgressDialog
+import cc.aoeiuv020.panovel.util.ProgressDialogCompat
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,7 +26,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
     private var _binding: NovelItemListBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var progressDialog: ProgressDialog
+    private lateinit var progressDialog: ProgressDialogCompat
     private val itemListener: BookListFragmentAdapter.ItemListener = object : BookListFragmentAdapter.ItemListener {
         override fun onClick(vh: BookListFragmentAdapter.ViewHolder) {
             BookListActivity.start(requireContext(), vh.bookList.nId)
@@ -133,7 +131,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        progressDialog = ProgressDialog(context)
+        progressDialog = ProgressDialogCompat(requireContext())
         // Note: 这里不是小说列表，固定用LinearLayoutManager，
         binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
         binding.rvNovel.adapter = mAdapter

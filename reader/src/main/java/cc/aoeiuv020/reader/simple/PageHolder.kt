@@ -50,7 +50,7 @@ internal class PageHolder(private val reader: SimpleReader) {
         ntrAdapter.setChapterName(chapter)
         scope.launch {
             try {
-                val novelText = withContext(reader.ioExecutorService.asCoroutineDispatcher()) {
+                val novelText = withContext(reader.ioDispatcher) {
                     requester.requestChapter(index, refresh)
                 }
                 showText(novelText)

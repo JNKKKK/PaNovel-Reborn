@@ -1,7 +1,6 @@
 package cc.aoeiuv020.panovel.text
 
 import android.content.Context
-import cc.aoeiuv020.base.jar.ioExecutorService
 import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.DataManager

@@ -28,14 +28,20 @@ Requires JDK 21. Uses Gradle 8.7, AGP 8.3.2, Kotlin 1.9.22.
 
 ## Architecture
 
-**MVP pattern** with a centralized `DataManager` singleton coordinating:
+**MVP pattern** with `DataManager` singleton coordinating:
 - `AppDatabaseManager` – Room database (2.6.1, uses KSP)
 - `ApiManager` – Novel website context/scraping
 - `CookieManager` – Cookie persistence
-- `CacheManager` – Content caching
+- `CacheManager` – Content caching (IronDB + kotlinx-serialization)
 - `ServerManager` – Push notifications and sync
 - `LocalManager` – Local file novel support
 - `DownloadManager` – Download management
+
+**Dependency management:**
+- `AppContainer` (in `App.kt`) holds app-scoped dependencies
+- `PrefContext` provides application context to the settings system
+- No global `App.context` — context flows through `PrefContext.appContext` or is passed explicitly
+- `DataManager` stores its own `appContext` from initialization
 
 Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Presenters use `CoroutineScope(Dispatchers.Main + SupervisorJob())` for async work.
 
@@ -45,8 +51,8 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 |--------|------|---------|
 | app | Android | Main application (activities, presenters, fragments) |
 | scraper | Java | Novel website scrapers (JSoup + Rhino JS parsing) |
-| core | Java | Shared utilities (GSON extensions, regex, SSL, jsoup helpers) |
-| IronDB | Java | File-based NoSQL key-value store |
+| core | Java | Shared utilities (JSON, regex, SSL, jsoup helpers) |
+| IronDB | Java | File-based NoSQL key-value store (kotlinx-serialization) |
 | rhino | Java | Rhino JavaScript engine wrapper |
 | local | Java | Local file support (TXT, EPUB via epub4j-core) |
 | pager | Android | Pagination library |
@@ -67,6 +73,10 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 - Async: Kotlin Coroutines (scope in Presenter base class, lifecycleScope in Activities)
 - Dialogs: AlertDialog.Builder (no DSL wrappers)
 - Navigation: standard Intent with putExtra
+- Settings: `Pref` interface + SharedPreferences delegates (`delegate.kt`), context from `PrefContext`
+- Serialization: kotlinx-serialization throughout (no GSON)
+- Activity results: `ActivityResultContracts` (no deprecated `startActivityForResult`)
+- Preferences UI: AndroidX `PreferenceFragmentCompat` (no deprecated `PreferenceFragment`)
 
 ## Tech Stack
 
@@ -75,7 +85,8 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 - AndroidX, Material Design, Glide 4.16.0, OkHttp 4.12.0
 - Room 2.6.1 (KSP), JSoup 1.17.2, Rhino 1.7.14
 - Timber 5.0.1 (logging), Kotlin Coroutines 1.7.3 (async)
-- GSON serialization, epub4j-core 4.2.1 (EPUB support)
+- kotlinx-serialization-json 1.6.2, epub4j-core 4.2.1 (EPUB support)
+- AndroidX Preference 1.2.1
 - SLF4J for non-Android modules
 
 ## Migration Status (from original codebase)
@@ -89,6 +100,16 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 - Replaced epublib stubs with real epub4j-core from Maven Central
 - OkHttp 3→4 API migration
 - ViewBinding migration from kotlin-android-extensions
+- Replaced GSON with kotlinx-serialization across all modules
+- Replaced `startActivityForResult` with `ActivityResultContracts`
+- Replaced `ProgressDialog` with `ProgressDialogCompat` (AlertDialog-based)
+- Replaced deprecated `PreferenceFragment`/`PreferenceActivity` with AndroidX `PreferenceFragmentCompat`
+- Replaced raw Thread/Handler patterns with Kotlin Coroutines
+- Replaced `ExecutorService` with `Dispatchers.IO` in reader module
+- Added DiffUtil to RecyclerView adapters
+- Removed global `App.context` — replaced with `PrefContext` + `AppContainer`
+- Fixed `PendingIntent` flags for Android 12+ compatibility
+- IronDB rewritten to use `KSerializer<T>` instead of `java.lang.reflect.Type`
 - `./gradlew assembleDebug` passes on JDK 21
 
 ## Release Workflow

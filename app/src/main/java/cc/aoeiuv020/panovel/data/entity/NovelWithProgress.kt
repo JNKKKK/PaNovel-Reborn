@@ -1,8 +1,8 @@
 package cc.aoeiuv020.panovel.data.entity
 
-/**
- * Created by AoEiuV020 on 2018.05.31-12:48:03.
- */
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class NovelWithProgress(
         /**
          * 网站名，

@@ -1,15 +1,12 @@
-@file:Suppress("DEPRECATION")
-
 package cc.aoeiuv020.panovel.main
 
 import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContracts
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
@@ -35,6 +32,7 @@ import cc.aoeiuv020.panovel.settings.InterfaceSettings
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.settings.SettingsActivity
 import cc.aoeiuv020.panovel.databinding.ActivityMainBinding
+import cc.aoeiuv020.panovel.util.ProgressDialogCompat
 import cc.aoeiuv020.panovel.util.cancelAllNotify
 import cc.aoeiuv020.panovel.util.initNotificationChannel
 import cc.aoeiuv020.panovel.util.loading
@@ -58,7 +56,17 @@ import androidx.lifecycle.lifecycleScope
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    lateinit var progressDialog: ProgressDialog
+    lateinit var progressDialog: ProgressDialogCompat
+
+    private val scanLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.data?.extras?.getString("SCAN_RESULT")?.let {
+            OpenManager.open(this, it, openListener)
+        }
+    }
+
+    private val openDocumentLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { OpenManager.open(this, it, openListener) }
+    }
     private val bookshelfFragment: BookshelfFragment?
         get() = supportFragmentManager.fragments.firstOrNull { it is BookshelfFragment } as BookshelfFragment?
     private val bookListFragment: BookListFragment?
@@ -112,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
         initNotificationChannel()
 
-        progressDialog = ProgressDialog(this)
+        progressDialog = ProgressDialogCompat(this)
 
         initWidget()
         syncSites()
@@ -271,7 +279,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent("com.google.zxing.client.android.SCAN")
         intent.putExtra("SCAN_MODE", "QR_CODE_MODE")
         try {
-            startActivityForResult(intent, 0)
+            scanLauncher.launch(intent)
         } catch (_: ActivityNotFoundException) {
             android.widget.Toast.makeText(this, "没安装zxing二维码扫描器，", android.widget.Toast.LENGTH_SHORT).show()
         } catch (_: SecurityException) {
@@ -293,14 +301,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             setNeutralButton(R.string.local_novel) { _, _ ->
-                // 调文件管理器选择小说，
-                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    Intent(Intent.ACTION_OPEN_DOCUMENT)
-                } else {
-                    Intent(Intent.ACTION_GET_CONTENT)
-                }
-                intent.type = "*/*"
-                startActivityForResult(intent, 1)
+                openDocumentLauncher.launch(arrayOf("*/*"))
             }
         }.create().safelyShow()
     }
@@ -332,17 +333,6 @@ class MainActivity : AppCompatActivity() {
                 Reporter.post(message, e)
                 Timber.e(e, message)
                 showError(message, e)
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            0 -> data?.extras?.getString("SCAN_RESULT")?.let {
-                OpenManager.open(this, it, openListener)
-            }
-            1 -> data?.data?.let { uri ->
-                OpenManager.open(this, uri, openListener)
             }
         }
     }

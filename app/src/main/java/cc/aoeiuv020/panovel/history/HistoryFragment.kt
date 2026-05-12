@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import cc.aoeiuv020.panovel.App.Companion.context
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding

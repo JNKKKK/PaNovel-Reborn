@@ -23,7 +23,7 @@ class DownloadingNotificationManager(
     // 太早了Intent不能用，
     private val notificationBuilder: NotificationCompat.Builder by lazy {
         val intent = Intent(context, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+        val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         val notificationBuilder = NotificationCompat.Builder(context, NotificationChannelId.downloading)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)

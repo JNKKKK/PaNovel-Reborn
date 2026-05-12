@@ -3,8 +3,9 @@ package cc.aoeiuv020.panovel.server
 import android.content.Context
 import androidx.annotation.WorkerThread
 import cc.aoeiuv020.base.jar.notZero
-import cc.aoeiuv020.panovel.App
-import com.google.gson.JsonParser
+import cc.aoeiuv020.json.AppJson
+import cc.aoeiuv020.panovel.util.PrefContext
+import kotlinx.serialization.json.jsonObject
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
@@ -37,10 +38,10 @@ object ServerManager  {
             try {
                 val (localNovel, hasUpdate) = withContext(Dispatchers.IO) {
                     val remoteNovel: Novel = run {
-                        val obj = JsonParser.parseString(extra).asJsonObject
-                        val novelElement = obj.get("novel")
-                        val novelStr = if (novelElement.isJsonPrimitive) novelElement.asString else novelElement.toString()
-                        App.gson.fromJson(novelStr, Novel::class.java)
+                        val obj = AppJson.parseToJsonElement(extra).jsonObject
+                        val novelElement = obj["novel"]!!
+                        val novelStr = novelElement.toString()
+                        AppJson.decodeFromString<Novel>(novelStr)
                     }
                     requireNotNull(remoteNovel.site)
                     requireNotNull(remoteNovel.author)
@@ -136,7 +137,7 @@ object ServerManager  {
             return null
         }
         val minVersion = VersionName(config.minVersion)
-        val currentVersion = VersionName(VersionUtil.getAppVersionName(App.context))
+        val currentVersion = VersionName(VersionUtil.getAppVersionName(PrefContext.appContext))
         Timber.i("getService minVersion $minVersion/$currentVersion")
         if (currentVersion < minVersion) {
             // 如果版本过低，直接返回空，不继续，

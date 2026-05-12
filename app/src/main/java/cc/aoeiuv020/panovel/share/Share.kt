@@ -1,34 +1,25 @@
 package cc.aoeiuv020.panovel.share
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.view.View
-import cc.aoeiuv020.panovel.App
-import com.google.gson.reflect.TypeToken
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import cc.aoeiuv020.json.AppJson
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.BookList
 import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.bumptech.glide.Glide
-import com.google.gson.JsonObject
-import android.content.Intent
-import android.net.Uri
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.*
 import java.util.*
 
-/**
- *
- * Created by AoEiuV020 on 2018.03.07-19:14:09.
- */
 object Share {
     private val paste = PasteUbuntu()
-    /**
-     * 对不同版本的分享结果进行支持，
-     * 当前第二版，
-     * 第一版的没有版本号，
-     */
     private const val VERSION: Int = 3
 
     fun check(url: String): Boolean {
@@ -42,36 +33,27 @@ object Share {
 
     fun exportBookList(bookList: BookList, novelList: List<NovelMinimal>): String {
         val bookListBean = BookListV3(bookList.name, novelList, VERSION, bookList.uuid)
-        return App.gson.toJson(bookListBean)
+        return AppJson.encodeToString(bookListBean)
     }
 
     fun importBookList(text: String): BookListV3 {
-        val bookListJson = App.gson.fromJson(text, JsonObject::class.java)
-        val version = bookListJson.get("version")?.asJsonPrimitive?.asInt
+        val bookListJson = AppJson.parseToJsonElement(text).jsonObject
+        val version = bookListJson["version"]?.jsonPrimitive?.intOrNull
         return when (version) {
-            3 -> {
-                App.gson.fromJson(bookListJson, object : TypeToken<BookListV3>() {}.type)
-            }
+            3 -> AppJson.decodeFromString<BookListV3>(text)
             2 -> {
-                App.gson.fromJson<BookListV2>(bookListJson, object : TypeToken<BookListV2>() {}.type).let {
-                    BookListV3(it.name, it.list, it.version, UUID.randomUUID().toString())
-                }
+                val v2 = AppJson.decodeFromString<BookListV2>(text)
+                BookListV3(v2.name, v2.list, v2.version, UUID.randomUUID().toString())
             }
-            1 -> {
-                // 旧版version为null,
-                val bookListBean1: BookListV1 = App.gson.fromJson(bookListJson, object : TypeToken<BookListV1>() {}.type)
-                BookListV3(bookListBean1.name, bookListBean1.list.map {
-                    // 旧版的extra为完整地址，直接拿来，就算写进数据库了，刷新详情页后也会被新版的bookId覆盖，
+            else -> {
+                val v1 = AppJson.decodeFromString<BookListV1>(text)
+                BookListV3(v1.name, v1.list.map {
                     NovelMinimal(site = it.site, author = it.author, name = it.name, detail = it.requester.extra)
                 }, VERSION, UUID.randomUUID().toString())
             }
-            else -> throw IllegalStateException("APP版本太低")
         }
     }
 
-    /**
-     * @return 返回导入的书单中的小说数量，
-     */
     fun receiveBookList(url: String): Int {
         val text = paste.download(url)
         val bookListBean = importBookList(text)

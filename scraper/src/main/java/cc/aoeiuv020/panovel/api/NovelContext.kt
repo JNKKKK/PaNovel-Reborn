@@ -1,9 +1,8 @@
 package cc.aoeiuv020.panovel.api
 
+import cc.aoeiuv020.json.AppJson
 import cc.aoeiuv020.panovel.api.site.*
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.encodeToString
 import okhttp3.Cookie
 import okhttp3.Headers
 import org.slf4j.Logger
@@ -25,11 +24,6 @@ abstract class NovelContext {
 
         const val sitesVersion = 13
 
-        // 用于存取cookie,
-        private val gson: Gson = GsonBuilder()
-            .disableHtmlEscaping()
-            .setPrettyPrinting()
-            .create()
 
         /**
          * 缓存文件夹，可以随时被删除的，
@@ -81,15 +75,13 @@ abstract class NovelContext {
         get() = mFilesDir?.resolve("cookies")
     private var _cookies: Map<String, Cookie>? = null
 
-    // name to Cookie,
-    // 虽然浏览器支持相同name的不同cookie，按domain和path区分，但是这里一个context只有一个网站，不会有多个name,
     var cookies: Map<String, Cookie>
         @Synchronized
         get() = _cookies ?: (cookiesFile?.let { file ->
             try {
-                gson.fromJson<Map<String, Cookie>>(file.readText(), object : TypeToken<Map<String, Cookie>>() {}.type)
+                val map: Map<String, SerializableCookie> = AppJson.decodeFromString(file.readText())
+                map.mapValues { (_, v) -> v.toCookie() }
             } catch (e: Exception) {
-                // 读取失败说明文件损坏，直接删除，下次保存，
                 file.delete()
                 null
             }
@@ -99,26 +91,22 @@ abstract class NovelContext {
         @Synchronized
         private set(value) {
             logger.debug("setCookies {}", value)
-            if (value == _cookies) {
-                return
-            }
+            if (value == _cookies) return
             _cookies = value
-            cookiesFile?.writeText(gson.toJson(value))
+            val serializable = value.mapValues { (_, v) -> SerializableCookie.from(v) }
+            cookiesFile?.writeText(AppJson.encodeToString(serializable))
         }
 
     private val headersFile: File?
         get() = mFilesDir?.resolve("headers")
     private var _headers: Map<String, String>? = null
 
-    // name to Cookie,
-    // 虽然浏览器支持相同name的不同cookie，按domain和path区分，但是这里一个context只有一个网站，不会有多个name,
     var headers: Map<String, String>
         @Synchronized
         get() = _headers ?: (headersFile?.let { file ->
             try {
-                gson.fromJson<Map<String, String>>(file.readText(), object : TypeToken<Map<String, String>>() {}.type)
+                AppJson.decodeFromString<Map<String, String>>(file.readText())
             } catch (e: Exception) {
-                // 读取失败说明文件损坏，直接删除，下次保存，
                 file.delete()
                 null
             }
@@ -128,11 +116,9 @@ abstract class NovelContext {
         @Synchronized
         private set(value) {
             logger.debug("setheaders {}", value)
-            if (value == _headers) {
-                return
-            }
+            if (value == _headers) return
             _headers = value
-            headersFile?.writeText(gson.toJson(value))
+            headersFile?.writeText(AppJson.encodeToString(value))
         }
 
     /**
@@ -155,9 +141,8 @@ abstract class NovelContext {
         @Synchronized
         get() = _charset ?: (charsetFile?.let { file ->
             try {
-                gson.fromJson(file.readText(), String::class.java)
+                file.readText().trim().ifEmpty { null }
             } catch (e: Exception) {
-                // 读取失败说明文件损坏，直接删除，下次保存，
                 file.delete()
                 null
             }
@@ -167,12 +152,10 @@ abstract class NovelContext {
         @Synchronized
         set(value) {
             logger.debug("set charset {}", value)
-            if (value == _charset) {
-                return
-            }
+            if (value == _charset) return
             if (!value.isNullOrBlank()) {
                 _charset = value
-                charsetFile?.writeText(gson.toJson(value))
+                charsetFile?.writeText(value)
             } else {
                 _charset = null
                 charsetFile?.delete()

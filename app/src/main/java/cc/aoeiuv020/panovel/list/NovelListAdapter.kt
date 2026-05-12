@@ -4,10 +4,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import cc.aoeiuv020.panovel.R
-import cc.aoeiuv020.panovel.ad.AdHelper
-import cc.aoeiuv020.panovel.ad.AdListHelper
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.settings.ItemAction
 import cc.aoeiuv020.panovel.settings.ListSettings
@@ -39,15 +38,28 @@ open class NovelListAdapter(
     var data: List<NovelManager>
         get() = _data
         set(value) {
-            _data = value.toMutableList()
-            notifyDataSetChanged()
+            val oldList = _data
+            val newList = value.toMutableList()
+            val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+                override fun getOldListSize() = oldList.size
+                override fun getNewListSize() = newList.size
+                override fun areItemsTheSame(oldPos: Int, newPos: Int): Boolean {
+                    return oldList[oldPos].novel.nId == newList[newPos].novel.nId
+                }
+                override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
+                    val old = oldList[oldPos].novel
+                    val new = newList[newPos].novel
+                    return old.name == new.name && old.readAtChapterName == new.readAtChapterName
+                }
+            })
+            _data = newList
+            diffResult.dispatchUpdatesTo(this)
         }
 
     // 打开时存个比最小时间大的，自动刷新没刷新过的，也就是刚搜索出来的，
     // 设置一天，以防万一时区问题，
     // 如果小说刷新时间checkUpdateTime小于这个时间就联网刷新章节列表，
     private var refreshTime = Date(TimeUnit.DAYS.toMillis(1))
-    private val adListHelper: AdListHelper<*, *, *> = AdHelper.createListHelper()
 
     fun refresh() {
         refreshTime = Date()
@@ -78,55 +90,24 @@ open class NovelListAdapter(
         hasUpdateList.forEach {
             shouldRefreshSet.add(it)
         }
-        // 刷新列表，开始刷新展示中的viewHolder对应的小说，
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, itemCount)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
-        return if (viewType == 1) {
-            adListHelper.createAdViewHolder(parent)
-        } else {
-            val itemView = LayoutInflater.from(parent.context).inflate(layout, parent, false)
-            NovelViewHolder(itemView, dotColor, dotSize, refreshingNovelSet, shouldRefreshSet
-                    , initItem, actualActionDoneListener, onError)
-        }
+        val itemView = LayoutInflater.from(parent.context).inflate(layout, parent, false)
+        return NovelViewHolder(itemView, dotColor, dotSize, refreshingNovelSet, shouldRefreshSet
+                , initItem, actualActionDoneListener, onError)
     }
 
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        adListHelper.onAttachedToRecyclerView(recyclerView)
-    }
-
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        adListHelper.onDestroy()
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        return if (adListHelper.isAd(position)) {
-            1
-        } else {
-            0
-        }
-    }
-
-    override fun getItemCount(): Int = adListHelper.getRealSize(data.size)
+    override fun getItemCount(): Int = data.size
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        if (holder is AdListHelper.AdViewHolder<*>) {
-            adListHelper.adHolderBind(holder, position)
-        } else if (holder is NovelViewHolder) {
-            val novel = _data[adListHelper.getItemPosition(position)]
-            holder.apply(novel, refreshTime)
-        } else {
-            throw IllegalStateException("未知holder: ${holder.javaClass}")
-        }
+        val novel = _data[position]
+        (holder as NovelViewHolder).apply(novel, refreshTime)
     }
 
     override fun getItemId(position: Int): Long {
-        return if (getItemViewType(position) == 1) {
-            adListHelper.getAdId(position)
-        } else {
-            data[adListHelper.getItemPosition(position)].novel.nId
-        }
+        return data[position].novel.nId
     }
 
 
@@ -138,12 +119,13 @@ open class NovelListAdapter(
     }
 
     fun clear() {
+        val oldSize = itemCount
         _data.clear()
-        notifyDataSetChanged()
+        notifyItemRangeRemoved(0, oldSize)
     }
 
     fun remove(position: Int) {
-        _data.removeAt(adListHelper.getItemPosition(position))
+        _data.removeAt(position)
         notifyItemRemoved(position)
     }
 

@@ -3,8 +3,9 @@ package cc.aoeiuv020.panovel.main
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import cc.aoeiuv020.json.AppJson
 import cc.aoeiuv020.panovel.BuildConfig
-import com.google.gson.JsonParser
+import kotlinx.serialization.json.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import cc.aoeiuv020.panovel.R
@@ -28,11 +29,11 @@ object Check : Pref {
         val request = Request.Builder().url(RELEASES_GITHUB_API).build()
         return client.newCall(request).execute().use { response ->
             val json = response.body?.string() ?: "[]"
-            val array = JsonParser.parseString(json).asJsonArray
+            val array = AppJson.parseToJsonElement(json).jsonArray
             array.mapNotNull { element ->
-                val obj = element.asJsonObject
-                val versionName = obj.get("tag_name")?.asString?.removePrefix("v") ?: return@mapNotNull null
-                val body = obj.get("body")?.asString ?: ""
+                val obj = element.jsonObject
+                val versionName = obj["tag_name"]?.jsonPrimitive?.content?.removePrefix("v") ?: return@mapNotNull null
+                val body = obj["body"]?.jsonPrimitive?.content ?: ""
                 ReleaseInfo(versionName, body)
             }
         }

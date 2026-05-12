@@ -1,57 +1,53 @@
-<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- These settings headers are only used on tablets. -->
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.GeneralPreferenceFragment"
+        app:title="@string/pref_header_general" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.GeneralPreferenceFragment"
-        android:title="@string/pref_header_general" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.ListPreferenceFragment"
+        app:title="@string/pref_header_list" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.ListPreferenceFragment"
-        android:title="@string/pref_header_list" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.ReaderPreferenceFragment"
+        app:title="@string/pref_header_read" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.ReaderPreferenceFragment"
-        android:title="@string/pref_header_read" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.InterfacePreferenceFragment"
+        app:title="@string/pref_header_interface" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.InterfacePreferenceFragment"
-        android:title="@string/pref_header_interface" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.DownloadPreferenceFragment"
+        app:title="@string/pref_header_download" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.DownloadPreferenceFragment"
-        android:title="@string/pref_header_download" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.LocationPreferenceFragment"
+        app:title="@string/pref_header_location" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.LocationPreferenceFragment"
-        android:title="@string/pref_header_location" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.ServerPreferenceFragment"
+        app:title="@string/pref_header_server" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.ServerPreferenceFragment"
-        android:title="@string/pref_header_server" />
+    <Preference
+        android:key="backup"
+        app:title="@string/pref_backup" />
 
-    <header
-        android:id="@+id/pref_backup"
-        android:title="@string/pref_backup" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.OthersPreferenceFragment"
+        app:title="@string/pref_others" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.OthersPreferenceFragment"
-        android:title="@string/pref_others" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.CacheClearPreferenceFragment"
+        app:title="@string/pref_clear" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.AdPreferenceFragment"
-        android:title="@string/pref_ad" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.DisclaimerFragment"
+        app:title="@string/pref_header_disclaimer" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.CacheClearPreferenceFragment"
-        android:title="@string/pref_clear" />
+    <Preference
+        app:fragment="cc.aoeiuv020.panovel.settings.AboutFragment"
+        app:title="@string/pref_header_about" />
 
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.DisclaimerFragment"
-        android:title="@string/pref_header_disclaimer" />
-
-    <header
-        android:fragment="cc.aoeiuv020.panovel.settings.AboutFragment"
-        android:title="@string/pref_header_about" />
-
-</preference-headers>
+</PreferenceScreen>

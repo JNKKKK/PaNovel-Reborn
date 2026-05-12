@@ -1,10 +1,10 @@
 package cc.aoeiuv020.panovel.data.entity
 
+import cc.aoeiuv020.json.DateSerializer
+import kotlinx.serialization.Serializable
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.05.31-12:48:03.
- */
+@Serializable
 data class NovelWithProgressAndPinnedTime(
         /**
          * 网站名，
@@ -47,6 +47,7 @@ data class NovelWithProgressAndPinnedTime(
          * 不过这样不好判断是否置顶，对比0时间的话，可能有时区问题，
          * 没法设置个按钮置顶时显示取消置顶，
          */
+        @Serializable(with = DateSerializer::class)
         var pinnedTime: Date = Date(0)
 ) {
     constructor(novel: Novel)

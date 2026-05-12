@@ -1,11 +1,10 @@
 package cc.aoeiuv020.panovel.data.entity
 
 import cc.aoeiuv020.panovel.api.NovelItem
+import kotlinx.serialization.Serializable
 import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel as ServerNovel
 
-/**
- * Created by AoEiuV020 on 2018.05.28-16:30:44.
- */
+@Serializable
 data class NovelMinimal(
         /**
          * 网站名，
@@ -34,7 +33,7 @@ data class NovelMinimal(
             : this(novelItem.site, novelItem.author, novelItem.name, novelItem.extra)
 
     constructor(novel: ServerNovel)
-            : this(novel.site, novel.author, novel.name, novel.detail)
+            : this(novel.site!!, novel.author!!, novel.name!!, novel.detail!!)
 
     constructor(novel: Novel)
             : this(novel.site, novel.author, novel.name, novel.detail)

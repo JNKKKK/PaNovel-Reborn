@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
-import cc.aoeiuv020.panovel.App
 import cc.aoeiuv020.panovel.api.NovelContext
 import cc.aoeiuv020.panovel.data.entity.*
 import cc.aoeiuv020.panovel.local.ImportRequireValue
@@ -27,38 +26,34 @@ import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel as ServerNovel
  */
 object DataManager {
     lateinit var app: AppDatabaseManager
+        private set
     lateinit var api: ApiManager
+        private set
     lateinit var cookie: CookieManager
+        private set
     lateinit var cache: CacheManager
+        private set
     lateinit var server: ServerManager
+        private set
     @SuppressLint("StaticFieldLeak")
     lateinit var local: LocalManager
+        private set
     @SuppressLint("StaticFieldLeak")
     lateinit var download: DownloadManager
+        private set
+    private lateinit var appContext: Context
 
     @Synchronized
     fun init(context: Context) {
-        if (!::app.isInitialized) {
-            app = AppDatabaseManager(context)
-        }
-        if (!::api.isInitialized) {
-            api = ApiManager(context)
-        }
-        if (!::cookie.isInitialized) {
-            cookie = CookieManager(context)
-        }
-        if (!::cache.isInitialized) {
-            cache = CacheManager(context)
-        }
-        if (!::server.isInitialized) {
-            server = ServerManager(context)
-        }
-        if (!::local.isInitialized) {
-            local = LocalManager(context)
-        }
-        if (!::download.isInitialized) {
-            download = DownloadManager(context)
-        }
+        if (::appContext.isInitialized) return
+        appContext = context.applicationContext
+        app = AppDatabaseManager(context)
+        api = ApiManager(context)
+        cookie = CookieManager(context)
+        cache = CacheManager(context)
+        server = ServerManager(context)
+        local = LocalManager(context)
+        download = DownloadManager(context)
     }
 
     fun resetCacheLocation(context: Context) {
@@ -74,7 +69,7 @@ object DataManager {
      */
     fun receiveUpdate(novel: ServerNovel): Pair<Novel, Boolean> {
         val localNovel = app.queryOrNewNovel(NovelMinimal(novel))
-        return localNovel to if (localNovel.chaptersCount < novel.chaptersCount) {
+        return localNovel to if (localNovel.chaptersCount < (novel.chaptersCount ?: 0)) {
             // 章节数更多了表示确实有更新，
             // 不能太相信推送的数据，一切以本地自己刷新的为准，
             val oldCount = localNovel.chaptersCount
@@ -394,7 +389,7 @@ object DataManager {
 
     fun removeAllCookies() {
         removeWebViewCookies()
-        syncCookies(App.context)
+        syncCookies(appContext)
         listSites().forEach {
             removeNovelContextCookies(it.name)
         }

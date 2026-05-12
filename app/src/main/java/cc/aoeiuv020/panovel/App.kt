@@ -1,20 +1,14 @@
 package cc.aoeiuv020.panovel
 
-import android.annotation.SuppressLint
 import android.app.ActivityManager
-import android.content.Context
 import android.os.Process
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
-import com.google.gson.GsonBuilder
-import cc.aoeiuv020.panovel.ad.AdHelper
 import cc.aoeiuv020.panovel.data.DataManager
-import cc.aoeiuv020.panovel.settings.AdSettings
 import cc.aoeiuv020.panovel.util.DnsUtils
 import cc.aoeiuv020.ssl.TLSSocketFactory
 import cc.aoeiuv020.ssl.TrustManagerUtils
 import com.bumptech.glide.Glide
-import com.google.gson.Gson
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 import kotlin.properties.Delegates
@@ -27,26 +21,18 @@ import kotlin.properties.Delegates
 @Suppress("MemberVisibilityCanPrivate")
 class App : MultiDexApplication() {
     companion object {
-        @SuppressLint("StaticFieldLeak")
-        lateinit var context: Context
+        lateinit var container: AppContainer
+            private set
 
-        /**
-         * 当前进程是否主进程，部分操作需要判断只在主进程执行一次，
-         */
         var isMainProcess: Boolean by Delegates.notNull()
 
-        /**
-         * 用于app不同页面传递数据时的序列化，
-         */
-        val gson: Gson = GsonBuilder()
-            .disableHtmlEscaping()
-            .setPrettyPrinting()
-            .create()
+        val json = cc.aoeiuv020.json.AppJson
     }
 
     override fun onCreate() {
         super.onCreate()
-        context = applicationContext
+        cc.aoeiuv020.panovel.util.PrefContext.init(applicationContext)
+        container = AppContainer(applicationContext)
         isMainProcess = isMainProcess()
 
         timber.log.Timber.plant(timber.log.Timber.DebugTree())
@@ -61,8 +47,6 @@ class App : MultiDexApplication() {
 
         initVector()
 
-        initAd()
-
         initGlide()
 
         initJar()
@@ -70,7 +54,7 @@ class App : MultiDexApplication() {
     }
 
     private fun initDnsUtils() {
-        DnsUtils.init(context)
+        DnsUtils.init(applicationContext)
     }
 
     /**
@@ -114,18 +98,13 @@ class App : MultiDexApplication() {
     }
 
     private fun initGlide() {
-        Glide.get(context).registry
+        Glide.get(applicationContext).registry
     }
 
     private fun initDataSources() {
-        DataManager.init(context)
+        DataManager.init(applicationContext)
     }
 
-    private fun initAd() {
-        if (AdSettings.adEnabled) {
-            AdHelper.init(this)
-        }
-    }
 
     private fun getCurrentProcessName(): String {
         val pid = Process.myPid()

@@ -1,9 +1,6 @@
-@file:Suppress("DEPRECATION")
-
 package cc.aoeiuv020.panovel.backup
 
 import android.Manifest
-import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -13,12 +10,14 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.MenuItem
 import android.widget.RadioButton
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.databinding.ActivityExportBinding
 import cc.aoeiuv020.panovel.settings.BackupSettings
+import cc.aoeiuv020.panovel.util.ProgressDialogCompat
 import cc.aoeiuv020.panovel.util.confirm
 import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.notNullOrReport
@@ -35,8 +34,31 @@ class BackupActivity : AppCompatActivity(), MvpView {
         }
     }
 
-    lateinit var progressDialog: ProgressDialog
+    lateinit var progressDialog: ProgressDialogCompat
     private lateinit var presenter: BackupPresenter
+
+    private val openDocumentLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { showOtherPath(it.toString()) }
+    }
+
+    private val permissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        showMessage("赋予权限后请重新点击导入或者导出")
+    }
+
+    private val configLaunchers = Array(10) { index ->
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (index < binding.rgPath.childCount) {
+                val radioButton = binding.rgPath.getChildAt(index) as RadioButton
+                val backupHelper = presenter.getHelper(radioButton.id).notNullOrReport()
+                if (backupHelper.ready()) {
+                    radioButton.text = backupHelper.notNullOrReport().configPreview()
+                } else {
+                    radioButton.text = getString(R.string.backup_click_for_reconfig, backupHelper.type)
+                }
+                showMessage("配置完成后请重新点击导入或者导出")
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityExportBinding.inflate(layoutInflater)
@@ -71,7 +93,7 @@ class BackupActivity : AppCompatActivity(), MvpView {
     fun getSelectedId(): Int = binding.rgPath.checkedRadioButtonId
 
     private fun initWidget() {
-        progressDialog = ProgressDialog(this)
+        progressDialog = ProgressDialogCompat(this)
         binding.btnImport.setOnClickListener {
             confirm(getString(R.string.confirm_backup_import), Runnable {
                 loading(progressDialog, getString(R.string.sImport))
@@ -129,43 +151,13 @@ class BackupActivity : AppCompatActivity(), MvpView {
         BackupSettings.cbSettings = binding.cbSettings.isChecked
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when {
-            requestCode == 1 -> data?.data?.let { uri ->
-                showOtherPath(uri.toString())
-            }
-            1000 <= requestCode && requestCode < 1000 + binding.rgPath.childCount -> {
-                val index = requestCode - 1000
-                val radioButton = binding.rgPath.getChildAt(index) as RadioButton
-                val backupHelper = presenter.getHelper(radioButton.id).notNullOrReport()
-                if (backupHelper.ready()) {
-                    radioButton.text = backupHelper.notNullOrReport().configPreview()
-                } else {
-                    radioButton.text = getString(R.string.backup_click_for_reconfig, backupHelper.type)
-                }
-                showMessage("配置完成后请重新点击导入或者导出")
-            }
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        when (requestCode) {
-            1 -> {
-                showMessage("赋予权限后请重新点击导入或者导出")
-            }
-        }
+    private val requestPermissionsLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        showMessage("赋予权限后请重新点击导入或者导出")
     }
 
     private fun requestFile() {
-        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Intent(Intent.ACTION_OPEN_DOCUMENT)
-        } else {
-            Intent(Intent.ACTION_GET_CONTENT)
-        }
-        intent.type = "*/*"
         try {
-            startActivityForResult(intent, 1)
+            openDocumentLauncher.launch(arrayOf("*/*"))
         } catch (e: ActivityNotFoundException) {
             showError(getString(R.string.no_file_explorer), e)
         }
@@ -175,12 +167,12 @@ class BackupActivity : AppCompatActivity(), MvpView {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
             intent.data = Uri.parse("package:$packageName")
-            startActivityForResult(intent, 1)
+            permissionLauncher.launch(intent)
         } else {
-            ActivityCompat.requestPermissions(this, arrayOf(
+            requestPermissionsLauncher.launch(arrayOf(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ), 1)
+            ))
         }
     }
 
@@ -250,7 +242,7 @@ class BackupActivity : AppCompatActivity(), MvpView {
 
     private fun startConfig(backupHelper: BackupHelper, index: Int) {
         Timber.d("startConfig ${backupHelper.type}")
-        startActivityForResult(Intent(this, backupHelper.configActivity()), 1000 + index)
+        configLaunchers[index].launch(Intent(this, backupHelper.configActivity()))
     }
 
 }

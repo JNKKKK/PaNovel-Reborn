@@ -1,17 +1,15 @@
 package cc.aoeiuv020.panovel.backup.impl
 
 import android.net.Uri
-import cc.aoeiuv020.panovel.App
+import cc.aoeiuv020.json.AppJson
 import cc.aoeiuv020.panovel.backup.BackupOption
-import com.google.gson.reflect.TypeToken
 import cc.aoeiuv020.panovel.backup.BackupOption.*
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 import cc.aoeiuv020.panovel.data.entity.NovelWithProgress
 import cc.aoeiuv020.panovel.settings.*
 import cc.aoeiuv020.panovel.util.Pref
-
-import com.google.gson.JsonElement
+import kotlinx.serialization.json.*
 import timber.log.Timber
 import java.io.File
 
@@ -58,72 +56,73 @@ class BackupV2 : DefaultBackup() {
     private fun importPref(pref: Pref, file: File): Int {
         val editor = pref.sharedPreferences.edit()
         var count = 0
-        App.gson.fromJson<Map<String, JsonElement>>(file.readText(), object : TypeToken<Map<String, JsonElement>>() {}.type).forEach { (key, value) ->
+        AppJson.parseToJsonElement(file.readText()).jsonObject.forEach { (key, value) ->
+            val prim = value.jsonPrimitive
             when (key) {
                 // 枚举，保存字符串，
-                "animationMode" -> editor.putString(key, value.asString)
-                "shareExpiration" -> editor.putString(key, value.asString)
-                "onCheckUpdateClick" -> editor.putString(key, value.asString)
-                "onDotClick" -> editor.putString(key, value.asString)
-                "onDotLongClick" -> editor.putString(key, value.asString)
-                "onItemClick" -> editor.putString(key, value.asString)
-                "onItemLongClick" -> editor.putString(key, value.asString)
-                "onLastChapterClick" -> editor.putString(key, value.asString)
-                "onNameClick" -> editor.putString(key, value.asString)
-                "onNameLongClick" -> editor.putString(key, value.asString)
-                "bookshelfOrderBy" -> editor.putString(key, value.asString)
+                "animationMode" -> editor.putString(key, prim.content)
+                "shareExpiration" -> editor.putString(key, prim.content)
+                "onCheckUpdateClick" -> editor.putString(key, prim.content)
+                "onDotClick" -> editor.putString(key, prim.content)
+                "onDotLongClick" -> editor.putString(key, prim.content)
+                "onItemClick" -> editor.putString(key, prim.content)
+                "onItemLongClick" -> editor.putString(key, prim.content)
+                "onLastChapterClick" -> editor.putString(key, prim.content)
+                "onNameClick" -> editor.putString(key, prim.content)
+                "onNameLongClick" -> editor.putString(key, prim.content)
+                "bookshelfOrderBy" -> editor.putString(key, prim.content)
 
-                "adEnabled" -> AdSettings.adEnabled = value.asBoolean
-                "keepScreenOn" -> editor.putBoolean(key, value.asBoolean)
-                "fullScreen" -> editor.putBoolean(key, value.asBoolean)
-                "backPressOutOfFullScreen" -> editor.putBoolean(key, value.asBoolean)
-                "fullScreenClickNextPage" -> editor.putBoolean(key, value.asBoolean)
-                "fitWidth" -> editor.putBoolean(key, value.asBoolean)
-                "fitHeight" -> editor.putBoolean(key, value.asBoolean)
-                "gridView" -> editor.putBoolean(key, value.asBoolean)
-                "largeView" -> editor.putBoolean(key, value.asBoolean)
-                "reportCrash" -> editor.putBoolean(key, value.asBoolean)
-                "volumeKeyScroll" -> editor.putBoolean(key, value.asBoolean)
-                "tabGravityCenter" -> editor.putBoolean(key, value.asBoolean)
-                "animationSpeed" -> editor.putFloat(key, value.asFloat)
-                "centerPercent" -> editor.putFloat(key, value.asFloat)
-                "dotSize" -> editor.putFloat(key, value.asFloat)
-                "autoSaveReadStatus" -> editor.putInt(key, value.asInt)
-                "brightness" -> editor.putInt(key, value.asInt)
-                "autoRefreshInterval" -> editor.putInt(key, value.asInt)
-                "backgroundColor" -> editor.putInt(key, value.asInt)
-                "lastBackgroundColor" -> editor.putInt(key, value.asInt)
-                "chapterColorCached" -> editor.putInt(key, value.asInt)
-                "chapterColorDefault" -> editor.putInt(key, value.asInt)
-                "chapterColorReadAt" -> editor.putInt(key, value.asInt)
-                "dotColor" -> editor.putInt(key, value.asInt)
-                "searchThreadsLimit" -> editor.putInt(key, value.asInt)
+                "adEnabled" -> {}
+                "keepScreenOn" -> editor.putBoolean(key, prim.boolean)
+                "fullScreen" -> editor.putBoolean(key, prim.boolean)
+                "backPressOutOfFullScreen" -> editor.putBoolean(key, prim.boolean)
+                "fullScreenClickNextPage" -> editor.putBoolean(key, prim.boolean)
+                "fitWidth" -> editor.putBoolean(key, prim.boolean)
+                "fitHeight" -> editor.putBoolean(key, prim.boolean)
+                "gridView" -> editor.putBoolean(key, prim.boolean)
+                "largeView" -> editor.putBoolean(key, prim.boolean)
+                "reportCrash" -> editor.putBoolean(key, prim.boolean)
+                "volumeKeyScroll" -> editor.putBoolean(key, prim.boolean)
+                "tabGravityCenter" -> editor.putBoolean(key, prim.boolean)
+                "animationSpeed" -> editor.putFloat(key, prim.float)
+                "centerPercent" -> editor.putFloat(key, prim.float)
+                "dotSize" -> editor.putFloat(key, prim.float)
+                "autoSaveReadStatus" -> editor.putInt(key, prim.int)
+                "brightness" -> editor.putInt(key, prim.int)
+                "autoRefreshInterval" -> editor.putInt(key, prim.int)
+                "backgroundColor" -> editor.putInt(key, prim.int)
+                "lastBackgroundColor" -> editor.putInt(key, prim.int)
+                "chapterColorCached" -> editor.putInt(key, prim.int)
+                "chapterColorDefault" -> editor.putInt(key, prim.int)
+                "chapterColorReadAt" -> editor.putInt(key, prim.int)
+                "dotColor" -> editor.putInt(key, prim.int)
+                "searchThreadsLimit" -> editor.putInt(key, prim.int)
                 // 下载相关设置以前是在GeneralSettings里，
                 // TODO: 可以干脆都改成这样，
-                "downloadThreadsLimit" -> DownloadSettings.downloadThreadsLimit = value.asInt
-                "downloadCount" -> DownloadSettings.downloadCount = value.asInt
-                "autoDownloadCount" -> DownloadSettings.autoDownloadCount = value.asInt
-                "fullScreenDelay" -> editor.putInt(key, value.asInt)
-                "historyCount" -> editor.putInt(key, value.asInt)
-                "lineSpacing" -> editor.putInt(key, value.asInt)
-                "messageSize" -> editor.putInt(key, value.asInt)
-                "paragraphSpacing" -> editor.putInt(key, value.asInt)
-                "textColor" -> editor.putInt(key, value.asInt)
-                "lastTextColor" -> editor.putInt(key, value.asInt)
-                "textSize" -> editor.putInt(key, value.asInt)
-                "dateFormat" -> editor.putString(key, value.asString)
-                "segmentIndentation" -> editor.putString(key, value.asString)
-                "enabled" -> editor.putBoolean(key, value.asBoolean)
-                "notifyNovelUpdate" -> editor.putBoolean(key, value.asBoolean)
-                "askUpdate" -> editor.putBoolean(key, value.asBoolean)
-                "singleNotification" -> editor.putBoolean(key, value.asBoolean)
-                "notifyPinnedOnly" -> editor.putBoolean(key, value.asBoolean)
-                "dotNotifyUpdate" -> editor.putBoolean(key, value.asBoolean)
-                "subscriptToast" -> editor.putBoolean(key, value.asBoolean)
-                "bottom" -> editor.putInt(key, value.asInt)
-                "left" -> editor.putInt(key, value.asInt)
-                "right" -> editor.putInt(key, value.asInt)
-                "top" -> editor.putInt(key, value.asInt)
+                "downloadThreadsLimit" -> DownloadSettings.downloadThreadsLimit = prim.int
+                "downloadCount" -> DownloadSettings.downloadCount = prim.int
+                "autoDownloadCount" -> DownloadSettings.autoDownloadCount = prim.int
+                "fullScreenDelay" -> editor.putInt(key, prim.int)
+                "historyCount" -> editor.putInt(key, prim.int)
+                "lineSpacing" -> editor.putInt(key, prim.int)
+                "messageSize" -> editor.putInt(key, prim.int)
+                "paragraphSpacing" -> editor.putInt(key, prim.int)
+                "textColor" -> editor.putInt(key, prim.int)
+                "lastTextColor" -> editor.putInt(key, prim.int)
+                "textSize" -> editor.putInt(key, prim.int)
+                "dateFormat" -> editor.putString(key, prim.content)
+                "segmentIndentation" -> editor.putString(key, prim.content)
+                "enabled" -> editor.putBoolean(key, prim.boolean)
+                "notifyNovelUpdate" -> editor.putBoolean(key, prim.boolean)
+                "askUpdate" -> editor.putBoolean(key, prim.boolean)
+                "singleNotification" -> editor.putBoolean(key, prim.boolean)
+                "notifyPinnedOnly" -> editor.putBoolean(key, prim.boolean)
+                "dotNotifyUpdate" -> editor.putBoolean(key, prim.boolean)
+                "subscriptToast" -> editor.putBoolean(key, prim.boolean)
+                "bottom" -> editor.putInt(key, prim.int)
+                "left" -> editor.putInt(key, prim.int)
+                "right" -> editor.putInt(key, prim.int)
+                "top" -> editor.putInt(key, prim.int)
                 else -> --count
             }
             ++count
@@ -134,13 +133,13 @@ class BackupV2 : DefaultBackup() {
 
     private fun importBookList(folder: File): Int = folder.listFiles().sumBy { file ->
         val name = file.name.substringAfter('|', "")
-        val novelList: List<NovelMinimal> = App.gson.fromJson(file.readText(), object : TypeToken<List<NovelMinimal>>() {}.type)
+        val novelList: List<NovelMinimal> = AppJson.decodeFromString(file.readText())
         DataManager.importBookList(name, novelList)
         novelList.size
     }
 
     private fun importBookshelf(file: File): Int {
-        val list: List<NovelWithProgress> = App.gson.fromJson(file.readText(), object : TypeToken<List<NovelWithProgress>>() {}.type)
+        val list: List<NovelWithProgress> = AppJson.decodeFromString(file.readText())
         DataManager.importBookshelfWithProgress(list)
         return list.size
     }

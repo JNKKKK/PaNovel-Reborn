@@ -1,46 +1,40 @@
 package cc.aoeiuv020.irondb
 
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
-/**
- * Created by AoEiuV020 on 2018.05.27-14:43:23.
- */
 interface Database {
     fun sub(table: String): Database
-    /**
-     * @param value 为空则删除对应文件，
-     */
-    fun <T> write(key: String, value: T?, type: Type)
-
-    /**
-     * @return key不存在则返回null,
-     */
-    fun <T> read(key: String, type: Type): T?
-
-    /**
-     * 封装文件的使用，确保线程安全，
-     */
+    fun <T> write(key: String, value: T?, serializer: KSerializer<T>)
+    fun <T> read(key: String, serializer: KSerializer<T>): T?
     fun file(key: String): FileWrapper
-
     fun drop()
-
-    /**
-     * @return 返回用于判断指定key是否存在的集合，不可用于读出key,
-     */
     fun keysContainer(): Collection<String>
-
 }
 
-/**
- * 通过gson的TypeToken得到T的真实类型，
- * 这里不是必须的，
- */
-@Suppress("unused")
-inline fun <reified T> Database.write(key: String, value: T) = write(key, value, object : TypeToken<T>() {}.type)
+inline fun <reified T> Database.write(key: String, value: T) =
+    write(key, value, serializer<T>())
 
-/**
- * 通过gson的TypeToken得到T的真实类型，
- */
-@Suppress("unused")
-inline fun <reified T> Database.read(key: String): T? = read(key, object : TypeToken<T>() {}.type)
+inline fun <reified T> Database.read(key: String): T? =
+    read(key, serializer<T>())
+
+inline fun <reified T> Database.delegate(key: String? = null): ReadWriteProperty<Any, T?> =
+    DatabaseProperty(this, key, serializer<T>())
+
+class DatabaseProperty<T>(
+    private val database: Database,
+    private val key: String?,
+    private val serializer: KSerializer<T>
+) : ReadWriteProperty<Any, T?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>): T? {
+        val realKey = key ?: property.name
+        return database.read(realKey, serializer)
+    }
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T?) {
+        val realKey = key ?: property.name
+        database.write(realKey, value, serializer)
+    }
+}

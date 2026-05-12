@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import cc.aoeiuv020.panovel.App
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.NovelManager
@@ -16,7 +15,6 @@ import cc.aoeiuv020.panovel.list.NovelViewHolder
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.settings.ServerSettings
-import cc.aoeiuv020.panovel.util.getStringExtra
 import cc.aoeiuv020.panovel.databinding.ActivityBookListBinding
 import android.content.Intent
 import android.widget.Toast
@@ -30,8 +28,10 @@ import com.google.android.material.snackbar.Snackbar
  */
 class BookListActivity : AppCompatActivity(), MvpView {
     companion object {
+        private const val EXTRA_BOOK_LIST_ID = "bookListId"
+
         fun start(context: Context, bookListId: Long) {
-            context.startActivity(Intent(context, BookListActivity::class.java).putExtra("bookListId", App.gson.toJson(bookListId)))
+            context.startActivity(Intent(context, BookListActivity::class.java).putExtra(EXTRA_BOOK_LIST_ID, bookListId))
         }
     }
 
@@ -66,8 +66,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        // 貌似没必要，
-        outState.putString("bookListId", App.gson.toJson(bookListId))
+        outState.putLong(EXTRA_BOOK_LIST_ID, bookListId)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,8 +76,9 @@ class BookListActivity : AppCompatActivity(), MvpView {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        bookListId = getStringExtra("bookListId", savedInstanceState)
-                ?.let { App.gson.fromJson(it, Long::class.java) }
+        bookListId = savedInstanceState?.getLong(EXTRA_BOOK_LIST_ID, -1L)
+                ?.takeIf { it != -1L }
+                ?: intent?.getLongExtra(EXTRA_BOOK_LIST_ID, -1L)?.takeIf { it != -1L }
                 ?: run {
             Reporter.unreachable()
             Toast.makeText(this, "不存在，", Toast.LENGTH_SHORT).show()

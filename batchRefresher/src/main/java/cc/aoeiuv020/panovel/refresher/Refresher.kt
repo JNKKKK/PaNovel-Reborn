@@ -1,13 +1,13 @@
 package cc.aoeiuv020.panovel.refresher
 
+import cc.aoeiuv020.json.AppJson
 import cc.aoeiuv020.panovel.api.getNovelContextByName
-import com.google.gson.Gson
 import cc.aoeiuv020.panovel.server.ServerAddress
 import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel
 import cc.aoeiuv020.panovel.server.service.NovelService
 import cc.aoeiuv020.panovel.server.service.impl.NovelServiceImpl
 import cc.aoeiuv020.panovel.share.PasteUbuntu
-import com.google.gson.JsonObject
+import kotlinx.serialization.json.*
 import org.slf4j.LoggerFactory
 import java.net.URL
 import java.util.*
@@ -94,27 +94,21 @@ class Refresher(
                     }
                     paste.download(url)
                 }
-                val gson = Gson()
-                val bookListJson = Gson().fromJson(text, JsonObject::class.java)
-                val version = bookListJson.get("version")?.asJsonPrimitive?.asInt
+                val bookListJson = AppJson.parseToJsonElement(text).jsonObject
+                val version = bookListJson["version"]?.jsonPrimitive?.intOrNull
                 val bookListBean: BookListV3 = when (version) {
-                    3 -> {
-                        gson.fromJson(bookListJson, BookListV3::class.java)
-                    }
+                    3 -> AppJson.decodeFromString(text)
                     2 -> {
-                        gson.fromJson(bookListJson, BookListV2::class.java).let {
+                        AppJson.decodeFromString<BookListV2>(text).let {
                             BookListV3(it.name, it.list, it.version, UUID.randomUUID().toString())
                         }
                     }
-                    1 -> {
-                        // 旧版version为null,
-                        val bookListBean1: BookListV1 = gson.fromJson(bookListJson, BookListV1::class.java)
+                    else -> {
+                        val bookListBean1: BookListV1 = AppJson.decodeFromString(text)
                         BookListV3(bookListBean1.name, bookListBean1.list.map {
-                            // 旧版的extra为完整地址，直接拿来，就算写进数据库了，刷新详情页后也会被新版的bookId覆盖，
                             NovelMinimal(site = it.site, author = it.author, name = it.name, detail = it.requester.extra)
                         }, 3, UUID.randomUUID().toString())
                     }
-                    else -> throw IllegalStateException("APP版本太低")
                 }
                 bookListBean.list.forEach {
                     logger.info("获取到书架小说 {}", it)
@@ -164,13 +158,13 @@ class Refresher(
             return
         }
         try {
-            val context = getNovelContextByName(novel.site)
+            val context = getNovelContextByName(novel.site!!)
             if (context.hide || !context.upkeep) {
                 logger.info("skip <{}.{}.{}.{}>", novel.site, novel.author, novel.name, novel.detail)
                 return
             }
-            val chapters = context.getNovelChaptersAsc(novel.detail)
-            val hasUpdate = chapters.size > novel.chaptersCount
+            val chapters = context.getNovelChaptersAsc(novel.detail!!)
+            val hasUpdate = chapters.size > (novel.chaptersCount ?: 0)
             novel.chaptersCount = chapters.size
             novel.checkUpdateTime = Date()
             if (hasUpdate) {

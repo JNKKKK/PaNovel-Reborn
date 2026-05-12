@@ -6,14 +6,13 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import cc.aoeiuv020.panovel.BuildConfig
 import cc.aoeiuv020.panovel.R
 import android.content.Intent
 import cc.aoeiuv020.panovel.main.MainActivity
+import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
 /**
@@ -78,101 +77,80 @@ fun Context.initNotificationChannel() {
     )
 }
 
-/**
- * 用来代理循环通知的情况，
- * 没有死循环，就算不主动结束，也会在delay时间后自动结束，
- */
 class NotifyLoopProxy(
         context: Context,
         private val id: Int = (Math.random() * Int.MAX_VALUE).toInt(),
-        // 最多delay毫秒一个通知，
-        private val delay: Long = 300L
+        private val loopDelay: Long = 300L
 ) {
     companion object {
         val DEFAULT_CANCEL_DELAY: Long = TimeUnit.SECONDS.toMillis(5)
     }
 
-    private val handler = Handler(Looper.getMainLooper())
-
-    // System services not available to Activities before onCreate()
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private val manager by lazy { NotificationManagerCompat.from(context) }
 
     private var waiting = false
     private var done = false
     private var canceled = false
-    private var cancelDelay: Long = DEFAULT_CANCEL_DELAY
     private var mNotification: Notification? = null
-    private val cancelBlock = Runnable {
-        // 如果延时期间取消了取消，就不取消，
-        if (canceled) {
-            manager.cancel(id)
-        }
-    }
-    private val loopBlock = Runnable {
-        // 取出wrapper中的notification,
-        if (mNotification != null) {
-            notifyCached()
-        }
-        if (canceled) {
-            handler.postDelayed(cancelBlock, cancelDelay)
-        }
-        // 执行完了取消等待状态，
-        waiting = false
-    }
-
-    private val mainThread = Looper.getMainLooper().thread
-
-    private fun runOnUiThread(block: () -> Unit) {
-        if (mainThread == Thread.currentThread()) {
-            block()
-        } else {
-            handler.post(block)
-        }
-    }
+    private var loopJob: Job? = null
+    private var cancelJob: Job? = null
 
     private fun notifyCached() {
         val notification = mNotification
-        // 置空，免得重复弹，
         mNotification = null
         notification?.let { n ->
-            runOnUiThread {
-                manager.notify(id, n)
-            }
+            manager.notify(id, n)
         }
     }
 
     fun start(notification: Notification) {
         done = false
         canceled = false
-        handler.removeCallbacks(cancelBlock)
-        handler.removeCallbacks(loopBlock)
-        // 循环开始前先弹一次通知，
-        // 之后隔delay时间弹一次，
+        cancelJob?.cancel()
+        loopJob?.cancel()
         mNotification = notification
         notifyCached()
         waiting = true
-        handler.postDelayed(loopBlock, delay)
+        loopJob = scope.launch {
+            delay(loopDelay)
+            if (mNotification != null) {
+                notifyCached()
+            }
+            if (canceled) {
+                cancelJob = scope.launch {
+                    delay(DEFAULT_CANCEL_DELAY)
+                    if (canceled) manager.cancel(id)
+                }
+            }
+            waiting = false
+        }
     }
 
     fun modify(notification: Notification) {
-        // 如果已经结束，无视modify, 不再弹通知，
         if (done) return
-        // 如果正在等待状态，也就是loopBlock已经提交，还没执行，
-        // 直接修改当前缓存的notification，
-        // 不论当前是否已经存在notification, 只弹最后一个通知，跳过频率过高的通知，
         mNotification = notification
         if (!waiting) {
             notifyCached()
             waiting = true
-            handler.postDelayed(loopBlock, delay)
+            loopJob = scope.launch {
+                delay(loopDelay)
+                if (mNotification != null) {
+                    notifyCached()
+                }
+                if (canceled) {
+                    cancelJob = scope.launch {
+                        delay(DEFAULT_CANCEL_DELAY)
+                        if (canceled) manager.cancel(id)
+                    }
+                }
+                waiting = false
+            }
         }
     }
 
     fun complete(notification: Notification) {
         done = true
-        // 就算完成了，也等最后一个循环节走完，
-        // 这里无视线程冲突，尽量都只用主线程，
-        // 要是说刚好主线程正在进入loopBlock拿走notification,可能导致最后一个通知不是完成通知，
         mNotification = notification
         if (!waiting) {
             notifyCached()
@@ -180,27 +158,26 @@ class NotifyLoopProxy(
     }
 
     fun cancel(cancelDelay: Long = DEFAULT_CANCEL_DELAY) {
-        if (canceled) {
-            return
-        }
+        if (canceled) return
         canceled = true
-        this.cancelDelay = cancelDelay
         if (!waiting) {
-            handler.postDelayed(cancelBlock, cancelDelay)
+            cancelJob = scope.launch {
+                delay(cancelDelay)
+                if (canceled) manager.cancel(id)
+            }
         }
     }
 
     fun error() {
         done = true
         waiting = false
-        // 出错了直接停止循环，
-        handler.removeCallbacks(loopBlock)
+        loopJob?.cancel()
     }
 }
 
 fun Context.notify(id: Int, text: String? = null, title: String? = null, icon: Int = R.mipmap.ic_launcher_foreground, time: Long? = null, bigText: String? = null, channelId: String = NotificationChannelId.default) {
     val intent = Intent(this, MainActivity::class.java)
-    val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+    val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
     val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)

@@ -1,11 +1,12 @@
 package cc.aoeiuv020.panovel.server.dal.model
 
+import cc.aoeiuv020.json.DateSerializer
+import kotlinx.serialization.Serializable
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.06.19-16:14:40.
- */
+@Serializable
 data class QueryResponse(
         val chaptersCount: Int,
+        @Serializable(with = DateSerializer::class)
         val checkUpdateTime: Date
 )

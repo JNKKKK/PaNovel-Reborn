@@ -153,8 +153,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
     }
 
     private fun initPages(content: Canvas, pages: List<Page>?): Page? {
-        // 重置自动刷新线程，
-        reader.autoRefreshThread.reset()
+        reader.resetAutoRefresh()
         // 只用本地变量，防止pageIndex被多线程修改，
         var index = pageIndex
         val textHeight = textPaint.getFontMetricsInt(null)
@@ -348,7 +347,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         Timber.d("$this lazyRequest $requestIndex, refresh = $refresh")
         scope.launch {
             try {
-                val pages = withContext(reader.ioExecutorService.asCoroutineDispatcher()) {
+                val pages = withContext(reader.ioDispatcher) {
                     val text = requester.requestChapter(requestIndex, refresh)
                     typesetting(reader.chapterList[requestIndex], text)
                 }

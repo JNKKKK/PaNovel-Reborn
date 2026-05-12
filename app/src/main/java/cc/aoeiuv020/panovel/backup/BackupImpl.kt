@@ -1,8 +1,7 @@
-package cc.aoeiuv020.panovel.backup.impl
+package cc.aoeiuv020.panovel.backup
 
 import android.net.Uri
 import cc.aoeiuv020.json.AppJson
-import cc.aoeiuv020.panovel.backup.BackupOption
 import cc.aoeiuv020.panovel.backup.BackupOption.*
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.NovelMinimal
@@ -10,17 +9,56 @@ import cc.aoeiuv020.panovel.data.entity.NovelWithProgressAndPinnedTime
 import cc.aoeiuv020.panovel.settings.*
 import cc.aoeiuv020.panovel.share.Share
 import cc.aoeiuv020.panovel.util.Pref
+import cc.aoeiuv020.panovel.util.PrefContext
 import cc.aoeiuv020.panovel.util.notNullOrReport
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import timber.log.Timber
 import java.io.File
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.05.30-20:40:56.
- */
-class BackupV3 : DefaultBackup() {
-    override fun import(file: File, option: BackupOption): Int {
+class BackupImpl : Backup {
+
+    @Synchronized
+    override fun import(base: File, options: Set<BackupOption>): String {
+        Timber.d("import from $base\n enable $options")
+        val sb = StringBuilder()
+        options.forEach { option ->
+            val name = getOptionName(option)
+            try {
+                val count = import(base.resolve(option.name), option)
+                sb.appendln("成功导入$name: <$count>条，")
+            } catch (e: Exception) {
+                Timber.e(e, "读取[$name]失败，")
+            }
+        }
+        return sb.toString()
+    }
+
+    @Synchronized
+    override fun export(base: File, options: Set<BackupOption>): String {
+        Timber.d("export to $base\n enable $options")
+        val sb = StringBuilder()
+        options.forEach { option ->
+            val name = getOptionName(option)
+            try {
+                val count = export(base.resolve(option.name), option)
+                sb.appendln("成功导出$name: <$count>条，")
+            } catch (e: Exception) {
+                Timber.e(e, "写入[$name]失败，")
+            }
+        }
+        return sb.toString()
+    }
+
+    private fun getOptionName(option: BackupOption): String = when (option) {
+        Bookshelf -> "书架"
+        BookList -> "书单"
+        Progress -> "进度"
+        Settings -> "设置"
+    }
+
+    private fun import(file: File, option: BackupOption): Int {
         Timber.d("import $option from $file")
         return when (option) {
             Bookshelf -> importBookshelf(file)
@@ -30,18 +68,24 @@ class BackupV3 : DefaultBackup() {
         }
     }
 
+    private fun export(file: File, option: BackupOption): Int {
+        Timber.d("export $option to $file")
+        return when (option) {
+            Bookshelf -> exportBookshelf(file)
+            BookList -> exportBookList(file)
+            Progress -> exportProgress(file)
+            Settings -> exportSettings(file)
+        }
+    }
+
     private fun importProgress(file: File): Int {
         return file.useLines { s ->
             s.map { line ->
                 val a = line.split(',')
                 NovelWithProgressAndPinnedTime(
-                        a[0],
-                        a[1],
-                        a[2],
-                        a[3],
-                        a[4].toInt(),
-                        a[5].toInt(),
-                        Date(a[6].toLong())
+                    a[0], a[1], a[2], a[3],
+                    a[4].toInt(), a[5].toInt(),
+                    Date(a[6].toLong())
                 )
             }.let {
                 DataManager.importNovelWithProgress(it)
@@ -69,7 +113,9 @@ class BackupV3 : DefaultBackup() {
                 "Reader_PaginationMargins" -> importPref(ReaderSettings.paginationMargins, file)
                 "Reader_TimeMargins" -> importPref(ReaderSettings.timeMargins, file)
                 "backgroundImage" -> 1.also { ReaderSettings.backgroundImage = Uri.fromFile(file) }
-                "lastBackgroundImage" -> 1.also { ReaderSettings.lastBackgroundImage = Uri.fromFile(file) }
+                "lastBackgroundImage" -> 1.also {
+                    ReaderSettings.lastBackgroundImage = Uri.fromFile(file)
+                }
                 "font" -> 1.also { ReaderSettings.font = Uri.fromFile(file) }
                 else -> 0
             }
@@ -82,7 +128,6 @@ class BackupV3 : DefaultBackup() {
         AppJson.parseToJsonElement(file.readText()).jsonObject.forEach { (key, value) ->
             val prim = value.jsonPrimitive
             when (key) {
-                // 枚举，保存字符串，
                 "animationMode" -> editor.putString(key, prim.content)
                 "shareExpiration" -> editor.putString(key, prim.content)
                 "onCheckUpdateClick" -> editor.putString(key, prim.content)
@@ -107,6 +152,9 @@ class BackupV3 : DefaultBackup() {
                 "pinnedBackgroundColor" -> editor.putInt(key, prim.int)
                 "refreshOnSearch" -> editor.putBoolean(key, prim.boolean)
                 "reportCrash" -> editor.putBoolean(key, prim.boolean)
+                "qidianshuju" -> editor.putBoolean(key, prim.boolean)
+                "sp7" -> editor.putBoolean(key, prim.boolean)
+                "qidiantu" -> editor.putBoolean(key, prim.boolean)
                 "volumeKeyScroll" -> editor.putBoolean(key, prim.boolean)
                 "tabGravityCenter" -> editor.putBoolean(key, prim.boolean)
                 "animationSpeed" -> editor.putFloat(key, prim.float)
@@ -122,7 +170,6 @@ class BackupV3 : DefaultBackup() {
                 "chapterColorReadAt" -> editor.putInt(key, prim.int)
                 "dotColor" -> editor.putInt(key, prim.int)
                 "searchThreadsLimit" -> editor.putInt(key, prim.int)
-                // 下载相关设置以前是在GeneralSettings里，
                 "downloadThreadsLimit" -> DownloadSettings.downloadThreadsLimit = prim.int
                 "downloadCount" -> DownloadSettings.downloadCount = prim.int
                 "autoDownloadCount" -> DownloadSettings.autoDownloadCount = prim.int
@@ -156,15 +203,16 @@ class BackupV3 : DefaultBackup() {
         return count
     }
 
-    private fun importBookList(folder: File): Int = folder.listFiles().notNullOrReport().sumBy { file ->
-        val bookListBean = Share.importBookList(file.readText())
-        DataManager.importBookList(
+    private fun importBookList(folder: File): Int =
+        folder.listFiles().notNullOrReport().sumBy { file ->
+            val bookListBean = Share.importBookList(file.readText())
+            DataManager.importBookList(
                 bookListBean.name,
                 bookListBean.list,
                 bookListBean.uuid
-        )
-        bookListBean.list.size
-    }
+            )
+            bookListBean.list.size
+        }
 
     private fun importBookshelf(file: File): Int {
         val list: List<NovelMinimal> = AppJson.decodeFromString(file.readText())
@@ -172,4 +220,106 @@ class BackupV3 : DefaultBackup() {
         return list.size
     }
 
+    private fun exportProgress(file: File): Int {
+        val list = DataManager.exportNovelProgress().map {
+            NovelWithProgressAndPinnedTime(it)
+        }
+        var count = 0
+        file.outputStream().bufferedWriter().use { output ->
+            list.forEach { n ->
+                if (n.readAtChapterIndex > 0 || n.readAtTextIndex > 0) {
+                    output.appendln(
+                        listOf(
+                            n.site, n.author, n.name, n.detail,
+                            n.readAtChapterIndex, n.readAtTextIndex,
+                            n.pinnedTime.time
+                        ).joinToString(",")
+                    )
+                    count++
+                }
+            }
+        }
+        return count
+    }
+
+    private fun exportBookshelf(file: File): Int {
+        val list = DataManager.listBookshelf().map {
+            NovelMinimal(it.novel)
+        }
+        file.writeText(AppJson.encodeToString(list))
+        return list.size
+    }
+
+    private fun exportBookList(folder: File): Int {
+        folder.mkdirs()
+        return DataManager.allBookList().sumBy { bookList ->
+            val fileName = "${bookList.id}|${bookList.name}"
+            val novelList = DataManager.getNovelMinimalFromBookList(bookList.nId)
+            folder.resolve(fileName).writeText(Share.exportBookList(bookList, novelList))
+            novelList.size
+        }
+    }
+
+    private fun exportSettings(folder: File): Int {
+        folder.mkdirs()
+        @Suppress("RemoveExplicitTypeArguments")
+        var count = listOf<Pref>(
+            GeneralSettings, ListSettings, OtherSettings, ReaderSettings,
+            DownloadSettings, InterfaceSettings, LocationSettings, ServerSettings,
+            ReaderSettings.batteryMargins,
+            ReaderSettings.bookNameMargins,
+            ReaderSettings.chapterNameMargins,
+            ReaderSettings.contentMargins,
+            ReaderSettings.paginationMargins,
+            ReaderSettings.timeMargins
+        ).sumBy { pref ->
+            pref.sharedPreferences.all.also { map ->
+                val jsonObj = buildJsonObject {
+                    map.forEach { (k, v) ->
+                        when (v) {
+                            is Boolean -> put(k, v)
+                            is Int -> put(k, v)
+                            is Long -> put(k, v)
+                            is Float -> put(k, v)
+                            is String -> put(k, v)
+                            else -> {}
+                        }
+                    }
+                }
+                folder.resolve(pref.name).writeText(jsonObj.toString())
+            }.size
+        }
+        val backgroundImage = ReaderSettings.backgroundImage
+        if (backgroundImage != null) {
+            folder.resolve("backgroundImage").outputStream().use { output ->
+                PrefContext.appContext.contentResolver.openInputStream(backgroundImage)!!.use { input ->
+                    input.copyTo(output)
+                }
+                output.flush()
+            }
+            count++
+        }
+        val lastBackgroundImage = ReaderSettings.lastBackgroundImage
+        if (lastBackgroundImage != null) {
+            folder.resolve("lastBackgroundImage").outputStream().use { output ->
+                PrefContext.appContext.contentResolver.openInputStream(lastBackgroundImage)!!
+                    .use { input ->
+                        input.copyTo(output)
+                    }
+                output.flush()
+            }
+            count++
+        }
+        val font = ReaderSettings.font
+        if (font != null) {
+            folder.resolve("font").outputStream().use { output ->
+                PrefContext.appContext.contentResolver.openInputStream(font)!!.use { input ->
+                    input.copyTo(output)
+                }
+                output.flush()
+            }
+            count++
+        }
+        return count
+    }
 }

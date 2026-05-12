@@ -23,7 +23,6 @@ abstract class NovelContext {
             MockSite()
         )
 
-        const val sitesVersion = 13
 
 
         /**

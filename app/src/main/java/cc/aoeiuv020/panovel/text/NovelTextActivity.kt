@@ -460,8 +460,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
      */
     @Suppress("UNUSED_PARAMETER")
     fun showNovelNotFound(message: String, e: Throwable) {
-        // 两个参数已经打过日志了，这里就不重复了，
-        android.widget.Toast.makeText(this, "小说不存在，", android.widget.Toast.LENGTH_SHORT).show()
+        android.widget.Toast.makeText(this, "$message${e.message}", android.widget.Toast.LENGTH_LONG).show()
         finish()
     }
 

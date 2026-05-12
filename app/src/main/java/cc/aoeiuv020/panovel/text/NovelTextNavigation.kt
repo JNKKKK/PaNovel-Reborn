@@ -37,7 +37,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             showLayout(mPanelSettings)
             view.fullScreen()
         }
-        mPanelDefault.findViewById<CheckBox>(R.id.ivStar).apply {
+        mPanelDefault.findViewById<CheckableImageView>(R.id.ivStar).apply {
             isChecked = novel.bookshelf
             setOnClickListener {
                 toggle()

@@ -22,8 +22,6 @@ import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.history.HistoryFragment
-import cc.aoeiuv020.panovel.api.NovelContext
-import cc.aoeiuv020.panovel.settings.SiteSettings
 import cc.aoeiuv020.panovel.open.OpenManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.search.FuzzySearchActivity
@@ -139,10 +137,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    if (NovelContext.sitesVersion > SiteSettings.cachedVersion) {
-                        DataManager.syncSites()
-                        SiteSettings.cachedVersion = NovelContext.sitesVersion
-                    }
+                    DataManager.syncSites()
                 }
             } catch (e: Exception) {
                 Reporter.post("同步网站列表失败", e)

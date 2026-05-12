@@ -1,10 +1,10 @@
 package cc.aoeiuv020.panovel.settings
 
+import android.app.Fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import cc.aoeiuv020.panovel.databinding.ContentDisclaimerBinding
 
 /**
@@ -17,12 +17,8 @@ class DisclaimerFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = ContentDisclaimerBinding.inflate(inflater, container, false)
+        binding.tvDisclaimer.text = activity.assets.open("Disclaimer.txt").reader().readText()
         return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.tvDisclaimer.text = requireActivity().assets.open("Disclaimer.txt").reader().readText()
     }
 
     override fun onDestroyView() {

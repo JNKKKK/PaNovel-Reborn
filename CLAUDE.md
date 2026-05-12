@@ -110,9 +110,9 @@ git push
 gh release create v1.2.3 --title "v1.2.3" --notes "what changed"
 ```
 
-The app checks for updates by hitting `https://api.github.com/repos/JNKKKK/PaNovel/releases/latest`. It reads `tag_name` for the version and `body` for the changelog shown to users. No `ChangeLog.txt` maintenance needed for updates.
+The app checks for updates by hitting `https://api.github.com/repos/JNKKKK/PaNovel-Reborn/releases/latest`. It reads `tag_name` for the version and `body` for the changelog shown to users. No `ChangeLog.txt` maintenance needed for updates.
 
-Repository: https://github.com/JNKKKK/PaNovel
+Repository: https://github.com/JNKKKK/PaNovel-Reborn
 
 ## CI/CD
 

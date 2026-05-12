@@ -23,7 +23,7 @@ object Check : Pref {
 
     private data class ReleaseInfo(val versionName: String, val body: String)
 
-    private fun getReleasesNewerThan(currentVersion: String): List<ReleaseInfo> {
+    private fun getAllReleases(): List<ReleaseInfo> {
         val client = OkHttpClient()
         val request = Request.Builder().url(RELEASES_GITHUB_API).build()
         return client.newCall(request).execute().use { response ->
@@ -34,7 +34,31 @@ object Check : Pref {
                 val versionName = obj.get("tag_name")?.asString?.removePrefix("v") ?: return@mapNotNull null
                 val body = obj.get("body")?.asString ?: ""
                 ReleaseInfo(versionName, body)
-            }.filter { VersionUtil.compare(it.versionName, currentVersion) > 0 }
+            }
+        }
+    }
+
+    private fun getReleasesNewerThan(currentVersion: String): List<ReleaseInfo> {
+        return getAllReleases().filter { VersionUtil.compare(it.versionName, currentVersion) > 0 }
+    }
+
+    fun asyncLoadChangeLog(onResult: (String) -> Unit) {
+        scope.launch {
+            try {
+                val text = withContext(Dispatchers.IO) {
+                    val releases = getAllReleases()
+                    Timber.d("Loaded ${releases.size} releases")
+                    releases.forEach { Timber.d("Release ${it.versionName}: body=${it.body}") }
+                    releases.joinToString("\n\n") { release ->
+                        val body = release.body.ifEmpty { "(no notes)" }
+                        "${release.versionName}\n${body}"
+                    }
+                }
+                onResult(text.ifEmpty { "暂无更新日志" })
+            } catch (e: Exception) {
+                Timber.e(e, "获取更新日志失败")
+                onResult("获取更新日志失败: ${e.message}")
+            }
         }
     }
 
@@ -81,9 +105,9 @@ object Check : Pref {
         }
     }
 
-    private const val RELEASE_GITHUB = "https://github.com/JNKKKK/PaNovel/releases"
+    private const val RELEASE_GITHUB = "https://github.com/JNKKKK/PaNovel-Reborn/releases"
     private const val RELEASES_GITHUB_API =
-        "https://api.github.com/repos/JNKKKK/PaNovel/releases"
+        "https://api.github.com/repos/JNKKKK/PaNovel-Reborn/releases"
     private var ignoreSignatureCheck: Boolean by Delegates.boolean(false)
     private var signature: String by Delegates.string("")
 

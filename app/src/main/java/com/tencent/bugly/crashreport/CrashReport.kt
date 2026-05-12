@@ -9,12 +9,12 @@ import android.content.Context
  */
 object CrashReport {
     @JvmStatic
-    fun initCrashReport(ctx: Context, appId: String, debug: Boolean) {
+    fun initCrashReport(context: Context, appId: String, debug: Boolean) {
         // no-op
     }
 
     @JvmStatic
-    fun setIsDevelopmentDevice(ctx: Context, isDev: Boolean) {
+    fun setIsDevelopmentDevice(context: Context, isDev: Boolean) {
         // no-op
     }
 

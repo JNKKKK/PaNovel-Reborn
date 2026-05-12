@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Site
 import android.content.Intent
@@ -14,10 +14,10 @@ import androidx.appcompat.app.AlertDialog
 import cc.aoeiuv020.panovel.databinding.ActivitySiteChooseBinding
 import java.util.*
 
-class SiteChooseActivity : AppCompatActivity(), IView {
+class SiteChooseActivity : AppCompatActivity(), MvpView {
     companion object {
-        fun start(ctx: Context) {
-            ctx.startActivity(Intent(ctx, SiteChooseActivity::class.java))
+        fun start(context: Context) {
+            context.startActivity(Intent(context, SiteChooseActivity::class.java))
         }
     }
 

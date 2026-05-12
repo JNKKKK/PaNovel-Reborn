@@ -7,13 +7,13 @@ import timber.log.Timber
  * mvp的presenter,
  * Created by AoEiuV020 on 2017.10.11-15:32:17.
  */
-abstract class Presenter<T : IView> {
+abstract class Presenter<T : MvpView> {
     protected val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     var view: T? = null
         private set
 
-    fun attach(view: IView) {
+    fun attach(view: MvpView) {
         Timber.v("$this attach $view")
         @Suppress("UNCHECKED_CAST")
         this.view = view as? T

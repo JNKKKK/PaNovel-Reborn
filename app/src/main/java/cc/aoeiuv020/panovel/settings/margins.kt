@@ -11,7 +11,7 @@ import cc.aoeiuv020.reader.ItemMargins
 class Margins(subName: String, enabled: Boolean,
               left: Int, top: Int, right: Int, bottom: Int
 ) : SubPref(ReaderSettings, subName), ItemMargins {
-    // 保存在App.ctx.packageName + "_ReaderSettings" + "_$name"
+    // 保存在App.context.packageName + "_ReaderSettings" + "_$name"
     /**
      * 对应的东西是否显示，
      * 除了小说内容，其他都支持不显示，

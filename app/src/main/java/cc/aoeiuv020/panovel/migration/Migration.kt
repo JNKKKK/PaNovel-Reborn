@@ -20,7 +20,7 @@ abstract class Migration {
      *
      * TODO: 考虑下要不要询问是否删除旧版数据，先不删除旧版数据，
      */
-    abstract fun migrate(ctx: Context, from: VersionName)
+    abstract fun migrate(context: Context, from: VersionName)
 
     override fun toString(): String {
         return "${javaClass.simpleName}(to=$to, message=$message)"

@@ -24,9 +24,9 @@ class DataMigration : Migration() {
     override val to: VersionName = VersionName("2.2.2")
     override val message: String = "书架列表，书单列表，设置，"
 
-    override fun migrate(ctx: Context, from: VersionName) {
-        ctx.getExternalFilesDir(null)?.let { import(it) }
-        import(ctx.filesDir)
+    override fun migrate(context: Context, from: VersionName) {
+        context.getExternalFilesDir(null)?.let { import(it) }
+        import(context.filesDir)
     }
 
     private fun import(base: File) {

@@ -17,8 +17,8 @@ It supports local TXT/EPUB files, WebDAV backup, reading progress sync, and a pl
 # Build release APK
 ./gradlew assembleRelease
 
-# Compile API module (scraper DSL)
-./gradlew api:compileKotlin
+# Compile scraper module (scraper DSL)
+./gradlew scraper:compileKotlin
 
 # Compile local module (TXT/EPUB)
 ./gradlew local:compileKotlin
@@ -37,27 +37,27 @@ Requires JDK 21. Uses Gradle 8.7, AGP 8.3.2, Kotlin 1.9.22.
 - `LocalManager` – Local file novel support
 - `DownloadManager` – Download management
 
-Base classes: `IView` interface + `Presenter<T : IView>` abstract class. Presenters use `CoroutineScope(Dispatchers.Main + SupervisorJob())` for async work.
+Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Presenters use `CoroutineScope(Dispatchers.Main + SupervisorJob())` for async work.
 
 ## Module Structure
 
 | Module | Type | Purpose |
 |--------|------|---------|
 | app | Android | Main application (activities, presenters, fragments) |
-| api | Java | Novel website scrapers (JSoup + Rhino JS parsing) |
-| baseJar | Java | Shared utilities (GSON extensions, regex, SSL, jsoup helpers) |
+| scraper | Java | Novel website scrapers (JSoup + Rhino JS parsing) |
+| core | Java | Shared utilities (GSON extensions, regex, SSL, jsoup helpers) |
 | IronDB | Java | File-based NoSQL key-value store |
-| js | Java | Rhino JavaScript engine wrapper |
+| rhino | Java | Rhino JavaScript engine wrapper |
 | local | Java | Local file support (TXT, EPUB via epub4j-core) |
 | pager | Android | Pagination library |
 | reader | Android | Novel reader UI |
 | filepicker | Android | File picker UI |
-| refresher | Java | Standalone CLI for batch refreshing |
+| batchRefresher | Java | Standalone CLI for batch refreshing |
 | server | Java | Server communication |
 
 ## Key Patterns
 
-- Novel site scrapers extend `DslJsoupNovelContext` in `api/src/main/java/cc/aoeiuv020/panovel/api/site/`
+- Novel site scrapers extend `DslJsoupNovelContext` in `scraper/src/main/java/cc/aoeiuv020/panovel/api/site/`
 - Only `MockSite.kt` exists as a template — add new scrapers by copying it
 - Dependency versions are centralized in `version.properties`
 - App package structure is feature-based: `cc.aoeiuv020.panovel.{bookshelf,download,search,settings,...}`

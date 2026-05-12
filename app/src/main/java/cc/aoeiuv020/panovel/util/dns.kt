@@ -13,8 +13,8 @@ import java.net.URLDecoder
  * Created by AoEiuV020 on 2021.05.15-18:27:30.
  */
 object DnsUtils {
-    fun init(ctx: Context) {
-        AndroidResolverConfigProvider.setContext(ctx.applicationContext)
+    fun init(context: Context) {
+        AndroidResolverConfigProvider.setContext(context.applicationContext)
     }
 
     /**

@@ -21,7 +21,7 @@ public class CheckableImageView extends AppCompatImageView implements Checkable 
 
     private static final int[] DRAWABLE_STATE_CHECKED = new int[]{android.R.attr.state_checked};
 
-    private boolean mChecked;
+    private boolean checked;
 
     public CheckableImageView(Context context) {
         this(context, null);
@@ -53,13 +53,13 @@ public class CheckableImageView extends AppCompatImageView implements Checkable 
 
     @Override
     public boolean isChecked() {
-        return mChecked;
+        return checked;
     }
 
     @Override
     public void setChecked(boolean checked) {
-        if (mChecked != checked) {
-            mChecked = checked;
+        if (this.checked != checked) {
+            this.checked = checked;
             refreshDrawableState();
             sendAccessibilityEvent(
                     AccessibilityEventCompat.TYPE_WINDOW_CONTENT_CHANGED);
@@ -68,12 +68,12 @@ public class CheckableImageView extends AppCompatImageView implements Checkable 
 
     @Override
     public void toggle() {
-        setChecked(!mChecked);
+        setChecked(!this.checked);
     }
 
     @Override
     public int[] onCreateDrawableState(int extraSpace) {
-        if (mChecked) {
+        if (checked) {
             return mergeDrawableStates(
                     super.onCreateDrawableState(extraSpace + DRAWABLE_STATE_CHECKED.length),
                     DRAWABLE_STATE_CHECKED);

@@ -6,7 +6,7 @@ import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.data.entity.Novel
-import cc.aoeiuv020.panovel.qrcode.QrCodeManager
+import cc.aoeiuv020.panovel.qrcode.QrCodeGenerator
 import cc.aoeiuv020.panovel.report.Reporter
 import timber.log.Timber
 import kotlinx.coroutines.*
@@ -61,7 +61,7 @@ class NovelDetailPresenter(
             try {
                 val (url, qrCode) = withContext(Dispatchers.IO) {
                     val url = novelManager.getDetailUrl()
-                    val qrCode = QrCodeManager.generate(url)
+                    val qrCode = QrCodeGenerator.generate(url)
                     url to qrCode
                 }
                 view?.showSharedUrl(url, qrCode)

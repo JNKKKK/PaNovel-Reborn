@@ -7,9 +7,9 @@ import android.widget.ImageView
 import cc.aoeiuv020.reader.*
 import cc.aoeiuv020.reader.databinding.SimpleBinding
 
-internal class SimpleReader(override var ctx: Context, novel: String, private val parent: ViewGroup, requester: TextRequester, override var config: ReaderConfig)
+internal class SimpleReader(override var context: Context, novel: String, private val parent: ViewGroup, requester: TextRequester, override var config: ReaderConfig)
     : BaseNovelReader(novel, requester), ConfigChangedListener {
-    private val layoutInflater = LayoutInflater.from(ctx)
+    private val layoutInflater = LayoutInflater.from(context)
     private val binding: SimpleBinding = SimpleBinding.inflate(layoutInflater, parent, true)
     private val viewPager: androidx.viewpager.widget.ViewPager = binding.viewPager
     private val background: ImageView = binding.ivBackground

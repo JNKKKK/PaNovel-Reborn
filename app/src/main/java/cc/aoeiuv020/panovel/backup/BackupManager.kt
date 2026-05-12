@@ -23,16 +23,16 @@ class BackupManager {
         const val CURRENT_VERSION = 4
     }
 
-    private val ctx: Context = App.ctx
+    private val context: Context = App.context
 
     private fun getTempFile() =
-            ctx.cacheDir.resolve(NAME_TEMP)
+            context.cacheDir.resolve(NAME_TEMP)
                     .apply {
                         exists() && delete()
                     }
 
     private fun getTempFolder() =
-            ctx.cacheDir.resolve(FOLDER_TEMP)
+            context.cacheDir.resolve(FOLDER_TEMP)
                     .apply {
                         exists() && deleteRecursively()
                     }.apply {
@@ -40,7 +40,7 @@ class BackupManager {
                         mkdirs()
                     }
 
-    private fun getExporter(version: Int): IBackup = when (version) {
+    private fun getExporter(version: Int): Backup = when (version) {
         4 -> BackupV4()
         3 -> BackupV3()
         2 -> BackupV2()

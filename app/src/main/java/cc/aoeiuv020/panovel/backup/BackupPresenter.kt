@@ -34,7 +34,7 @@ class BackupPresenter : Presenter<BackupActivity>() {
         }
     }
 
-    private val ctx = App.ctx
+    private val context = App.context
 
     private val backupManager = BackupManager()
     private val backupHelperMap: Map<Int, BackupHelper> = mapOf(R.id.rbDefaultWebDav to BackupWebDavHelper())
@@ -45,7 +45,7 @@ class BackupPresenter : Presenter<BackupActivity>() {
                 val baseFile = File(LocationSettings.backupLocation)
                         .apply { exists() || mkdirs() }
                         .takeIf { it.canWrite() }
-                        ?: ctx.filesDir
+                        ?: context.filesDir
                                 .resolve(NAME_FOLDER)
                                 .apply { exists() || mkdirs() }
                 val indexList: List<Int> = baseFile.list(FILENAME_FILTER)
@@ -103,7 +103,7 @@ class BackupPresenter : Presenter<BackupActivity>() {
                     Timber.d("import: $uri")
                     restore = { tempFile: File ->
                         try {
-                            ctx.contentResolver.openInputStream(uri)
+                            context.contentResolver.openInputStream(uri)
                         } catch (e: FileNotFoundException) {
                             if (e.message?.contains("Permission denied") == true
                                     || ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()))) {
@@ -153,7 +153,7 @@ class BackupPresenter : Presenter<BackupActivity>() {
                     Timber.d("export: $uri")
                     backup = { tempFile: File ->
                         try {
-                            ctx.contentResolver.openOutputStream(uri)
+                            context.contentResolver.openOutputStream(uri)
                         } catch (e: FileNotFoundException) {
                             if (e.message?.contains("Permission denied") == true
                                     || ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()))) {

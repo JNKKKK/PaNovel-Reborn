@@ -42,7 +42,7 @@ class Pager : View, PageAnimation.OnPageChangeListener {
             field = value
             (mAnim as? SimulationPageAnim)?.setMainColor(value)
         }
-    var drawer: IPagerDrawer = BlankPagerDrawer()
+    var drawer: PagerDrawer = BlankPagerDrawer()
         set(value) {
             field = value
             resetDrawer()

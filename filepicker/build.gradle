@@ -3,5 +3,5 @@ android {
 }
 
 dependencies {
-    implementation project(':baseJar')
+    implementation project(':core')
 }

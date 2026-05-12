@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.list.NovelListAdapter
@@ -20,7 +20,7 @@ import cc.aoeiuv020.panovel.util.show
  *
  * Created by AoEiuV020 on 2017.10.15-17:22:28.
  */
-class BookshelfFragment : androidx.fragment.app.Fragment(), IView {
+class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
     private var _binding: NovelItemListBinding? = null
     private val binding get() = _binding!!
 

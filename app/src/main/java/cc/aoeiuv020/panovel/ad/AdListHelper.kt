@@ -28,7 +28,7 @@ abstract class AdListHelper<AD, IT : AdListHelper.AdItem<AD>, VH : AdListHelper.
     }
 
     open val nativeAdEnabled = AdSettings.adEnabled
-    protected val ctx: Context by lazy { recyclerView.context }
+    protected val context: Context by lazy { recyclerView.context }
     protected var isDestroy: Boolean = false
     private var isNoAd: Boolean = false
     private lateinit var recyclerView: RecyclerView

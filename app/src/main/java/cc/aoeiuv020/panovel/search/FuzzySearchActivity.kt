@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.data.entity.Novel
@@ -20,32 +20,32 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 
 
-class FuzzySearchActivity : AppCompatActivity(), IView {
+class FuzzySearchActivity : AppCompatActivity(), MvpView {
     private lateinit var binding: ActivityFuzzySearchBinding
 
     companion object {
-        fun start(ctx: Context) {
-            ctx.startActivity(Intent(ctx, FuzzySearchActivity::class.java))
+        fun start(context: Context) {
+            context.startActivity(Intent(context, FuzzySearchActivity::class.java))
         }
 
-        fun start(ctx: Context, novel: Novel) {
+        fun start(context: Context, novel: Novel) {
             // 精确搜索，refine search,
-            start(ctx, novel.name, novel.author)
+            start(context, novel.name, novel.author)
         }
 
-        fun start(ctx: Context, name: String) {
+        fun start(context: Context, name: String) {
             // 模糊搜索，fuzzy search,
-            ctx.startActivity(Intent(ctx, FuzzySearchActivity::class.java).putExtra("name", name))
+            context.startActivity(Intent(context, FuzzySearchActivity::class.java).putExtra("name", name))
         }
 
-        fun start(ctx: Context, name: String, author: String) {
+        fun start(context: Context, name: String, author: String) {
             // 精确搜索，refine search,
-            ctx.startActivity(Intent(ctx, FuzzySearchActivity::class.java).putExtra("name", name).putExtra("author", author))
+            context.startActivity(Intent(context, FuzzySearchActivity::class.java).putExtra("name", name).putExtra("author", author))
         }
 
-        fun startSingleSite(ctx: Context, site: String) {
+        fun startSingleSite(context: Context, site: String) {
             // 单个网站模糊搜索，fuzzy search,
-            ctx.startActivity(Intent(ctx, FuzzySearchActivity::class.java).putExtra("site", site))
+            context.startActivity(Intent(context, FuzzySearchActivity::class.java).putExtra("site", site))
         }
     }
 

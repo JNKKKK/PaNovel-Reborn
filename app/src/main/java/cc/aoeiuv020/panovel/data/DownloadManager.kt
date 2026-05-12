@@ -20,14 +20,14 @@ import timber.log.Timber
  * Created by AoEiuV020 on 2018.10.06-19:05:33.
  */
 class DownloadManager(
-        private val ctx: Context
+        private val context: Context
 )  {
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     val dnmLocal = object : ThreadLocal<DownloadingNotificationManager>() {
         override fun initialValue(): DownloadingNotificationManager {
-            return DownloadingNotificationManager(ctx)
+            return DownloadingNotificationManager(context)
         }
     }
 
@@ -57,9 +57,9 @@ class DownloadManager(
                     val nextIndex = AtomicInteger(fromIndex)
                     val threadsLimit = maxOf(1, DownloadSettings.downloadThreadsLimit)
                     Timber.d("download start <$fromIndex/$size> * $threadsLimit")
-                    val dfm = DownloadNotificationManager(ctx, novel)
+                    val downloadNotification = DownloadNotificationManager(context, novel)
                     withContext(Dispatchers.Main) {
-                        dfm.downloadStart(left.get())
+                        downloadNotification.downloadStart(left.get())
                     }
                     // 同时启动多个线程下载，
                     // 判断一下，线程数不要过多，
@@ -91,14 +91,14 @@ class DownloadManager(
                                 val tmpLeft = left.decrementAndGet()
                                 withContext(Dispatchers.Main) {
                                     Timber.d("download $index, left $tmpLeft")
-                                    dfm.downloading(exists, downloads, errors, tmpLeft)
+                                    downloadNotification.downloading(exists, downloads, errors, tmpLeft)
                                 }
                                 index = nextIndex.getAndIncrement()
                             }
                             withContext(Dispatchers.Main) {
-                                dfm.downloadComplete(exists, downloads, errors)
+                                downloadNotification.downloadComplete(exists, downloads, errors)
                                 // 5秒后删除下载结果通知，
-                                dfm.cancelNotification(TimeUnit.SECONDS.toMillis(5))
+                                downloadNotification.cancelNotification(TimeUnit.SECONDS.toMillis(5))
                             }
                         }
                     }
@@ -114,33 +114,33 @@ class DownloadManager(
 
     // 不能用全局application的Context弹对话框，
     // WindowManager$BadTokenException: Unable to add window -- token null is not for an application
-    fun askDownload(ctx: Context, novelManager: NovelManager, currentIndex: Int, fromFirst: Boolean): Boolean {
+    fun askDownload(context: Context, novelManager: NovelManager, currentIndex: Int, fromFirst: Boolean): Boolean {
         val defaultCount = DownloadSettings.downloadCount.takeIf { it >= 0 }
                 ?: 50
-        val layout = View.inflate(ctx, R.layout.dialog_download_count, null)
-        val etCount = layout.findViewById<EditText>(R.id.editText).apply {
+        val layout = View.inflate(context, R.layout.dialog_download_count, null)
+        val countInput = layout.findViewById<EditText>(R.id.editText).apply {
             setText(defaultCount.toString())
         }
-        val rgFrom = layout.findViewById<RadioGroup>(R.id.rgFrom)
+        val fromRadioGroup = layout.findViewById<RadioGroup>(R.id.rgFrom)
         if (fromFirst) {
-            rgFrom.check(R.id.rbFromFirst)
+            fromRadioGroup.check(R.id.rbFromFirst)
         } else {
-            rgFrom.check(R.id.rbFromCurrent)
+            fromRadioGroup.check(R.id.rbFromCurrent)
         }
-        val cbRemember = layout.findViewById<CheckBox>(R.id.checkBox)
+        val rememberCheckBox = layout.findViewById<CheckBox>(R.id.checkBox)
         fun remember() {
-            if (cbRemember.isChecked) {
-                etCount.text.toString().toIntOrNull()?.let {
+            if (rememberCheckBox.isChecked) {
+                countInput.text.toString().toIntOrNull()?.let {
                     DownloadSettings.downloadCount = it
                 }
             }
         }
-        androidx.appcompat.app.AlertDialog.Builder(ctx)
+        androidx.appcompat.app.AlertDialog.Builder(context)
             .setTitle(R.string.download_chapters_count)
             .setView(layout)
             .setNeutralButton(R.string.all) { _, _ ->
                 remember()
-                val fromIndex = if (rgFrom.checkedRadioButtonId == R.id.rbFromFirst) {
+                val fromIndex = if (fromRadioGroup.checkedRadioButtonId == R.id.rbFromFirst) {
                     0
                 } else {
                     currentIndex
@@ -149,13 +149,13 @@ class DownloadManager(
             }
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 remember()
-                val count = etCount.text.toString().toIntOrNull() ?: 0
+                val count = countInput.text.toString().toIntOrNull() ?: 0
                 val realCount = if (count == 0) {
                     Int.MAX_VALUE
                 } else {
                     count
                 }
-                val fromIndex = if (rgFrom.checkedRadioButtonId == R.id.rbFromFirst) {
+                val fromIndex = if (fromRadioGroup.checkedRadioButtonId == R.id.rbFromFirst) {
                     0
                 } else {
                     currentIndex

@@ -12,11 +12,11 @@ internal class TextViewHolder internal constructor(
         itemView: View,
         private val prAdapter: PageRecyclerAdapter
 ) : PageRecyclerAdapter.ViewHolder(itemView) {
-    private val ctx: Context = itemView.context
+    private val context: Context = itemView.context
     private val divider: View = itemView.findViewById(R.id.divider)
     private val textView: TextView = itemView.findViewById(R.id.textView)
     fun setText(string: String) {
-        divider.setHeight((prAdapter.mLineSpacing * ctx.resources.displayMetrics.density).toInt() + (prAdapter.mParagraphSpacing * ctx.resources.displayMetrics.density).toInt())
+        divider.setHeight((prAdapter.mLineSpacing * context.resources.displayMetrics.density).toInt() + (prAdapter.mParagraphSpacing * context.resources.displayMetrics.density).toInt())
         textView.apply {
             Timber.d("initMargin <${prAdapter.mLeftSpacing}, ${prAdapter.mRightSpacing}>")
             text = string

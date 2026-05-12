@@ -31,7 +31,7 @@ object ServerManager  {
     private var disabled: Boolean = false
     var config: Config? = null
 
-    fun downloadUpdate(ctx: Context, extra: String) {
+    fun downloadUpdate(context: Context, extra: String) {
         Timber.d("downloadUpdate $extra")
         scope.launch {
             try {
@@ -67,16 +67,16 @@ object ServerManager  {
                                     it.run { "$name: $lastChapterName" }
                                 }
                     }
-                    ctx.notify(id = 2,
+                    context.notify(id = 2,
                             text = localNovel.lastChapterName,
-                            title = ctx.getString(R.string.notify_has_update_title_placeholder, localNovel.name),
+                            title = context.getString(R.string.notify_has_update_title_placeholder, localNovel.name),
                             bigText = bitText,
                             time = localNovel.receiveUpdateTime.notZero()?.time,
                             channelId = NotificationChannelId.update)
                 } else {
-                    ctx.notify(id = localNovel.nId.toInt(),
+                    context.notify(id = localNovel.nId.toInt(),
                             text = localNovel.lastChapterName,
-                            title = ctx.getString(R.string.notify_has_update_title_placeholder, localNovel.name),
+                            title = context.getString(R.string.notify_has_update_title_placeholder, localNovel.name),
                             time = localNovel.receiveUpdateTime.notZero()?.time,
                             channelId = NotificationChannelId.update)
                 }
@@ -136,7 +136,7 @@ object ServerManager  {
             return null
         }
         val minVersion = VersionName(config.minVersion)
-        val currentVersion = VersionName(VersionUtil.getAppVersionName(App.ctx))
+        val currentVersion = VersionName(VersionUtil.getAppVersionName(App.context))
         Timber.i("getService minVersion $minVersion/$currentVersion")
         if (currentVersion < minVersion) {
             // 如果版本过低，直接返回空，不继续，

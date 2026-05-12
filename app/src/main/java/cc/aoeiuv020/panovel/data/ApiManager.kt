@@ -10,10 +10,10 @@ import java.net.URL
 /**
  * Created by AoEiuV020 on 2018.05.23-15:55:11.
  */
-class ApiManager(ctx: Context) {
+class ApiManager(context: Context) {
     init {
-        NovelContext.cache(ctx.cacheDir.resolve("api"))
-        NovelContext.files(ctx.filesDir.resolve("api"))
+        NovelContext.cache(context.cacheDir.resolve("api"))
+        NovelContext.files(context.filesDir.resolve("api"))
     }
 
     // TODO: 动漫之家还是维护，等开放了，测试后再添加，

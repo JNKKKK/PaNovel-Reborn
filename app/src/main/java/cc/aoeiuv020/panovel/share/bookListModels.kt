@@ -1,5 +1,6 @@
-package cc.aoeiuv020.panovel.refresher
+package cc.aoeiuv020.panovel.share
 
+import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -8,7 +9,7 @@ import com.google.gson.annotations.SerializedName
  *
  * Created by AoEiuV020 on 2018.05.28-13:50:33.
  */
-class BookListBean(
+class BookListV3(
         @SerializedName("name")
         val name: String,
         @SerializedName("list")
@@ -19,7 +20,7 @@ class BookListBean(
         val uuid: String
 )
 
-class BookListBean2(
+class BookListV2(
         @SerializedName("name")
         val name: String,
         @SerializedName("list")
@@ -28,14 +29,14 @@ class BookListBean2(
         val version: Int
 )
 
-class BookListBean1(
+class BookListV1(
         @SerializedName("name")
         val name: String,
         @SerializedName("list")
-        val list: List<OldNovel>
+        val list: List<LegacyNovel>
 )
 
-class OldNovel(
+class LegacyNovel(
         @SerializedName("name")
         val name: String,
         @SerializedName("author")
@@ -43,20 +44,12 @@ class OldNovel(
         @SerializedName("site")
         val site: String,
         @SerializedName("requester")
-        val requester: OldRequester
+        val requester: LegacyRequester
 )
 
-class OldRequester(
+class LegacyRequester(
         @SerializedName("type")
         val type: String,
         @SerializedName("extra")
         val extra: String
 )
-
-data class NovelMinimal(
-        var site: String,
-        var author: String,
-        var name: String,
-        var detail: String
-)
-

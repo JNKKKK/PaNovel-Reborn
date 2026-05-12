@@ -29,7 +29,7 @@ import kotlin.properties.Delegates
 class App : MultiDexApplication() {
     companion object {
         @SuppressLint("StaticFieldLeak")
-        lateinit var ctx: Context
+        lateinit var context: Context
 
         /**
          * 当前进程是否主进程，部分操作需要判断只在主进程执行一次，
@@ -47,7 +47,7 @@ class App : MultiDexApplication() {
 
     override fun onCreate() {
         super.onCreate()
-        ctx = applicationContext
+        context = applicationContext
         isMainProcess = isMainProcess()
 
         timber.log.Timber.plant(timber.log.Timber.DebugTree())
@@ -73,7 +73,7 @@ class App : MultiDexApplication() {
     }
 
     private fun initDnsUtils() {
-        DnsUtils.init(ctx)
+        DnsUtils.init(context)
     }
 
     /**
@@ -117,18 +117,18 @@ class App : MultiDexApplication() {
     }
 
     private fun initGlide() {
-        Glide.get(ctx).registry
+        Glide.get(context).registry
     }
 
     private fun initDataSources() {
-        DataManager.init(ctx)
+        DataManager.init(context)
     }
 
     /**
      * 初始化异常上报封装类，
      */
     private fun initReporter() {
-        Reporter.init(ctx)
+        Reporter.init(context)
     }
 
     private fun initAd() {

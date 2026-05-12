@@ -62,12 +62,12 @@ object Check : Pref {
         }
     }
 
-    fun asyncCheckVersion(ctx: Context, tip: Boolean = false) {
+    fun asyncCheckVersion(context: Context, tip: Boolean = false) {
         scope.launch {
             try {
                 data class CheckResult(val newestVersionName: String, val hasUpdate: Boolean, val changeLog: String?)
                 val result = withContext(Dispatchers.IO) {
-                    val currentVersionName = VersionUtil.getAppVersionName(ctx)
+                    val currentVersionName = VersionUtil.getAppVersionName(context)
                     val releases = getReleasesNewerThan(currentVersionName)
                     val newest = releases.firstOrNull()
                     Timber.i("checkVersion $currentVersionName/${newest?.versionName ?: "none"}")
@@ -80,18 +80,18 @@ object Check : Pref {
                 }
                 if (result.changeLog == null) {
                     if (tip) {
-                        android.widget.Toast.makeText(ctx, ctx.getString(R.string.tip_no_new_version), android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(context, context.getString(R.string.tip_no_new_version), android.widget.Toast.LENGTH_SHORT).show()
                     }
                     return@launch
                 }
-                androidx.appcompat.app.AlertDialog.Builder(ctx)
+                androidx.appcompat.app.AlertDialog.Builder(context)
                     .setTitle("有更新 ${result.newestVersionName}")
                     .setMessage(result.changeLog)
                     .setNeutralButton("忽略") { _, _ ->
                         knownVersionName = result.newestVersionName
                     }
                     .setPositiveButton("Github") { _, _ ->
-                        ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_GITHUB)))
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_GITHUB)))
                     }
                     .create().safelyShow()
             } catch (e: Exception) {
@@ -99,7 +99,7 @@ object Check : Pref {
                 Reporter.post(message, e)
                 Timber.e(e, message)
                 if (tip) {
-                    android.widget.Toast.makeText(ctx, ctx.getString(R.string.tip_update_failed), android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, context.getString(R.string.tip_update_failed), android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -114,11 +114,11 @@ object Check : Pref {
     /**
      * @return 忽略或者通过都返回true,
      */
-    private fun checkSignature(ctx: Context): Boolean {
+    private fun checkSignature(context: Context): Boolean {
         Timber.i("checkSignature " + BuildConfig.SIGNATURE)
         if (TimeUnit.MILLISECONDS.toDays(
-                System.currentTimeMillis() - ctx.packageManager.getPackageInfo(
-                    ctx.packageName,
+                System.currentTimeMillis() - context.packageManager.getPackageInfo(
+                    context.packageName,
                     0
                 ).firstInstallTime
             ) < 7
@@ -134,26 +134,26 @@ object Check : Pref {
             return true
         }
         val apkSign = signature.takeIf(String::isNotEmpty)
-            ?: SignatureUtil.getAppSignature(ctx).also { signature = it }
+            ?: SignatureUtil.getAppSignature(context).also { signature = it }
         Timber.i("apkSign = $apkSign")
         return BuildConfig.SIGNATURE.equals(apkSign, ignoreCase = true)
     }
 
-    fun asyncCheckSignature(ctx: Context) {
+    fun asyncCheckSignature(context: Context) {
         scope.launch {
             try {
-                val passed = withContext(Dispatchers.IO) { checkSignature(ctx) }
+                val passed = withContext(Dispatchers.IO) { checkSignature(context) }
                 if (passed) {
                     return@launch
                 }
-                androidx.appcompat.app.AlertDialog.Builder(ctx)
+                androidx.appcompat.app.AlertDialog.Builder(context)
                     .setTitle("签名不正确")
                     .setMessage("你可能用了假app,")
                     .setNeutralButton("忽略") { _, _ ->
                         ignoreSignatureCheck = true
                     }
                     .setPositiveButton("Github") { _, _ ->
-                        ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_GITHUB)))
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_GITHUB)))
                     }
                     .create().safelyShow()
             } catch (e: Exception) {

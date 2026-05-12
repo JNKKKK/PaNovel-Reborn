@@ -14,7 +14,7 @@ class AdSettingsMigration : Migration() {
     override val to: VersionName = VersionName("3.4.1")
     override val message: String = "广告设置"
 
-    override fun migrate(ctx: Context, from: VersionName) {
+    override fun migrate(context: Context, from: VersionName) {
         GeneralSettings.sharedPreferences.all.forEach { (key, value) ->
             when (key) {
                 "adEnabled" -> AdSettings.adEnabled = value as Boolean

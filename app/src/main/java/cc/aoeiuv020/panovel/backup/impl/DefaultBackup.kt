@@ -1,14 +1,14 @@
 package cc.aoeiuv020.panovel.backup.impl
 
 import cc.aoeiuv020.panovel.backup.BackupOption
-import cc.aoeiuv020.panovel.backup.IBackup
+import cc.aoeiuv020.panovel.backup.Backup
 import timber.log.Timber
 import java.io.File
 
 /**
  * Created by AoEiuV020 on 2018.05.11-20:27:17.
  */
-abstract class DefaultBackup : IBackup {
+abstract class DefaultBackup : Backup {
 
     /**
      * @return 返回选项对应的名字和文件名，

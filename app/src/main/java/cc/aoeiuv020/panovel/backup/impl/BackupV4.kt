@@ -260,7 +260,7 @@ class BackupV4 : DefaultBackup() {
         val backgroundImage = ReaderSettings.backgroundImage
         if (backgroundImage != null) {
             folder.resolve("backgroundImage").outputStream().use { output ->
-                App.ctx.contentResolver.openInputStream(backgroundImage)!!.use { input ->
+                App.context.contentResolver.openInputStream(backgroundImage)!!.use { input ->
                     input.copyTo(output)
                 }
                 output.flush()
@@ -271,7 +271,7 @@ class BackupV4 : DefaultBackup() {
         val lastBackgroundImage = ReaderSettings.lastBackgroundImage
         if (lastBackgroundImage != null) {
             folder.resolve("lastBackgroundImage").outputStream().use { output ->
-                App.ctx.contentResolver.openInputStream(lastBackgroundImage)!!
+                App.context.contentResolver.openInputStream(lastBackgroundImage)!!
                     .use { input ->
                         input.copyTo(output)
                     }
@@ -283,7 +283,7 @@ class BackupV4 : DefaultBackup() {
         val font = ReaderSettings.font
         if (font != null) {
             folder.resolve("font").outputStream().use { output ->
-                App.ctx.contentResolver.openInputStream(font)!!.use { input ->
+                App.context.contentResolver.openInputStream(font)!!.use { input ->
                     input.copyTo(output)
                 }
                 output.flush()

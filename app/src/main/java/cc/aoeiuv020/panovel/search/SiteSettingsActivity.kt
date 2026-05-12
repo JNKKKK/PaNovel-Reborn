@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.databinding.ActivitySiteSettingsBinding
 import cc.aoeiuv020.panovel.report.Reporter
@@ -15,10 +15,10 @@ import android.widget.Toast
 import cc.aoeiuv020.panovel.util.uiInput
 import timber.log.Timber
 
-class SiteSettingsActivity : AppCompatActivity(), IView {
+class SiteSettingsActivity : AppCompatActivity(), MvpView {
     companion object {
-        fun start(ctx: Context, site: String) {
-            ctx.startActivity(Intent(ctx, SiteSettingsActivity::class.java).putExtra("site", site))
+        fun start(context: Context, site: String) {
+            context.startActivity(Intent(context, SiteSettingsActivity::class.java).putExtra("site", site))
         }
     }
 

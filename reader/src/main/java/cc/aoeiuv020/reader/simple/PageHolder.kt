@@ -12,12 +12,12 @@ import timber.log.Timber
 import kotlin.properties.Delegates
 
 internal class PageHolder(private val reader: SimpleReader) {
-    private val ctx = reader.ctx as Activity
+    private val context = reader.context as Activity
     private val requester = reader.requester
-    val itemView: View = View.inflate(ctx, R.layout.simple_view_pager_item, null)
+    val itemView: View = View.inflate(context, R.layout.simple_view_pager_item, null)
     var position: Int = 0
     private val textRecyclerView: androidx.recyclerview.widget.RecyclerView = itemView.findViewById(R.id.textRecyclerView)
-    private val layoutManager: androidx.recyclerview.widget.LinearLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(ctx)
+    private val layoutManager: androidx.recyclerview.widget.LinearLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
     private val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
     val ntrAdapter = PageRecyclerAdapter(reader)
     private var textProgress: Int? = null
@@ -30,9 +30,9 @@ internal class PageHolder(private val reader: SimpleReader) {
         textRecyclerView.apply {
             layoutParams = (layoutParams as ViewGroup.MarginLayoutParams).apply {
                 setMargins(leftMargin,
-                        reader.config.contentMargins.top.run { (toFloat() / 100 * ctx.window.decorView.height).toInt() },
+                        reader.config.contentMargins.top.run { (toFloat() / 100 * this@PageHolder.context.window.decorView.height).toInt() },
                         rightMargin,
-                        reader.config.contentMargins.bottom.run { (toFloat() / 100 * ctx.window.decorView.height).toInt() })
+                        reader.config.contentMargins.bottom.run { (toFloat() / 100 * this@PageHolder.context.window.decorView.height).toInt() })
             }
             addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {

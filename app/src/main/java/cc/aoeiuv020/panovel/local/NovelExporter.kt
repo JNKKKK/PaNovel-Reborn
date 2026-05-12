@@ -36,7 +36,7 @@ class NovelExporter(
     companion object {
         const val NAME_FOLDER = "Export"
 
-        fun export(ctx: Context, type: LocalNovelType, charset: Charset, novelManager: NovelManager) {
+        fun export(context: Context, type: LocalNovelType, charset: Charset, novelManager: NovelManager) {
             val novel = novelManager.novel
             // 本地小说的site就是后缀，不要重复了，
             val fileName = if (novel.site.startsWith(".")) {
@@ -48,42 +48,42 @@ class NovelExporter(
             val baseFile = File(LocationSettings.exportLocation)
                     .apply { exists() || mkdirs() }
                     .takeIf { it.canWrite() }
-                    ?: ctx.filesDir
+                    ?: context.filesDir
                             .resolve(BackupPresenter.NAME_FOLDER)
                             .apply { exists() || mkdirs() }
             val file = baseFile.resolve(fileName)
             // 太早了Intent不能用，<-- 我也不知道这在说什么，
-            val nb: NotificationCompat.Builder by lazy {
-                val intent = Intent(ctx, MainActivity::class.java)
-                val pendingIntent = PendingIntent.getActivity(ctx, 0, intent, 0)
-                val notificationBuilder = NotificationCompat.Builder(ctx, NotificationChannelId.export)
+            val notificationBuilder: NotificationCompat.Builder by lazy {
+                val intent = Intent(context, MainActivity::class.java)
+                val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+                val notificationBuilder = NotificationCompat.Builder(context, NotificationChannelId.export)
                         .setOnlyAlertOnce(true)
                         .setAutoCancel(true)
-                        .setContentTitle(ctx.getString(R.string.exporting_title_placeholder, novel.name))
+                        .setContentTitle(context.getString(R.string.exporting_title_placeholder, novel.name))
                         .setContentIntent(pendingIntent)
                 notificationBuilder.apply {
                     setSmallIcon(android.R.drawable.stat_sys_download)
                 }
                 notificationBuilder
             }
-            val proxy = NotifyLoopProxy(ctx)
+            val proxy = NotifyLoopProxy(context)
             val mainHandler = Handler(Looper.getMainLooper())
             mainHandler.post {
-                nb.setProgress(0, 0, true)
-                proxy.start(nb.build())
+                notificationBuilder.setProgress(0, 0, true)
+                proxy.start(notificationBuilder.build())
             }
             NovelExporter(type, charset, file) { current, total ->
                 Timber.d("exporting $current/$total")
                 mainHandler.post {
                     if (current == total) {
-                        nb.setContentTitle(ctx.getString(R.string.export_title_complete_placeholder, novel.name))
-                        nb.setStyle(NotificationCompat.BigTextStyle().bigText(ctx.getString(R.string.export_complete_big_placeholder, file.path)))
-                        nb.setProgress(total, current, false)
-                        nb.setSmallIcon(android.R.drawable.stat_sys_download_done)
-                        proxy.complete(nb.build())
+                        notificationBuilder.setContentTitle(context.getString(R.string.export_title_complete_placeholder, novel.name))
+                        notificationBuilder.setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(R.string.export_complete_big_placeholder, file.path)))
+                        notificationBuilder.setProgress(total, current, false)
+                        notificationBuilder.setSmallIcon(android.R.drawable.stat_sys_download_done)
+                        proxy.complete(notificationBuilder.build())
                     } else {
-                        nb.setProgress(total, current, false)
-                        proxy.modify(nb.build())
+                        notificationBuilder.setProgress(total, current, false)
+                        proxy.modify(notificationBuilder.build())
                     }
                 }
             }.export(novelManager)
@@ -125,7 +125,7 @@ class NovelExporter(
 
             override fun openImage(url: URL): InputStream? {
                 return if (url.isHttp()) {
-                    Glide.with(App.ctx)
+                    Glide.with(App.context)
                             .asFile()
                             .load(url.toString())
                             .apply(RequestOptions().onlyRetrieveFromCache(true))

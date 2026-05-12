@@ -13,7 +13,7 @@ import timber.log.Timber
 /**
  * Created by AoEiuV020 on 2018.05.23-20:25:48.
  */
-class CookieManager(@Suppress("UNUSED_PARAMETER") ctx: Context) {
+class CookieManager(@Suppress("UNUSED_PARAMETER") context: Context) {
     private val cookieManager = CookieManager.getInstance()
 
     fun putCookie(domain: String, cookiePair: String) {
@@ -30,12 +30,12 @@ class CookieManager(@Suppress("UNUSED_PARAMETER") ctx: Context) {
 
     // 莫名，旧版刷新方法需要Context,
     // 方便起见，传入ctx可空，为空就不刷低版本的了，
-    fun sync(ctx: Context?) {
+    fun sync(context: Context?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cookieManager.flush()
         } else {
-            ctx ?: return
-            val syncManager = CookieSyncManager.createInstance(ctx)
+            context ?: return
+            val syncManager = CookieSyncManager.createInstance(context)
             syncManager.sync()
         }
     }

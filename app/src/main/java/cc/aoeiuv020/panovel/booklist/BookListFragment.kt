@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.BookList
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
@@ -24,7 +24,7 @@ import androidx.appcompat.app.AlertDialog
  *
  * Created by AoEiuV020 on 2017.11.22-14:07:56.
  */
-class BookListFragment : androidx.fragment.app.Fragment(), IView {
+class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
     private var _binding: NovelItemListBinding? = null
     private val binding get() = _binding!!
 
@@ -124,7 +124,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView {
         presenter.shareBookList(bookList)
     }
 
-    private val presenter: BookListFragmentPresenter = BookListFragmentPresenter()
+    private val presenter: BookListOverviewPresenter = BookListOverviewPresenter()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         _binding = NovelItemListBinding.inflate(inflater, container, false)
@@ -176,10 +176,10 @@ class BookListFragment : androidx.fragment.app.Fragment(), IView {
     }
 
     fun newBookList() {
-        val ctx = activity.notNullOrReport()
-        val layout = View.inflate(ctx, R.layout.dialog_editor, null)
+        val context = activity.notNullOrReport()
+        val layout = View.inflate(context, R.layout.dialog_editor, null)
         val etName = layout.findViewById<EditText>(R.id.editText)
-        AlertDialog.Builder(ctx)
+        AlertDialog.Builder(context)
             .setTitle(R.string.add_book_list)
             .setView(layout)
             .setPositiveButton(android.R.string.ok) { _, _ ->

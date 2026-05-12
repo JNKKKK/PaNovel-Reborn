@@ -6,7 +6,7 @@ import android.graphics.*
 import android.os.Build
 import android.text.TextPaint
 import cc.aoeiuv020.pager.Pager
-import cc.aoeiuv020.pager.PagerDrawer
+import cc.aoeiuv020.pager.BasePagerDrawer
 import cc.aoeiuv020.pager.Size
 import cc.aoeiuv020.reader.*
 import cc.aoeiuv020.reader.ReaderConfigName.*
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 @SuppressWarnings("SimpleDateFormat")
 class ReaderDrawer(private val reader: ComplexReader, private val novel: String, private val requester: TextRequester)
-    : PagerDrawer() {
+    : BasePagerDrawer() {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     val pagesCache: androidx.collection.LruCache<Int, List<Page>?> = androidx.collection.LruCache(8)
     private lateinit var titlePaint: TextPaint
@@ -92,7 +92,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         textPaint = TextPaint().apply {
             isAntiAlias = true
             color = reader.config.textColor
-            textSize = (reader.config.textSize * reader.ctx.resources.displayMetrics.scaledDensity).toInt().toFloat()
+            textSize = (reader.config.textSize * reader.context.resources.displayMetrics.scaledDensity).toInt().toFloat()
             typeface = reader.config.font
         }
         titlePaint = TextPaint(textPaint).apply {
@@ -100,14 +100,14 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         }
         backgroundImage = reader.config.backgroundImage?.let {
             try {
-                BitmapFactory.decodeStream(reader.ctx.contentResolver.openInputStream(it))
+                BitmapFactory.decodeStream(reader.context.contentResolver.openInputStream(it))
             } catch (e: FileNotFoundException) {
                 // 以防万一，说不定uri存在但是文件已经不存在了，
                 null
             }
         }
         messagePaint = TextPaint(textPaint).apply {
-            textSize = (reader.config.messageSize * reader.ctx.resources.displayMetrics.scaledDensity).toInt().toFloat()
+            textSize = (reader.config.messageSize * reader.context.resources.displayMetrics.scaledDensity).toInt().toFloat()
         }
     }
 
@@ -206,7 +206,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
     }
 
     private fun drawBattery(canvas: Canvas) {
-        val intent = reader.ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))!!
+        val intent = reader.context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))!!
         val battery = intent.getIntExtra("level", 0)
         val text = "$battery"
         val margins = reader.config.batteryMargins
@@ -280,11 +280,11 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
 
     private fun drawContent(content: Canvas, page: Page) {
         val textHeight = textPaint.getFontMetricsInt(null)
-        val lineSpacing = (reader.config.lineSpacing * reader.ctx.resources.displayMetrics.density).toInt()
+        val lineSpacing = (reader.config.lineSpacing * reader.context.resources.displayMetrics.density).toInt()
 
         val width = content.width.toFloat()
         var y = 0
-        val paragraphSpacing = (reader.config.paragraphSpacing * reader.ctx.resources.displayMetrics.density).toInt()
+        val paragraphSpacing = (reader.config.paragraphSpacing * reader.context.resources.displayMetrics.density).toInt()
         page.lines.forEach { line ->
             Timber.v("draw height $y/${content.height}")
             when (line) {
@@ -382,8 +382,8 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         var height = 0
         var fitHeight = 0
         val lines = mutableListOf<Any>()
-        val lineSpacing = (reader.config.lineSpacing * reader.ctx.resources.displayMetrics.density).toInt()
-        val paragraphSpacing = (reader.config.paragraphSpacing * reader.ctx.resources.displayMetrics.density).toInt()
+        val lineSpacing = (reader.config.lineSpacing * reader.context.resources.displayMetrics.density).toInt()
+        val paragraphSpacing = (reader.config.paragraphSpacing * reader.context.resources.displayMetrics.density).toInt()
         val textHeight = typesettingTextPaint.getFontMetricsInt(null)
         (listOf(chapter) + list).forEachIndexed { index, str ->
             // 不支持图片，得到段就直接转成String,

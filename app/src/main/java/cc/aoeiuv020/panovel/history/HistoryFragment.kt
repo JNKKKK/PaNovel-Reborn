@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import cc.aoeiuv020.panovel.App.Companion.ctx
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.App.Companion.context
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.list.NovelListAdapter
@@ -18,7 +18,7 @@ import cc.aoeiuv020.panovel.settings.ListSettings
  * 绝大部分照搬书架，
  * Created by AoEiuV020 on 2017.10.15-18:07:39.
  */
-class HistoryFragment : androidx.fragment.app.Fragment(), IView {
+class HistoryFragment : androidx.fragment.app.Fragment(), MvpView {
     private var _binding: NovelItemListBinding? = null
     private val binding get() = _binding!!
 
@@ -37,9 +37,9 @@ class HistoryFragment : androidx.fragment.app.Fragment(), IView {
         super.onViewCreated(view, savedInstanceState)
 
         binding.rvNovel.layoutManager = if (ListSettings.gridView) {
-            androidx.recyclerview.widget.GridLayoutManager(ctx, if (ListSettings.largeView) 3 else 5)
+            androidx.recyclerview.widget.GridLayoutManager(context, if (ListSettings.largeView) 3 else 5)
         } else {
-            androidx.recyclerview.widget.LinearLayoutManager(ctx)
+            androidx.recyclerview.widget.LinearLayoutManager(context)
         }
         binding.rvNovel.adapter = novelListAdapter
         binding.srlRefresh.setOnRefreshListener {

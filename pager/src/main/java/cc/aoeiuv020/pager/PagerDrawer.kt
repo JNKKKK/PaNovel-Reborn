@@ -1,21 +1,20 @@
 package cc.aoeiuv020.pager
 
+import android.graphics.Canvas
+
 /**
  *
- * Created by AoEiuV020 on 2017.12.07-23:54:07.
+ * Created by AoEiuV020 on 2017.12.02-17:58:54.
  */
-abstract class PagerDrawer : IPagerDrawer {
-    var pager: Pager? = null
-    protected lateinit var backgroundSize: Size
-    protected lateinit var contentSize: Size
+interface PagerDrawer {
 
-    override fun attach(pager: Pager, backgroundSize: Size, contentSize: Size) {
-        this.pager = pager
-        this.backgroundSize = backgroundSize
-        this.contentSize = contentSize
-    }
+    fun attach(pager: Pager, backgroundSize: Size, contentSize: Size)
 
-    override fun detach() {
-        this.pager = null
-    }
+    fun drawCurrentPage(background: Canvas, content: Canvas)
+
+    fun scrollToPrev(): Boolean
+
+    fun scrollToNext(): Boolean
+
+    fun detach()
 }

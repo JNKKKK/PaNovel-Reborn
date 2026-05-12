@@ -12,13 +12,13 @@ internal class ImageViewHolder(
         private val prAdapter: PageRecyclerAdapter
 ) : PageRecyclerAdapter.ViewHolder(itemView) {
     companion object {
-        fun create(ctx: Context, parent: ViewGroup, prAdapter: PageRecyclerAdapter): ImageViewHolder {
-            val view = LayoutInflater.from(ctx).inflate(R.layout.simple_image_item, parent, false)
+        fun create(context: Context, parent: ViewGroup, prAdapter: PageRecyclerAdapter): ImageViewHolder {
+            val view = LayoutInflater.from(context).inflate(R.layout.simple_image_item, parent, false)
             return ImageViewHolder(view, prAdapter)
         }
     }
 
-    private val ctx: Context = itemView.context
+    private val context: Context = itemView.context
     private val tvPage = itemView.findViewById<android.widget.TextView>(R.id.tvPage)
     private val ivImage = itemView.findViewById<com.github.chrisbanes.photoview.PhotoView>(R.id.ivImage)
 
@@ -31,7 +31,7 @@ internal class ImageViewHolder(
                     setMargins((prAdapter.mLeftSpacing.toFloat() / 100 * itemView.width).toInt(),
                             topMargin,
                             (prAdapter.mRightSpacing.toFloat() / 100 * itemView.width).toInt(),
-                            (prAdapter.mParagraphSpacing * ctx.resources.displayMetrics.density).toInt())
+                            (prAdapter.mParagraphSpacing * context.resources.displayMetrics.density).toInt())
                 }
             }
 

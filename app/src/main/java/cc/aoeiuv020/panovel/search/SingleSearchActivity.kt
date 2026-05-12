@@ -10,7 +10,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
@@ -23,12 +23,12 @@ import timber.log.Timber
  * 负责单个网站的搜索功能，
  * 还有登录也在这里，
  */
-class SingleSearchActivity : AppCompatActivity(), IView {
+class SingleSearchActivity : AppCompatActivity(), MvpView {
     private lateinit var binding: ActivitySingleSearchBinding
 
     companion object {
-        fun start(ctx: Context, site: String) {
-            ctx.startActivity(Intent(ctx, SingleSearchActivity::class.java).putExtra("site", site))
+        fun start(context: Context, site: String) {
+            context.startActivity(Intent(context, SingleSearchActivity::class.java).putExtra("site", site))
         }
     }
 

@@ -27,14 +27,14 @@ import java.nio.charset.UnsupportedCharsetException
  * Created by AoEiuV020 on 2018.06.12-20:16:51.
  */
 class LocalManager(
-        private val ctx: Context
+        private val context: Context
 ) {
 
     // 所有临时文件都保存在/data/data/cc.aoeiuv020.panovel/cache/local
     // 为了线程安全搞的，但貌似并不需要，一次只会导入一本，
-    private val cache = Iron.db(ctx.cacheDir).sub(KEY_LOCAL)
+    private val cache = Iron.db(context.cacheDir).sub(KEY_LOCAL)
     // 所有导入的小说都保存在/data/data/cc.aoeiuv020.panovel/files/local
-    private val files = Iron.db(ctx.filesDir).sub(KEY_LOCAL)
+    private val files = Iron.db(context.filesDir).sub(KEY_LOCAL)
 
     @WorkerThread
     fun importLocalNovel(input: InputStream, uri: String,
@@ -63,10 +63,10 @@ class LocalManager(
         // defaultType要作为单选框的默认值，必须是存在的type,
         val defaultType = previewer.guessType() ?: LocalNovelType.TEXT
         val actualTypeSuffix = requestInput(ImportRequireValue.TYPE, defaultType.suffix)
-                ?: interrupt(ctx.getString(R.string.tip_not_select_file_type))
+                ?: interrupt(context.getString(R.string.tip_not_select_file_type))
         val actualType = LocalNovelType.values().firstOrNull {
             it.suffix == actualTypeSuffix
-        } ?: interrupt(ctx.getString(R.string.tip_no_file_type))
+        } ?: interrupt(context.getString(R.string.tip_no_file_type))
         Timber.d("importLocalNovel file type: ${actualType.suffix}")
         val actualCharset: Charset? = if (actualType == LocalNovelType.TEXT
                 || actualType == LocalNovelType.EPUB) {
@@ -77,9 +77,9 @@ class LocalManager(
                 try {
                     charset(it)
                 } catch (e: UnsupportedCharsetException) {
-                    interrupt(ctx.getString(R.string.tip_not_support_charset, it))
+                    interrupt(context.getString(R.string.tip_not_support_charset, it))
                 }
-            } ?: interrupt(ctx.getString(R.string.tip_no_charset))
+            } ?: interrupt(context.getString(R.string.tip_no_charset))
             Timber.d("importLocalNovel file charset: $actualCharset")
             actualCharset
         } else {
@@ -102,11 +102,11 @@ class LocalManager(
         }
         val name = requestInput(ImportRequireValue.NAME, info.name
                 ?: defaultName)
-                ?: interrupt(ctx.getString(R.string.tip_no_novel_name))
+                ?: interrupt(context.getString(R.string.tip_no_novel_name))
         val author = requestInput(ImportRequireValue.AUTHOR, info.author
         // 没有作者名就用小说名顶一下，当成默认值给用户改，
                 ?: name)
-                ?: interrupt(ctx.getString(R.string.tip_no_author_name))
+                ?: interrupt(context.getString(R.string.tip_no_author_name))
 
         // 最终导入的小说就永久保存在这里了，
         val file = saveNovel(previewer.file, suffix, author, name)

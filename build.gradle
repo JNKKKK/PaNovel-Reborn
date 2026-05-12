@@ -3,7 +3,7 @@
 buildscript {
     ext {
         applicationModules = ['app']
-        javaModules = ["api", "local", "baseJar", "IronDB", "refresher", "server", "js"]
+        javaModules = ["scraper", "local", "core", "IronDB", "batchRefresher", "server", "rhino"]
         androidModules = ["pager", "reader", 'filepicker']
         def versionFile = rootProject.file('version.properties')
         if (versionFile.exists()) {
@@ -137,7 +137,7 @@ applicationModules.forEach { name ->
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
             runtimeOnly 'org.slf4j:slf4j-android:' + slf4j_version
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            implementation project(':baseJar')
+            implementation project(':core')
         }
     }
 }
@@ -154,8 +154,8 @@ javaModules.forEach { name ->
             implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            if (name != 'baseJar') {
-                implementation project(':baseJar')
+            if (name != 'core') {
+                implementation project(':core')
             }
         }
 
@@ -221,7 +221,7 @@ androidModules.forEach { name ->
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
             runtimeOnly 'org.slf4j:slf4j-android:' + slf4j_version
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            implementation project(':baseJar')
+            implementation project(':core')
         }
     }
 }

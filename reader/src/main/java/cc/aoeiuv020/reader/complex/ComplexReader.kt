@@ -12,9 +12,9 @@ import cc.aoeiuv020.reader.toIMargins
  *
  * Created by AoEiuV020 on 2017.12.01-20:31:49.
  */
-class ComplexReader(override var ctx: Context, novel: String, private val parent: ViewGroup, requester: TextRequester, override var config: ReaderConfig)
+class ComplexReader(override var context: Context, novel: String, private val parent: ViewGroup, requester: TextRequester, override var config: ReaderConfig)
     : BaseNovelReader(novel, requester) {
-    private val pageView: Pager = Pager(ctx)
+    private val pageView: Pager = Pager(context)
     private val drawer = ReaderDrawer(this, novel, requester)
     val autoRefreshThread: AutoRefreshThread = AutoRefreshThread()
     override val maxTextProgress: Int

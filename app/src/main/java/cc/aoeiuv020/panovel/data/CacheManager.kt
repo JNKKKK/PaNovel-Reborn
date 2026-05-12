@@ -17,27 +17,27 @@ import java.util.*
 /**
  * Created by AoEiuV020 on 2018.05.23-22:08:14.
  */
-class CacheManager(ctx: Context) {
+class CacheManager(context: Context) {
     private val contentDBMap = WeakHashMap<Long, Database>()
     // 所有都保存在/data/data/cc.aoeiuv020.panovel/cache/novel
     private var root: Database
 
     init {
-        root = initCacheLocation(ctx)
+        root = initCacheLocation(context)
     }
 
-    fun resetCacheLocation(ctx: Context) {
+    fun resetCacheLocation(context: Context) {
         contentDBMap.clear()
-        root = initCacheLocation(ctx)
+        root = initCacheLocation(context)
     }
 
-    private fun initCacheLocation(ctx: Context): Database = try {
+    private fun initCacheLocation(context: Context): Database = try {
         Iron.db(File(LocationSettings.cacheLocation))
     } catch (e: Exception) {
         Reporter.post("初始化缓存目录<${LocationSettings.cacheLocation}>失败，", e)
-        Toast.makeText(ctx, ctx.getString(R.string.tip_init_cache_failed_place_holder, LocationSettings.cacheLocation), Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.tip_init_cache_failed_place_holder, LocationSettings.cacheLocation), Toast.LENGTH_SHORT).show()
         // 失败一次就改成默认的，以免反复失败，
-        LocationSettings.cacheLocation = ctx.cacheDir.resolve(NAME_FOLDER).absolutePath
+        LocationSettings.cacheLocation = context.cacheDir.resolve(NAME_FOLDER).absolutePath
         Iron.db(File(LocationSettings.cacheLocation))
     }
 

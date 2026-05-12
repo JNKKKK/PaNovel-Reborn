@@ -8,7 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.report.Reporter
@@ -28,10 +28,10 @@ import timber.log.Timber
  *
  * Created by AoEiuV020 on 2017.10.03-18:10:37.
  */
-class NovelDetailActivity : AppCompatActivity(), IView {
+class NovelDetailActivity : AppCompatActivity(), MvpView {
     companion object {
-        fun start(ctx: Context, novel: Novel) {
-            ctx.startActivity(Intent(ctx, NovelDetailActivity::class.java).putExtra(Novel.KEY_ID, novel.nId))
+        fun start(context: Context, novel: Novel) {
+            context.startActivity(Intent(context, NovelDetailActivity::class.java).putExtra(Novel.KEY_ID, novel.nId))
         }
     }
 

@@ -22,9 +22,9 @@ import kotlinx.coroutines.*
  * Created by AoEiuV020 on 2018.05.16-22:54:50.
  */
 class MigrationPresenter(
-    override val ctx: Context
+    override val context: Context
 ) : Presenter<MigrationView>(), Pref {
-    // sp file is App.ctx.packageName + "_$name"
+    // sp file is App.context.packageName + "_$name"
     override val name: String = "Migration"
 
     /**
@@ -37,7 +37,7 @@ class MigrationPresenter(
     /**
      * 获取当前版本，
      */
-    private val currentVersion: String = VersionUtil.getAppVersionName(ctx)
+    private val currentVersion: String = VersionUtil.getAppVersionName(context)
 
     private fun list(vararg list: KClass<out Migration>): List<KClass<out Migration>> =
         list.toList()
@@ -67,7 +67,7 @@ class MigrationPresenter(
                         withContext(Dispatchers.Main) {
                             view?.showUpgrading(from = cachedVersionName, migration = sitesMigration)
                         }
-                        sitesMigration.migrate(ctx, cachedVersionName)
+                        sitesMigration.migrate(context, cachedVersionName)
                         SiteSettings.cachedVersion = NovelContext.sitesVersion
                     }
                     when {
@@ -104,7 +104,7 @@ class MigrationPresenter(
                                     }
                                     Timber.d("migrate $cachedVersionName to ${migration.to}")
                                     try {
-                                        migration.migrate(ctx, cachedVersionName)
+                                        migration.migrate(context, cachedVersionName)
                                     } catch (e: Exception) {
                                         if (e is MigrateException) {
                                             throw e

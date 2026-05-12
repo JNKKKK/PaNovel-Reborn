@@ -15,16 +15,16 @@ import cc.aoeiuv020.panovel.util.NotifyLoopProxy
  * Created by AoEiuV020 on 2018.10.07-15:16:13.
  */
 class DownloadingNotificationManager(
-        private val ctx: Context
+        private val context: Context
 ) {
 
     private val enable: Boolean get() = DownloadSettings.downloadThreadProgress
-    private val proxy: NotifyLoopProxy = NotifyLoopProxy(ctx)
+    private val proxy: NotifyLoopProxy = NotifyLoopProxy(context)
     // 太早了Intent不能用，
-    private val nb: NotificationCompat.Builder by lazy {
-        val intent = Intent(ctx, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(ctx, 0, intent, 0)
-        val notificationBuilder = NotificationCompat.Builder(ctx, NotificationChannelId.downloading)
+    private val notificationBuilder: NotificationCompat.Builder by lazy {
+        val intent = Intent(context, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+        val notificationBuilder = NotificationCompat.Builder(context, NotificationChannelId.downloading)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
@@ -43,15 +43,15 @@ class DownloadingNotificationManager(
 
 
     fun downloadStart(novel: Novel, index: Int, name: String) {
-        nb.setContentTitle(novel.name)
+        notificationBuilder.setContentTitle(novel.name)
         val offset = 0L
         val length = 0L
         val progress = progress(offset, length)
-        nb.setContentText(ctx.getString(R.string.chapter_downloading_placeholder, index, name, offset, length))
+        notificationBuilder.setContentText(context.getString(R.string.chapter_downloading_placeholder, index, name, offset, length))
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setProgress(100, progress, false)
         if (enable) {
-            proxy.start(nb.build())
+            proxy.start(notificationBuilder.build())
         } else {
             // 以防万一通知开始了不结束，
             cancelNotification()
@@ -61,31 +61,31 @@ class DownloadingNotificationManager(
     fun downloading(index: Int, name: String, offset: Long, length: Long) {
         // 更新数据，下次通知自己读取，
         val progress = progress(offset, length)
-        nb.setContentText(ctx.getString(R.string.chapter_downloading_placeholder, index, name, offset, length))
+        notificationBuilder.setContentText(context.getString(R.string.chapter_downloading_placeholder, index, name, offset, length))
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setProgress(100, progress, length <= 0)
         if (enable) {
-            proxy.modify(nb.build())
+            proxy.modify(notificationBuilder.build())
         }
     }
 
     fun downloadComplete(index: Int, name: String) {
-        nb.setContentText(ctx.getString(R.string.chapter_download_complete_placeholder, index, name))
+        notificationBuilder.setContentText(context.getString(R.string.chapter_download_complete_placeholder, index, name))
                 .setProgress(0, 0, false)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
         if (enable) {
-            proxy.complete(nb.build())
+            proxy.complete(notificationBuilder.build())
         } else {
             cancelNotification()
         }
     }
 
     fun downloadError(index: Int, name: String, message: String) {
-        nb.setContentText(ctx.getString(R.string.chapter_download_error_placeholder, index, name, message))
+        notificationBuilder.setContentText(context.getString(R.string.chapter_download_error_placeholder, index, name, message))
                 .setProgress(0, 0, false)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
         if (enable) {
-            proxy.complete(nb.build())
+            proxy.complete(notificationBuilder.build())
         } else {
             cancelNotification()
         }

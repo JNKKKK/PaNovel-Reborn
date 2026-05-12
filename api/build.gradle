@@ -1,5 +1,0 @@
-dependencies {
-    implementation 'org.jsoup:jsoup:' + jsoup_version
-    implementation project(':baseJar')
-    implementation project(':js')
-}

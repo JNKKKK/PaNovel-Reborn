@@ -19,7 +19,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import cc.aoeiuv020.gson.toBean
 import cc.aoeiuv020.gson.toJson
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
@@ -56,18 +56,18 @@ import androidx.lifecycle.lifecycleScope
  *
  * Created by AoEiuV020 on 2017.10.03-19:06:44.
  */
-class NovelTextActivity : NovelTextBaseFullScreenActivity(), IView {
+class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     companion object {
-        fun start(ctx: Context, novel: Novel) {
-            start(ctx, novel.nId)
+        fun start(context: Context, novel: Novel) {
+            start(context, novel.nId)
         }
 
-        fun start(ctx: Context, id: Long) {
-            ctx.startActivity(Intent(ctx, NovelTextActivity::class.java).putExtra(Novel.KEY_ID, id))
+        fun start(context: Context, id: Long) {
+            context.startActivity(Intent(context, NovelTextActivity::class.java).putExtra(Novel.KEY_ID, id))
         }
 
-        fun start(ctx: Context, novel: Novel, index: Int) {
-            ctx.startActivity(Intent(ctx, NovelTextActivity::class.java)
+        fun start(context: Context, novel: Novel, index: Int) {
+            context.startActivity(Intent(context, NovelTextActivity::class.java)
                     .putExtra(Novel.KEY_ID, novel.nId)
                     .putExtra("index", cc.aoeiuv020.panovel.App.gson.toJson(index)))
         }

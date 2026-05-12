@@ -13,17 +13,17 @@ import cc.aoeiuv020.panovel.util.Pref
 object LocationSettings : Pref {
     override val name: String
         get() = "Location"
-    var cacheLocation: String by Delegates.string(ctx.cacheDir.resolve(CacheManager.NAME_FOLDER).absolutePath)
+    var cacheLocation: String by Delegates.string(context.cacheDir.resolve(CacheManager.NAME_FOLDER).absolutePath)
     var backupLocation: String by Delegates.string(sdcardResolve(BackupPresenter.NAME_FOLDER))
     var exportLocation: String by Delegates.string(sdcardResolve(NovelExporter.NAME_FOLDER))
 
     // 优先SD卡，不可用就私有目录,
     private fun sdcardResolve(name: String): String = (
-            ctx.getExternalFilesDir(null)
+            context.getExternalFilesDir(null)
                     ?.resolve(name)
                     ?.apply { exists() || mkdirs() }
                     ?.takeIf { it.canWrite() }
-                    ?: ctx.filesDir.resolve(name)
+                    ?: context.filesDir.resolve(name)
             ).absolutePath
 
 }

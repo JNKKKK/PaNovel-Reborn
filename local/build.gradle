@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(':baseJar')
+    implementation project(':core')
     implementation 'net.sourceforge.jchardet:jchardet:1.0'
     implementation('io.documentnode:epub4j-core:4.2.1') {
         exclude group: 'xmlpull'

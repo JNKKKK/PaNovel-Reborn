@@ -24,12 +24,12 @@ import kotlin.reflect.KProperty
  */
 interface Pref {
     val name: String
-    val ctx: Context
-        get() = App.ctx
+    val context: Context
+        get() = App.context
     val sharedPreferencesName: String
-        get() = App.ctx.packageName + "_$name"
+        get() = App.context.packageName + "_$name"
     val sharedPreferences: SharedPreferences
-        get() = App.ctx.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
+        get() = App.context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
 }
 
 abstract class SubPref(
@@ -84,7 +84,7 @@ object Delegates {
 /**
  * 文件相关的用这个，
  * Uri可以从文件得到，也可以打开写入文件，
- * ${ctx.cacheDir}/UriDelegate/${pref.name}/${key ?: property.name}
+ * ${context.cacheDir}/UriDelegate/${pref.name}/${key ?: property.name}
  */
 class UriDelegate(
         private val key: kotlin.String? = null
@@ -94,7 +94,7 @@ class UriDelegate(
     }
 
     private fun getFile(thisRef: Pref, property: KProperty<*>): File {
-        return App.ctx.filesDir.resolve(KEY_URI_DELEGATE)
+        return App.context.filesDir.resolve(KEY_URI_DELEGATE)
                 .resolve(thisRef.name)
                 .apply { mkdirs() }
                 .resolve(key ?: property.name)
@@ -126,7 +126,7 @@ class UriDelegate(
             }
         } else {
             file.outputStream().use { output ->
-                App.ctx.contentResolver.openInputStream(value)!!.use { input ->
+                App.context.contentResolver.openInputStream(value)!!.use { input ->
                     input.copyTo(output)
                 }
                 output.flush()

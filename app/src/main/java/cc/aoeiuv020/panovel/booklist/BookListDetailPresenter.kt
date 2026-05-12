@@ -11,7 +11,7 @@ import timber.log.Timber
  *
  * Created by AoEiuV020 on 2017.11.22-15:47:37.
  */
-class BookListActivityPresenter(private val bookListId: Long) : Presenter<BookListActivity>() {
+class BookListDetailPresenter(private val bookListId: Long) : Presenter<BookListActivity>() {
 
     fun start() {
         scope.launch {

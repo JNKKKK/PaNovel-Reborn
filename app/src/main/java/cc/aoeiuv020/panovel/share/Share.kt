@@ -41,26 +41,26 @@ object Share {
     }
 
     fun exportBookList(bookList: BookList, novelList: List<NovelMinimal>): String {
-        val bookListBean = BookListBean(bookList.name, novelList, VERSION, bookList.uuid)
+        val bookListBean = BookListV3(bookList.name, novelList, VERSION, bookList.uuid)
         return App.gson.toJson(bookListBean)
     }
 
-    fun importBookList(text: String): BookListBean {
+    fun importBookList(text: String): BookListV3 {
         val bookListJson = App.gson.fromJson(text, JsonObject::class.java)
         val version = bookListJson.get("version")?.asJsonPrimitive?.asInt
         return when (version) {
             3 -> {
-                App.gson.fromJson(bookListJson, object : TypeToken<BookListBean>() {}.type)
+                App.gson.fromJson(bookListJson, object : TypeToken<BookListV3>() {}.type)
             }
             2 -> {
-                App.gson.fromJson<BookListBean2>(bookListJson, object : TypeToken<BookListBean2>() {}.type).let {
-                    BookListBean(it.name, it.list, it.version, UUID.randomUUID().toString())
+                App.gson.fromJson<BookListV2>(bookListJson, object : TypeToken<BookListV2>() {}.type).let {
+                    BookListV3(it.name, it.list, it.version, UUID.randomUUID().toString())
                 }
             }
             1 -> {
                 // 旧版version为null,
-                val bookListBean1: BookListBean1 = App.gson.fromJson(bookListJson, object : TypeToken<BookListBean1>() {}.type)
-                BookListBean(bookListBean1.name, bookListBean1.list.map {
+                val bookListBean1: BookListV1 = App.gson.fromJson(bookListJson, object : TypeToken<BookListV1>() {}.type)
+                BookListV3(bookListBean1.name, bookListBean1.list.map {
                     // 旧版的extra为完整地址，直接拿来，就算写进数据库了，刷新详情页后也会被新版的bookId覆盖，
                     NovelMinimal(site = it.site, author = it.author, name = it.name, detail = it.requester.extra)
                 }, VERSION, UUID.randomUUID().toString())

@@ -11,10 +11,10 @@ import cc.aoeiuv020.reader.simple.SimpleReader
  */
 object Readers {
 
-    fun getReader(ctx: Context, novel: String, parent: ViewGroup, requester: TextRequester, config: ReaderConfig)
+    fun getReader(context: Context, novel: String, parent: ViewGroup, requester: TextRequester, config: ReaderConfig)
             : INovelReader = if (config.animationMode == AnimationMode.SIMPLE) {
-        SimpleReader(ctx, novel, parent, requester, config)
+        SimpleReader(context, novel, parent, requester, config)
     } else {
-        ComplexReader(ctx, novel, parent, requester, config)
+        ComplexReader(context, novel, parent, requester, config)
     }
 }

@@ -37,32 +37,32 @@ object DataManager {
     lateinit var download: DownloadManager
 
     @Synchronized
-    fun init(ctx: Context) {
+    fun init(context: Context) {
         if (!::app.isInitialized) {
-            app = AppDatabaseManager(ctx)
+            app = AppDatabaseManager(context)
         }
         if (!::api.isInitialized) {
-            api = ApiManager(ctx)
+            api = ApiManager(context)
         }
         if (!::cookie.isInitialized) {
-            cookie = CookieManager(ctx)
+            cookie = CookieManager(context)
         }
         if (!::cache.isInitialized) {
-            cache = CacheManager(ctx)
+            cache = CacheManager(context)
         }
         if (!::server.isInitialized) {
-            server = ServerManager(ctx)
+            server = ServerManager(context)
         }
         if (!::local.isInitialized) {
-            local = LocalManager(ctx)
+            local = LocalManager(context)
         }
         if (!::download.isInitialized) {
-            download = DownloadManager(ctx)
+            download = DownloadManager(context)
         }
     }
 
-    fun resetCacheLocation(ctx: Context) {
-        cache.resetCacheLocation(ctx)
+    fun resetCacheLocation(context: Context) {
+        cache.resetCacheLocation(context)
     }
 
     fun listBookshelf(): List<NovelManager> = app.listBookshelf(ListSettings.bookshelfOrderBy).map { it.toManager() }
@@ -178,7 +178,7 @@ object DataManager {
     }
 
     @WorkerThread
-    fun syncCookies(ctx: Context?) = cookie.sync(ctx)
+    fun syncCookies(context: Context?) = cookie.sync(context)
 
     /**
      * TODO: 这里有NovelContext拿到cookies后的文件操作，
@@ -394,7 +394,7 @@ object DataManager {
 
     fun removeAllCookies() {
         removeWebViewCookies()
-        syncCookies(App.ctx)
+        syncCookies(App.context)
         listSites().forEach {
             removeNovelContextCookies(it.name)
         }
@@ -410,8 +410,8 @@ object DataManager {
      * @param requestInput 有的需要让用户输入决定，比如编码，作者名，小说名，还有文件类型，
      */
     @WorkerThread
-    fun importLocalNovel(ctx: Context, uri: Uri, requestInput: (ImportRequireValue, String) -> String?): Novel {
-        val (novel, chapterList) = ctx.contentResolver.openInputStream(uri).notNullOrReport(uri.toString()).use { input ->
+    fun importLocalNovel(context: Context, uri: Uri, requestInput: (ImportRequireValue, String) -> String?): Novel {
+        val (novel, chapterList) = context.contentResolver.openInputStream(uri).notNullOrReport(uri.toString()).use { input ->
             local.importLocalNovel(input, uri.toString(), requestInput)
         }
         app.queryOrNewNovel(NovelMinimal(novel)).let { exists ->

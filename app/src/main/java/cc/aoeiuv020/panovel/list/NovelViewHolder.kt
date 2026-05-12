@@ -49,14 +49,14 @@ class NovelViewHolder(itemView: View,
     lateinit var novelManager: NovelManager
         private set
     val novel get() = novelManager.novel
-    val ctx: Context = itemView.context
+    val context: Context = itemView.context
 
     init {
         // 这里的引用的设置修改后不会马上生效，因为ViewHolder会被复用，
         // 无所谓了，要是从外面传进来的话就太烦了，
 
         val typedValue = TypedValue()
-        ctx.theme.resolveAttribute(android.R.attr.selectableItemBackground, typedValue, true)
+        context.theme.resolveAttribute(android.R.attr.selectableItemBackground, typedValue, true)
         // 长按时波纹背景，
         val selectableItemBackground = typedValue.resourceId
 
@@ -123,7 +123,7 @@ class NovelViewHolder(itemView: View,
             itemListener.onStarChanged(this, it.isChecked)
         }
         refreshingDot?.setDotColor(dotColor)
-        refreshingDot?.setDotSize((dotSize * ctx.resources.displayMetrics.density).toInt())
+        refreshingDot?.setDotSize((dotSize * context.resources.displayMetrics.density).toInt())
 
         initItem(this)
     }
@@ -158,7 +158,7 @@ class NovelViewHolder(itemView: View,
             if (novel.image == noCover) {
                 imageView.setImageResource(R.mipmap.no_cover)
             } else {
-                Glide.with(ctx.applicationContext)
+                Glide.with(context.applicationContext)
                         .load(novelManager.getImage(novel.image))
                         .apply(RequestOptions().apply {
                             placeholder(R.mipmap.no_cover)

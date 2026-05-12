@@ -17,7 +17,7 @@ class SitesMigration : Migration() {
     override val to: VersionName = VersionName(BuildConfig.VERSION_NAME)
     override val message: String = "刷新支持的网站列表，"
 
-    override fun migrate(ctx: Context, from: VersionName) {
+    override fun migrate(context: Context, from: VersionName) {
         // 同步所有网站信息到数据库，
         // 如果有网站不再支持，可以在后面加上删除指定条目，
         DataManager.syncSites()

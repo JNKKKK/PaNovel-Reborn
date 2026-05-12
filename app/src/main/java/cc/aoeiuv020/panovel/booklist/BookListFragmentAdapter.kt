@@ -41,7 +41,7 @@ class BookListFragmentAdapter(
         // 提供外面的加调方法使用，
         lateinit var bookList: BookList
             private set
-        val ctx: Context = itemView.context
+        val context: Context = itemView.context
 
         init {
             itemView.setOnClickListener {

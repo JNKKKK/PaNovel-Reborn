@@ -3,7 +3,7 @@ package cc.aoeiuv020.panovel.booklist
 import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.BookList
-import cc.aoeiuv020.panovel.qrcode.QrCodeManager
+import cc.aoeiuv020.panovel.qrcode.QrCodeGenerator
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.share.Share
@@ -14,7 +14,7 @@ import timber.log.Timber
  *
  * Created by AoEiuV020 on 2017.11.22-14:31:17.
  */
-class BookListFragmentPresenter : Presenter<BookListFragment>() {
+class BookListOverviewPresenter : Presenter<BookListFragment>() {
     fun refresh() {
         requestBookListList()
     }
@@ -41,7 +41,7 @@ class BookListFragmentPresenter : Presenter<BookListFragment>() {
             try {
                 val (url, qrCode) = withContext(Dispatchers.IO) {
                     val url = Share.shareBookList(bookList, OtherSettings.shareExpiration)
-                    val qrCode = QrCodeManager.generate(url)
+                    val qrCode = QrCodeGenerator.generate(url)
                     Pair(url, qrCode)
                 }
                 view?.showSharedUrl(url, qrCode)

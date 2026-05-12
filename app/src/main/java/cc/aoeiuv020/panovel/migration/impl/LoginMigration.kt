@@ -25,13 +25,13 @@ class LoginMigration : Migration() {
     override val to: VersionName = VersionName("2.2.2")
     override val message: String = "登录状态，"
 
-    override fun migrate(ctx: Context, from: VersionName) {
+    override fun migrate(context: Context, from: VersionName) {
         Timber.d("migrate from: ${from.name}")
         if (from < VersionName("2.2.0")) {
             // 2.2.0 之前没有内嵌浏览器，不用迁移登录状态，
             // 但是，2.2.2才开始记录版本号，所以传入的会是"0", 不能跳过，
         }
-        val cacheDir = ctx.cacheDir.resolve("api")
+        val cacheDir = context.cacheDir.resolve("api")
         if (!cacheDir.exists()) {
             // 没有数据就不继续了，
             return

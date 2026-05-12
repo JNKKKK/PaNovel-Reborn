@@ -83,7 +83,7 @@ fun Context.initNotificationChannel() {
  * 没有死循环，就算不主动结束，也会在delay时间后自动结束，
  */
 class NotifyLoopProxy(
-        ctx: Context,
+        context: Context,
         private val id: Int = (Math.random() * Int.MAX_VALUE).toInt(),
         // 最多delay毫秒一个通知，
         private val delay: Long = 300L
@@ -95,7 +95,7 @@ class NotifyLoopProxy(
     private val handler = Handler(Looper.getMainLooper())
 
     // System services not available to Activities before onCreate()
-    private val manager by lazy { NotificationManagerCompat.from(ctx) }
+    private val manager by lazy { NotificationManagerCompat.from(context) }
 
     private var waiting = false
     private var done = false
@@ -202,19 +202,19 @@ fun Context.notify(id: Int, text: String? = null, title: String? = null, icon: I
     val intent = Intent(this, MainActivity::class.java)
     val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
 
-    val nb = NotificationCompat.Builder(this, channelId)
+    val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(text)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .setContentIntent(pendingIntent)
     bigText?.let {
-        nb.setStyle(NotificationCompat.BigTextStyle().bigText(it))
+        notificationBuilder.setStyle(NotificationCompat.BigTextStyle().bigText(it))
     }
     time?.let {
-        nb.setWhen(it)
+        notificationBuilder.setWhen(it)
     }
-    nb.apply {
+    notificationBuilder.apply {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             setLargeIcon(getBitmapFromVectorDrawable(icon))
             setSmallIcon(R.mipmap.ic_launcher_round)
@@ -223,7 +223,7 @@ fun Context.notify(id: Int, text: String? = null, title: String? = null, icon: I
         }
     }
     val manager = NotificationManagerCompat.from(this)
-    manager.notify(id, nb.build())
+    manager.notify(id, notificationBuilder.build())
 }
 
 fun Context.cancelNotify(id: Int) {

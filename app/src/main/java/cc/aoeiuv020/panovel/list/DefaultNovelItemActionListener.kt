@@ -31,10 +31,10 @@ class DefaultNovelItemActionListener(
     fun on(action: ItemAction, vh: NovelViewHolder): Boolean {
         Timber.d("doing $action at ${vh.novel.name}")
         when (action) {
-            ReadLastChapter -> NovelTextActivity.start(vh.ctx, vh.novel, -1)
-            ReadContinue -> NovelTextActivity.start(vh.ctx, vh.novel)
-            OpenDetail -> NovelDetailActivity.start(vh.ctx, vh.novel)
-            RefineSearch -> FuzzySearchActivity.start(vh.ctx, vh.novel)
+            ReadLastChapter -> NovelTextActivity.start(vh.context, vh.novel, -1)
+            ReadContinue -> NovelTextActivity.start(vh.context, vh.novel)
+            OpenDetail -> NovelDetailActivity.start(vh.context, vh.novel)
+            RefineSearch -> FuzzySearchActivity.start(vh.context, vh.novel)
             Export -> exportNovel(vh)
             // TODO: 有点混乱不统一，改支之前考虑清楚，主要是有的操作需要更新vh界面，
             AddBookshelf -> vh.addBookshelf() // vh里再反过来调用onStarChanged，
@@ -66,9 +66,9 @@ class DefaultNovelItemActionListener(
                         R.string.clean_cache to CleanCache,
                         R.string.clean_this_novel to CleanData
                 )
-                val items = list.unzip().first.map { vh.ctx.getString(it) }.toTypedArray()
-                AlertDialog.Builder(vh.ctx)
-                    .setTitle(vh.ctx.getString(R.string.title_more_action))
+                val items = list.unzip().first.map { vh.context.getString(it) }.toTypedArray()
+                AlertDialog.Builder(vh.context)
+                    .setTitle(vh.context.getString(R.string.title_more_action))
                     .setItems(items) { _, i ->
                         on(list[i].second, vh)
                     }
@@ -150,7 +150,7 @@ class DefaultNovelItemActionListener(
     }
 
     private fun download(vh: NovelViewHolder) {
-        DataManager.download.askDownload(vh.ctx, vh.novelManager, vh.novel.readAtChapterIndex, true)
+        DataManager.download.askDownload(vh.context, vh.novelManager, vh.novel.readAtChapterIndex, true)
     }
 
     private fun pinned(vh: NovelViewHolder) {
@@ -209,32 +209,32 @@ class DefaultNovelItemActionListener(
         scope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val ctx = vh.ctx
+                    val context = vh.context
                     val types = LocalNovelType.values()
                     val items = types.map { type ->
                         when (type) {
                             LocalNovelType.TEXT -> R.string.select_item_text
                             LocalNovelType.EPUB -> R.string.select_item_epub
-                        }.let { ctx.getString(it) }
+                        }.let { context.getString(it) }
                     }.toTypedArray()
                     // 默认导出txt,
                     val defaultIndex = 0
-                    val type = ctx.uiSelect(ctx.getString(R.string.file_type), items, defaultIndex)?.let { selectIndex ->
+                    val type = context.uiSelect(context.getString(R.string.file_type), items, defaultIndex)?.let { selectIndex ->
                         types[selectIndex]
-                    } ?: interrupt(ctx.getString(R.string.tip_no_file_type))
+                    } ?: interrupt(context.getString(R.string.tip_no_file_type))
                     val charset = if (type == LocalNovelType.TEXT) {
-                        ctx.uiInput(ctx.getString(R.string.file_charset), Charsets.UTF_8.name())?.let {
+                        context.uiInput(context.getString(R.string.file_charset), Charsets.UTF_8.name())?.let {
                             try {
                                 charset(it)
                             } catch (e: UnsupportedCharsetException) {
-                                interrupt(ctx.getString(R.string.tip_not_support_charset, it))
+                                interrupt(context.getString(R.string.tip_not_support_charset, it))
                             }
-                        } ?: interrupt(ctx.getString(R.string.tip_no_charset))
+                        } ?: interrupt(context.getString(R.string.tip_no_charset))
                     } else {
                         Charsets.UTF_8
                     }
 
-                    NovelExporter.export(vh.ctx, type, charset, vh.novelManager)
+                    NovelExporter.export(vh.context, type, charset, vh.novelManager)
                 }
             } catch (e: Exception) {
                 val message = "导出小说<${vh.novel.bookId}>失败，"

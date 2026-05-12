@@ -97,19 +97,19 @@ class Refresher(
                 val gson = Gson()
                 val bookListJson = Gson().fromJson(text, JsonObject::class.java)
                 val version = bookListJson.get("version")?.asJsonPrimitive?.asInt
-                val bookListBean: BookListBean = when (version) {
+                val bookListBean: BookListV3 = when (version) {
                     3 -> {
-                        gson.fromJson(bookListJson, BookListBean::class.java)
+                        gson.fromJson(bookListJson, BookListV3::class.java)
                     }
                     2 -> {
-                        gson.fromJson(bookListJson, BookListBean2::class.java).let {
-                            BookListBean(it.name, it.list, it.version, UUID.randomUUID().toString())
+                        gson.fromJson(bookListJson, BookListV2::class.java).let {
+                            BookListV3(it.name, it.list, it.version, UUID.randomUUID().toString())
                         }
                     }
                     1 -> {
                         // 旧版version为null,
-                        val bookListBean1: BookListBean1 = gson.fromJson(bookListJson, BookListBean1::class.java)
-                        BookListBean(bookListBean1.name, bookListBean1.list.map {
+                        val bookListBean1: BookListV1 = gson.fromJson(bookListJson, BookListV1::class.java)
+                        BookListV3(bookListBean1.name, bookListBean1.list.map {
                             // 旧版的extra为完整地址，直接拿来，就算写进数据库了，刷新详情页后也会被新版的bookId覆盖，
                             NovelMinimal(site = it.site, author = it.author, name = it.name, detail = it.requester.extra)
                         }, 3, UUID.randomUUID().toString())

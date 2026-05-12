@@ -16,7 +16,7 @@ class DownloadMigration : Migration() {
     override val to: VersionName = VersionName("3.2.4")
     override val message: String = "下载设置"
 
-    override fun migrate(ctx: Context, from: VersionName) {
+    override fun migrate(context: Context, from: VersionName) {
         GeneralSettings.sharedPreferences.all.forEach { (key, value) ->
             when (key) {
                 "downloadThreadsLimit" -> DownloadSettings.downloadThreadsLimit = value as Int

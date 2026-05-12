@@ -7,7 +7,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.App
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.data.entity.BookList
@@ -28,7 +28,7 @@ import com.google.android.material.snackbar.Snackbar
  *
  * Created by AoEiuV020 on 2017.11.22-14:49:22.
  */
-class BookListActivity : AppCompatActivity(), IView {
+class BookListActivity : AppCompatActivity(), MvpView {
     companion object {
         fun start(context: Context, bookListId: Long) {
             context.startActivity(Intent(context, BookListActivity::class.java).putExtra("bookListId", App.gson.toJson(bookListId)))
@@ -38,7 +38,7 @@ class BookListActivity : AppCompatActivity(), IView {
     private lateinit var binding: ActivityBookListBinding
     // onCreate里赋值，必须有值，
     private var bookListId: Long = -1
-    private lateinit var presenter: BookListActivityPresenter
+    private lateinit var presenter: BookListDetailPresenter
 
     private val novelListAdapter by lazy {
         NovelListAdapter(initItem = { vh ->
@@ -91,7 +91,7 @@ class BookListActivity : AppCompatActivity(), IView {
         } else {
             androidx.recyclerview.widget.LinearLayoutManager(this)
         }
-        presenter = BookListActivityPresenter(bookListId)
+        presenter = BookListDetailPresenter(bookListId)
         binding.includeNovelList.rvNovel.adapter = novelListAdapter
         binding.includeNovelList.srlRefresh.setOnRefreshListener {
             forceRefresh()

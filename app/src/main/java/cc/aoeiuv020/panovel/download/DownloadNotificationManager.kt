@@ -12,17 +12,17 @@ import cc.aoeiuv020.panovel.util.NotificationChannelId
 import cc.aoeiuv020.panovel.util.NotifyLoopProxy
 
 class DownloadNotificationManager(
-        private val ctx: Context,
+        private val context: Context,
         novel: Novel
 ) {
 
     private val enable: Boolean get() = DownloadSettings.downloadProgress
-    private val proxy: NotifyLoopProxy = NotifyLoopProxy(ctx)
+    private val proxy: NotifyLoopProxy = NotifyLoopProxy(context)
     // 太早了Intent不能用，
-    private val nb: NotificationCompat.Builder by lazy {
-        val intent = Intent(ctx, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(ctx, 0, intent, 0)
-        val notificationBuilder = NotificationCompat.Builder(ctx, NotificationChannelId.download)
+    private val notificationBuilder: NotificationCompat.Builder by lazy {
+        val intent = Intent(context, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+        val notificationBuilder = NotificationCompat.Builder(context, NotificationChannelId.download)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
                 .setContentTitle(novel.name)
@@ -38,10 +38,10 @@ class DownloadNotificationManager(
         val downloads = 0
         val errors = 0
         val progress = ((exists + downloads + errors).toFloat() / ((exists + downloads + errors) + left) * 100).toInt()
-        nb.setContentText(ctx.getString(R.string.downloading_placeholder, exists, downloads, errors, left))
+        notificationBuilder.setContentText(context.getString(R.string.downloading_placeholder, exists, downloads, errors, left))
                 .setProgress(100, progress, false)
         if (enable) {
-            proxy.start(nb.build())
+            proxy.start(notificationBuilder.build())
         } else {
             // 以防万一通知开始了不结束，
             cancelNotification()
@@ -50,10 +50,10 @@ class DownloadNotificationManager(
 
     fun downloading(exists: Int, downloads: Int, errors: Int, left: Int) {
         val progress = ((exists + downloads + errors).toFloat() / ((exists + downloads + errors) + left) * 100).toInt()
-        nb.setContentText(ctx.getString(R.string.downloading_placeholder, exists, downloads, errors, left))
+        notificationBuilder.setContentText(context.getString(R.string.downloading_placeholder, exists, downloads, errors, left))
                 .setProgress(100, progress, false)
         if (enable) {
-            proxy.modify(nb.build())
+            proxy.modify(notificationBuilder.build())
         } else {
             // 以防万一通知开始了不结束，
             cancelNotification()
@@ -61,11 +61,11 @@ class DownloadNotificationManager(
     }
 
     fun downloadComplete(exists: Int, downloads: Int, errors: Int) {
-        nb.setContentText(ctx.getString(R.string.download_complete_placeholder, exists, downloads, errors))
+        notificationBuilder.setContentText(context.getString(R.string.download_complete_placeholder, exists, downloads, errors))
                 .setProgress(0, 0, false)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
         if (enable) {
-            proxy.complete(nb.build())
+            proxy.complete(notificationBuilder.build())
         } else {
             // 以防万一通知开始了不结束，
             cancelNotification()

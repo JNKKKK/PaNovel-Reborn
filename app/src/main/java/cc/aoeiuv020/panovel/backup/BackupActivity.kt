@@ -15,7 +15,7 @@ import android.view.MenuItem
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import cc.aoeiuv020.panovel.IView
+import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.databinding.ActivityExportBinding
 import cc.aoeiuv020.panovel.settings.BackupSettings
@@ -26,12 +26,12 @@ import cc.aoeiuv020.panovel.util.safelyShow
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import timber.log.Timber
-class BackupActivity : AppCompatActivity(), IView {
+class BackupActivity : AppCompatActivity(), MvpView {
     private lateinit var binding: ActivityExportBinding
 
     companion object {
-        fun start(ctx: Context) {
-            ctx.startActivity(Intent(ctx, BackupActivity::class.java))
+        fun start(context: Context) {
+            context.startActivity(Intent(context, BackupActivity::class.java))
         }
     }
 

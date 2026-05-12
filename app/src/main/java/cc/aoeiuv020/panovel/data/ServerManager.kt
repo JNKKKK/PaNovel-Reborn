@@ -11,7 +11,7 @@ import cc.aoeiuv020.panovel.server.toServer
  *
  * Created by AoEiuV020 on 2018.05.31-18:22:55.
  */
-class ServerManager(@Suppress("UNUSED_PARAMETER") ctx: Context) {
+class ServerManager(@Suppress("UNUSED_PARAMETER") context: Context) {
 
     /**
      * 订阅书架列表，覆盖所有tag,

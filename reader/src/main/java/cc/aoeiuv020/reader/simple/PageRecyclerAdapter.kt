@@ -13,7 +13,7 @@ import cc.aoeiuv020.reader.R
 internal class PageRecyclerAdapter(
         val reader: SimpleReader
 ) : androidx.recyclerview.widget.RecyclerView.Adapter<PageRecyclerAdapter.ViewHolder>() {
-    private val ctx get() = reader.ctx
+    private val context get() = reader.context
     private var chapterName: String = ""
     var data: List<String> = emptyList()
         set(value) {
@@ -30,11 +30,11 @@ internal class PageRecyclerAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageRecyclerAdapter.ViewHolder {
         return when (ItemType.values()[viewType]) {
             PageRecyclerAdapter.ItemType.TEXT -> {
-                val view = LayoutInflater.from(ctx).inflate(R.layout.simple_text_item, parent, false)
+                val view = LayoutInflater.from(context).inflate(R.layout.simple_text_item, parent, false)
                 TextViewHolder(view, this)
             }
             PageRecyclerAdapter.ItemType.IMAGE -> {
-                ImageViewHolder.create(ctx, parent, this)
+                ImageViewHolder.create(context, parent, this)
             }
         }
     }

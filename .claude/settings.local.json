@@ -4,9 +4,11 @@
       "Bash(*)",
       "Read",
       "Edit",
-      "Write"
+      "Write",
+      "WebFetch(domain:www.deqixs.co)",
+      "WebFetch(domain:m.cuoceng.com)"
     ],
     "deny": []
   },
-  "preferredNotifChannel" : "terminal_bell"
+  "preferredNotifChannel": "terminal_bell"
 }

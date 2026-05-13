@@ -48,6 +48,7 @@ class SiteListAdapter(
     inner class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
         private val tvStopUpkeep: TextView = itemView.findViewById(R.id.tvStopUpkeep)
         private val tvName: TextView = itemView.findViewById(R.id.tvName)
+        private val tvUrl: TextView = itemView.findViewById(R.id.tvUrl)
         private val ivSettings: ImageView = itemView.findViewById(R.id.ivSettings)
         val cbEnabled: CheckBox = itemView.findViewById(R.id.cbEnabled)
         lateinit var site: Site
@@ -76,6 +77,7 @@ class SiteListAdapter(
             tvName.text = data.name
             cbEnabled.isChecked = data.enabled
             val novelContext = DataManager.api.getNovelContextByName(data.name)
+            tvUrl.text = novelContext.homePage
             if (novelContext.upkeep) {
                 tvStopUpkeep.hide()
             } else {

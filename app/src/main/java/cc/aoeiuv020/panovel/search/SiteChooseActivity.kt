@@ -2,8 +2,6 @@ package cc.aoeiuv020.panovel.search
 
 import android.content.Context
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
@@ -92,18 +90,6 @@ class SiteChooseActivity : AppCompatActivity(), MvpView {
         return true
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_site_list, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.search -> FuzzySearchActivity.start(this)
-            else -> return super.onOptionsItemSelected(item)
-        }
-        return true
-    }
 
     fun showError(message: String, e: Throwable) {
         Toast.makeText(this, message + e, Toast.LENGTH_SHORT).show()

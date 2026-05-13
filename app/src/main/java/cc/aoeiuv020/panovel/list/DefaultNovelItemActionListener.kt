@@ -229,7 +229,7 @@ class DefaultNovelItemActionListener(
                     val defaultIndex = 0
                     val type = context.uiSelect(context.getString(R.string.file_type), items, defaultIndex)?.let { selectIndex ->
                         types[selectIndex]
-                    } ?: interrupt(context.getString(R.string.tip_no_file_type))
+                    } ?: return@withContext
                     val charset = if (type == LocalNovelType.TEXT) {
                         context.uiInput(context.getString(R.string.file_charset), Charsets.UTF_8.name())?.let {
                             try {
@@ -237,7 +237,7 @@ class DefaultNovelItemActionListener(
                             } catch (e: UnsupportedCharsetException) {
                                 interrupt(context.getString(R.string.tip_not_support_charset, it))
                             }
-                        } ?: interrupt(context.getString(R.string.tip_no_charset))
+                        } ?: return@withContext
                     } else {
                         Charsets.UTF_8
                     }

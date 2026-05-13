@@ -25,6 +25,21 @@
         tools:text="@string/app_name" />
 
     <TextView
+        android:id="@+id/tvUrl"
+        style="@style/TextSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        app:layout_constraintEnd_toStartOf="@+id/ivSettings"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/cbEnabled"
+        app:layout_constraintTop_toBottomOf="@+id/tvName"
+        tools:text="https://example.com" />
+
+    <TextView
         android:id="@+id/tvStopUpkeep"
         style="@style/TextBody1"
         android:layout_width="wrap_content"
@@ -40,7 +55,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/cbEnabled"
         android:textColor="@color/textWarning"
-        app:layout_constraintTop_toBottomOf="@+id/tvName"
+        app:layout_constraintTop_toBottomOf="@+id/tvUrl"
         android:text="@string/tip_stop_upkeep"
         tools:visibility="visible" />
 

@@ -96,7 +96,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
     val hostList: MutableList<String> = mutableListOf()
 
     override fun check(url: String): Boolean {
-        val domain = secondLevelDomain(URL(url).host)
+        val domain = secondLevelDomain(toURL(url).host)
         return super.check(url) || hostList.any {
             secondLevelDomain(it) == domain
         }

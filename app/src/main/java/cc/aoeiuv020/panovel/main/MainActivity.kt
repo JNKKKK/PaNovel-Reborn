@@ -2,51 +2,40 @@ package cc.aoeiuv020.panovel.main
 
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContracts
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.backup.BackupActivity
 import cc.aoeiuv020.panovel.booklist.BookListFragment
 import cc.aoeiuv020.panovel.bookshelf.BookshelfFragment
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.Novel
+import cc.aoeiuv020.panovel.databinding.ActivityMainBinding
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.history.HistoryFragment
 import cc.aoeiuv020.panovel.open.OpenManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.search.FuzzySearchActivity
 import cc.aoeiuv020.panovel.search.SiteChooseActivity
-import cc.aoeiuv020.panovel.settings.InterfaceSettings
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.settings.SettingsActivity
-import cc.aoeiuv020.panovel.databinding.ActivityMainBinding
 import cc.aoeiuv020.panovel.util.ProgressDialogCompat
 import cc.aoeiuv020.panovel.util.cancelAllNotify
 import cc.aoeiuv020.panovel.util.initNotificationChannel
 import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
-import net.lucode.hackware.magicindicator.ViewPagerHelper
-import net.lucode.hackware.magicindicator.buildins.UIUtil
-import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator
-import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.CommonNavigatorAdapter
-import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerIndicator
-import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerTitleView
-import net.lucode.hackware.magicindicator.buildins.commonnavigator.indicators.LinePagerIndicator
-import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.ColorTransitionPagerTitleView
-import timber.log.Timber
+import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.*
-import androidx.lifecycle.lifecycleScope
+import timber.log.Timber
 /**
  *
  * Created by AoEiuV020 on 2017.10.15-15:53:19.
@@ -170,18 +159,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initWidget() {
-        initTab(R.string.bookshelf to BookshelfFragment(),
-                R.string.book_list to BookListFragment(),
-                R.string.history to HistoryFragment())
+        val tabs = listOf(
+            R.string.bookshelf to { BookshelfFragment() },
+            R.string.book_list to { BookListFragment() },
+            R.string.history to { HistoryFragment() }
+        )
 
+        binding.container.adapter = object : FragmentStateAdapter(this) {
+            override fun getItemCount(): Int = tabs.size
+            override fun createFragment(position: Int): Fragment = tabs[position].second()
+        }
 
-        binding.container.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
-            override fun onPageScrollStateChanged(state: Int) {
-            }
+        TabLayoutMediator(binding.tabLayout, binding.container) { tab, position ->
+            tab.text = getString(tabs[position].first)
+        }.attach()
 
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-            }
-
+        binding.container.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 if (position == 1) {
                     binding.fab.show()
@@ -189,63 +182,10 @@ class MainActivity : AppCompatActivity() {
                     binding.fab.hide()
                 }
             }
-
         })
 
         binding.fab.setOnClickListener { _ ->
             bookListFragment?.newBookList()
-        }
-    }
-
-    private fun initTab(vararg pair: Pair<Int, androidx.fragment.app.Fragment>) {
-        val (titleIdList, fragmentList) = pair.unzip()
-        val pagerAdapter = object : androidx.fragment.app.FragmentPagerAdapter(supportFragmentManager) {
-            override fun getItem(position: Int): androidx.fragment.app.Fragment = fragmentList[position]
-
-            override fun getCount(): Int = fragmentList.size
-        }
-
-
-        binding.container.adapter = pagerAdapter
-
-        val commonNavigator = CommonNavigator(this)
-        val titleList = titleIdList.map {
-            getString(it)
-        }
-        commonNavigator.adapter = object : CommonNavigatorAdapter() {
-
-            override fun getCount(): Int = titleList.size
-
-            override fun getTitleView(context: Context, index: Int): IPagerTitleView {
-                val colorTransitionPagerTitleView = ColorTransitionPagerTitleView(context)
-                colorTransitionPagerTitleView.normalColor = Color.GRAY
-                colorTransitionPagerTitleView.selectedColor = Color.WHITE
-                colorTransitionPagerTitleView.text = titleList[index]
-                colorTransitionPagerTitleView.setOnClickListener { binding.container.currentItem = index }
-                return colorTransitionPagerTitleView
-            }
-
-            override fun getIndicator(context: Context): IPagerIndicator {
-                val indicator = LinePagerIndicator(context)
-                indicator.mode = LinePagerIndicator.MODE_EXACTLY
-                indicator.lineWidth = UIUtil.dip2px(context, 10.0).toFloat()
-                indicator.setColors(Color.WHITE)
-                return indicator
-            }
-        }
-        binding.magicIndicator.navigator = commonNavigator
-        val titleContainer = commonNavigator.titleContainer
-        titleContainer.showDividers = LinearLayout.SHOW_DIVIDER_MIDDLE
-        titleContainer.dividerDrawable = object : ColorDrawable() {
-            override fun getIntrinsicWidth(): Int {
-                return (15 * resources.displayMetrics.density).toInt()
-            }
-        }
-
-        ViewPagerHelper.bind(binding.magicIndicator, binding.container)
-
-        if (InterfaceSettings.tabGravityCenter) {
-            binding.llIndicator.gravity = Gravity.CENTER_HORIZONTAL
         }
     }
 

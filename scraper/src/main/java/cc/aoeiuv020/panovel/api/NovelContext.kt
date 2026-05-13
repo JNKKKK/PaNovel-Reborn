@@ -1,5 +1,6 @@
 package cc.aoeiuv020.panovel.api
 
+import cc.aoeiuv020.base.jar.toURL
 import cc.aoeiuv020.json.AppJson
 import cc.aoeiuv020.panovel.api.site.*
 import kotlinx.serialization.encodeToString
@@ -222,7 +223,7 @@ abstract class NovelContext {
      *
      */
     open fun cookieDomainList(): List<String> {
-        val host = URL(site.baseUrl).host
+        val host = toURL(site.baseUrl).host
         val domain = secondLevelDomain(host)
         return listOf(domain)
     }
@@ -317,7 +318,7 @@ abstract class NovelContext {
      * 有的网站可能用到站外地址，比如使用了百度搜索，不能单纯缓存host,
      */
     open fun check(url: String): Boolean = try {
-        secondLevelDomain(URL(site.baseUrl).host) == secondLevelDomain(URL(url).host)
+        secondLevelDomain(toURL(site.baseUrl).host) == secondLevelDomain(toURL(url).host)
     } catch (_: Exception) {
         false
     }
@@ -335,18 +336,15 @@ abstract class NovelContext {
      * 只支持extra本身就是完整地址和extra为斜杆/开头的file两种情况，
      */
     protected fun absUrl(extra: String): String = try {
-        // 先尝试extra是否是个合法的地址
-        // 好像没必要，URL会直接判断，
-        URL(extra)
+        toURL(extra)
     } catch (e: MalformedURLException) {
-        // 再尝试extra当成spec部分，拼接上网站baseUrl,
-        URL(URL(site.baseUrl), extra)
+        toURL(toURL(site.baseUrl), extra)
     }.toExternalForm()
 
     /**
      * 从extra中获取图片URL, 正常直接就是完整路径，
      * TODO: 考虑缓存主页URL,
      */
-    open fun getImage(extra: String): URL = URL(URL(site.baseUrl), extra)
+    open fun getImage(extra: String): URL = toURL(toURL(site.baseUrl), extra)
 
 }

@@ -69,6 +69,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
      *
      * @deprecated
      */
+    @Deprecated
     public String readLine(String charset) throws IOException {
         ByteArrayOutputStream o = new ByteArrayOutputStream();
         int c = -1;

@@ -2,6 +2,7 @@ package cc.aoeiuv020.panovel.local
 
 import cc.aoeiuv020.base.jar.findAll
 import cc.aoeiuv020.base.jar.textList
+import cc.aoeiuv020.base.jar.toURL
 import cc.aoeiuv020.regex.pick
 import io.documentnode.epub4j.domain.Book
 import io.documentnode.epub4j.domain.TOCReference
@@ -24,7 +25,7 @@ class EpubParser(
 ) : LocalNovelParser(file) {
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass.simpleName)
     // jar协议最后的斜杆/是必须的，拼接的时候不要重复了，
-    private val rootUrl = URL("jar:${file.toURI()}!/")
+    private val rootUrl = toURL("jar:${file.toURI()}!/")
 
     @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
     override fun parse(): LocalNovelInfo {
@@ -38,7 +39,7 @@ class EpubParser(
 
         val book: Book = file.inputStream().use { EpubReader().readEpub(it) }
 
-        val opfUrl = URL(rootUrl, book.opfResource.href)
+        val opfUrl = toURL(rootUrl, book.opfResource.href)
 
         // 一般来说都是存在第一个非空白title的，
         name = book.metadata?.titles?.firstOrNull { it.isNotBlank() }?.trim()
@@ -116,7 +117,7 @@ class EpubParser(
 
     override fun getNovelContent(chapter: LocalNovelChapter): List<String> {
         val extra = chapter.extra
-        val chapterUrl = URL(rootUrl, extra)
+        val chapterUrl = toURL(rootUrl, extra)
         logger.debug("getContent: {}", chapterUrl)
         return chapterUrl.openStream().use { input ->
             // 本章地址作为baseUri, 才能正确得到引用的资源，比如图片，
@@ -130,7 +131,7 @@ class EpubParser(
     // 封面extra只有包内路径，要展开成完整jar协议地址，
     override fun getImage(extra: String): URL {
         // api19模拟器上测试发现文件路径会重复出现，电脑和高版本安卓没有出现，
-        return URL(rootUrl, extra.removePrefix(rootUrl.toString())).also {
+        return toURL(rootUrl, extra.removePrefix(rootUrl.toString())).also {
             logger.debug("getImage <{}> -> <{}>", extra, it)
         }
     }
@@ -141,6 +142,6 @@ class EpubParser(
      * 所以要删除path开头和根目录开关一致的部分，
      */
     private fun getPath(base: URL, href: String): String {
-        return URL(base, href).path.removePrefix(rootUrl.path)
+        return toURL(base, href).path.removePrefix(rootUrl.path)
     }
 }

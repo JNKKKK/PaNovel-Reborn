@@ -35,22 +35,19 @@
             </androidx.appcompat.widget.Toolbar>
 
 
-            <LinearLayout
-                android:id="@+id/llIndicator"
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <net.lucode.hackware.magicindicator.MagicIndicator
-                    android:id="@+id/magic_indicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="56dp" />
-
-            </LinearLayout>
+                app:tabGravity="center"
+                app:tabMode="fixed"
+                app:tabIndicatorColor="@android:color/white"
+                app:tabSelectedTextColor="@android:color/white"
+                app:tabTextColor="@android:color/darker_gray" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.viewpager.widget.ViewPager
+        <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

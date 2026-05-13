@@ -217,7 +217,7 @@ fun Element.absXlinkHref(): String = absUrl(baseUri(), xlinkHref())
 // Jsoup的absUrl处理jar协议会出问题，错误在jar:后添加一个斜杆，
 private fun absUrl(base: String, attr: String): String =
         if (attr.isBlank()) ""
-        else URL(URL(base), attr).toString()
+        else toURL(toURL(base), attr).toString()
 
 /**
  * 地址仅路径，斜杆/开头，
@@ -225,7 +225,7 @@ private fun absUrl(base: String, attr: String): String =
 fun Element.path(): String = path(absHref())
 
 fun Element.title(): String = attr("title")
-fun Element.ownerPath(): String = URL(ownerDocument()!!.location()).path
+fun Element.ownerPath(): String = toURL(ownerDocument()!!.location()).path
 // kotlin的trim有包括utf8的特殊的空格，和java的trim不重复，
 fun TextNode.textNotBlank(): String? = this.text().trim().takeIf(String::isNotBlank)
 

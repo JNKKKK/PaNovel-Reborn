@@ -42,7 +42,6 @@ Requires JDK 21. Uses Gradle 8.7, AGP 8.3.2, Kotlin 1.9.22.
 - `ApiManager` – Novel website context/scraping
 - `CookieManager` – Cookie persistence
 - `CacheManager` – Content caching (IronDB + kotlinx-serialization)
-- `ServerManager` – Push notifications and sync
 - `LocalManager` – Local file novel support
 - `DownloadManager` – Download management
 
@@ -67,8 +66,6 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 | pager | Android | Pagination library |
 | reader | Android | Novel reader UI |
 | filepicker | Android | File picker UI |
-| batchRefresher | Java | Standalone CLI for batch refreshing |
-| server | Java | Server communication |
 
 ## Key Patterns
 
@@ -123,6 +120,8 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 - Removed ad system entirely (GDT SDK, splash ads, list ads, AdSettings)
 - Consolidated backup to single `BackupImpl` (removed versioned V1-V3 importers)
 - Simplified book list sharing to single `SharedBookList` (removed V1/V2 legacy formats)
+- Removed `server` module and `batchRefresher` module entirely (server infra dead, push notifications via JPush removed)
+- Removed `DnsUtils` (was only used for server config via DNS TXT records)
 - `./gradlew assembleDebug` passes on JDK 21
 
 ## Release Workflow

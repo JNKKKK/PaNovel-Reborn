@@ -4,10 +4,8 @@ import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.download.DownloadingNotificationManager
 import cc.aoeiuv020.panovel.local.LocalNovelProvider
-import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.DownloadSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
-import kotlinx.coroutines.*
 import timber.log.Timber
 import java.net.URL
 import java.util.*
@@ -26,8 +24,6 @@ class NovelManager(
         private val app: AppDatabaseManager,
         private val provider: NovelProvider,
         private val cache: CacheManager,
-        // server可空，本地小说不传入server，相关方法也都不调用，
-        private val server: ServerManager?,
         private val dnmLocal: ThreadLocal<DownloadingNotificationManager>
 ) {
 
@@ -117,22 +113,10 @@ class NovelManager(
         // 不管是否真的有更新，都更新数据库，至少checkUpdateTime是必须要更新的，
         app.updateChapters(novel)
         cache.saveChapters(novel, list)
-        // 书架上的小说自动缓存一定章节，
-        // 要在缓存之后下载，因为是根据缓存列表下载的，
         if (novel.bookshelf
                 && list.size - cachedSize > 0
                 && list.size - cachedSize <= DownloadSettings.autoDownloadCount) {
             DataManager.download.download(this, cachedSize, list.size - cachedSize)
-        }
-        // 这里异步，不影响刷新结果返回的时间，
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                server?.touchUpdate(novel)
-            } catch (e: Exception) {
-                val message = "上传<${novel.bookId}>刷新结果失败,"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-            }
         }
         return list
     }
@@ -173,12 +157,6 @@ class NovelManager(
     fun updateBookshelf(checked: Boolean) {
         novel.bookshelf = checked
         app.db.novelDao().updateBookshelf(novel.nId, novel.bookshelf)
-        // 向极光订阅/取消对应tag,
-        if (novel.bookshelf) {
-            server?.addTags(listOf(novel))
-        } else {
-            server?.removeTags(listOf(novel))
-        }
     }
 
     fun cleanCache() {

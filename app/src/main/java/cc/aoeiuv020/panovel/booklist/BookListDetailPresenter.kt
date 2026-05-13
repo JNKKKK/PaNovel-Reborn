@@ -45,22 +45,6 @@ class BookListDetailPresenter(private val bookListId: Long) : Presenter<BookList
         }
     }
 
-    fun askUpdate(novelList: List<NovelManager>) {
-        scope.launch {
-            try {
-                val resultList = withContext(Dispatchers.IO) {
-                    DataManager.askUpdate(novelList)
-                }
-                view?.showAskUpdateResult(resultList)
-            } catch (e: Exception) {
-                val message = "询问服务器小说列表更新失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                view?.askUpdateError(message, e)
-            }
-        }
-    }
-
     fun add(novelManager: NovelManager) {
         scope.launch {
             try {

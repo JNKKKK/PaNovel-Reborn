@@ -241,22 +241,6 @@ class MainActivity : AppCompatActivity() {
         }.create().safelyShow()
     }
 
-    private fun subscript() {
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    // 有检索书架列表，所以必须异步，
-                    DataManager.resetSubscript()
-                }
-            } catch (e: Exception) {
-                val message = "订阅书架的小说失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                showError(message, e)
-            }
-        }
-    }
-
     private fun downloadAll() {
         lifecycleScope.launch {
             try {
@@ -284,7 +268,6 @@ class MainActivity : AppCompatActivity() {
             R.id.search -> FuzzySearchActivity.start(this)
             R.id.scan -> scan()
             R.id.open -> open()
-            R.id.subscript -> subscript()
             R.id.cacheAll -> downloadAll()
             R.id.source -> SiteChooseActivity.start(this)
             R.id.explain -> showExplain()

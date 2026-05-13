@@ -5,7 +5,6 @@ import android.os.Process
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import cc.aoeiuv020.panovel.data.DataManager
-import cc.aoeiuv020.panovel.util.DnsUtils
 import cc.aoeiuv020.ssl.TLSSocketFactory
 import cc.aoeiuv020.ssl.TrustManagerUtils
 import com.bumptech.glide.Glide
@@ -37,8 +36,6 @@ class App : MultiDexApplication() {
 
         timber.log.Timber.plant(timber.log.Timber.DebugTree())
 
-        initDnsUtils()
-
         initJson()
 
         initDataSources()
@@ -51,10 +48,6 @@ class App : MultiDexApplication() {
 
         initJar()
 
-    }
-
-    private fun initDnsUtils() {
-        DnsUtils.init(applicationContext)
     }
 
     /**

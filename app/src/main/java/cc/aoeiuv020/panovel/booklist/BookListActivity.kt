@@ -14,7 +14,6 @@ import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.list.NovelViewHolder
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.ListSettings
-import cc.aoeiuv020.panovel.settings.ServerSettings
 import cc.aoeiuv020.panovel.databinding.ActivityBookListBinding
 import android.content.Intent
 import android.widget.Toast
@@ -143,23 +142,6 @@ class BookListActivity : AppCompatActivity(), MvpView {
 
     fun showNovelList(list: List<NovelManager>) {
         novelListAdapter.data = list
-        if (ServerSettings.askUpdate) {
-            presenter.askUpdate(list)
-        } else {
-            binding.includeNovelList.srlRefresh.isRefreshing = false
-        }
-    }
-
-    fun showAskUpdateResult(hasUpdateList: List<Long>) {
-        binding.includeNovelList.srlRefresh.isRefreshing = false
-        // 就算是空列表也要传进去，更新一下刷新时间，
-        // 空列表可能是因为连不上服务器，
-        novelListAdapter.hasUpdate(hasUpdateList)
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    fun askUpdateError(message: String, e: Throwable) {
-        // 询问服务器更新出错不展示，
         binding.includeNovelList.srlRefresh.isRefreshing = false
     }
 

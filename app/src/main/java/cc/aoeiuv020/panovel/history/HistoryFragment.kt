@@ -74,20 +74,6 @@ class HistoryFragment : androidx.fragment.app.Fragment(), MvpView {
 
     fun showNovelList(list: List<NovelManager>) {
         novelListAdapter.data = list
-        // 历史页面不询问章节更新，
-        binding.srlRefresh.isRefreshing = false
-    }
-
-    fun showAskUpdateResult(hasUpdateList: List<Long>) {
-        binding.srlRefresh.isRefreshing = false
-        // 就算是空列表也要传进去，更新一下刷新时间，
-        // 空列表可能是因为连不上服务器，
-        novelListAdapter.hasUpdate(hasUpdateList)
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    fun askUpdateError(message: String, e: Throwable) {
-        // 询问服务器更新出错不展示，
         binding.srlRefresh.isRefreshing = false
     }
 

@@ -2,7 +2,6 @@ package cc.aoeiuv020.panovel.data.entity
 
 import cc.aoeiuv020.panovel.api.NovelItem
 import kotlinx.serialization.Serializable
-import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel as ServerNovel
 
 @Serializable
 data class NovelMinimal(
@@ -31,9 +30,6 @@ data class NovelMinimal(
 ) {
     constructor(novelItem: NovelItem)
             : this(novelItem.site, novelItem.author, novelItem.name, novelItem.extra)
-
-    constructor(novel: ServerNovel)
-            : this(novel.site!!, novel.author!!, novel.name!!, novel.detail!!)
 
     constructor(novel: Novel)
             : this(novel.site, novel.author, novel.name, novel.detail)

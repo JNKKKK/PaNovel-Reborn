@@ -14,17 +14,6 @@
         android:key="shareExpiration"
         android:title="@string/book_list_share_expiration" />
 
-    <!--
-        <SwitchPreference
-            android:key="subscribe_novel_update"
-            android:title="@string/subscribe_novel_update" />
-    -->
-
-    <SwitchPreference
-        android:defaultValue="true"
-        android:key="reportCrash"
-        android:title="@string/report_crash" />
-
     <cc.aoeiuv020.panovel.settings.ColorPickerPreference
         android:defaultValue="0xff000000"
         android:key="chapterColorDefault"

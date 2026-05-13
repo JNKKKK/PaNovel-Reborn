@@ -22,8 +22,6 @@ object OtherSettings : Pref {
      * 书单分享后网上保存的时限，
      */
     var shareExpiration: Expiration by Delegates.enum(Expiration.NONE)
-    var reportCrash: Boolean by Delegates.boolean(true)
-
 
     var chapterColorDefault: Int by Delegates.int(0xff000000.toInt())
 

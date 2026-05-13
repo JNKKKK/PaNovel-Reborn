@@ -105,7 +105,7 @@ class BackupImpl : Backup {
                 "Download" -> importPref(DownloadSettings, file)
                 "Interface" -> importPref(InterfaceSettings, file)
                 "Location" -> importPref(LocationSettings, file)
-                "Server" -> importPref(ServerSettings, file)
+                "Server" -> 0
                 "Reader_BatteryMargins" -> importPref(ReaderSettings.batteryMargins, file)
                 "Reader_BookNameMargins" -> importPref(ReaderSettings.bookNameMargins, file)
                 "Reader_ChapterNameMargins" -> importPref(ReaderSettings.chapterNameMargins, file)
@@ -151,10 +151,6 @@ class BackupImpl : Backup {
                 "largeView" -> editor.putBoolean(key, prim.boolean)
                 "pinnedBackgroundColor" -> editor.putInt(key, prim.int)
                 "refreshOnSearch" -> editor.putBoolean(key, prim.boolean)
-                "reportCrash" -> editor.putBoolean(key, prim.boolean)
-                "qidianshuju" -> editor.putBoolean(key, prim.boolean)
-                "sp7" -> editor.putBoolean(key, prim.boolean)
-                "qidiantu" -> editor.putBoolean(key, prim.boolean)
                 "volumeKeyScroll" -> editor.putBoolean(key, prim.boolean)
                 "tabGravityCenter" -> editor.putBoolean(key, prim.boolean)
                 "animationSpeed" -> editor.putFloat(key, prim.float)
@@ -184,13 +180,7 @@ class BackupImpl : Backup {
                 "dateFormat" -> editor.putString(key, prim.content)
                 "segmentIndentation" -> editor.putString(key, prim.content)
                 "enabled" -> editor.putBoolean(key, prim.boolean)
-                "serverAddress" -> editor.putString(key, prim.content)
-                "notifyNovelUpdate" -> editor.putBoolean(key, prim.boolean)
-                "askUpdate" -> editor.putBoolean(key, prim.boolean)
-                "singleNotification" -> editor.putBoolean(key, prim.boolean)
-                "notifyPinnedOnly" -> editor.putBoolean(key, prim.boolean)
                 "dotNotifyUpdate" -> editor.putBoolean(key, prim.boolean)
-                "subscriptToast" -> editor.putBoolean(key, prim.boolean)
                 "bottom" -> editor.putInt(key, prim.int)
                 "left" -> editor.putInt(key, prim.int)
                 "right" -> editor.putInt(key, prim.int)
@@ -265,7 +255,7 @@ class BackupImpl : Backup {
         @Suppress("RemoveExplicitTypeArguments")
         var count = listOf<Pref>(
             GeneralSettings, ListSettings, OtherSettings, ReaderSettings,
-            DownloadSettings, InterfaceSettings, LocationSettings, ServerSettings,
+            DownloadSettings, InterfaceSettings, LocationSettings,
             ReaderSettings.batteryMargins,
             ReaderSettings.bookNameMargins,
             ReaderSettings.chapterNameMargins,

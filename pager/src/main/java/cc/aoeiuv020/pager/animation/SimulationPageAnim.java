@@ -269,7 +269,7 @@ public class SimulationPageAnim extends HorizonPageAnim {
         canvas.save();
         try {
             canvas.clipPath(mPath0);
-            canvas.clipPath(mPath1, Region.Op.INTERSECT);
+            canvas.clipPath(mPath1);
         } catch (Exception e) {
         }
 
@@ -376,7 +376,7 @@ public class SimulationPageAnim extends HorizonPageAnim {
             } else {
                 canvas.clipPath(mPath0, Region.Op.XOR);
             }
-            canvas.clipPath(mPath1, Region.Op.INTERSECT);
+            canvas.clipPath(mPath1);
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -425,7 +425,7 @@ public class SimulationPageAnim extends HorizonPageAnim {
             } else {
                 canvas.clipPath(mPath0, Region.Op.XOR);
             }
-            canvas.clipPath(mPath1, Region.Op.INTERSECT);
+            canvas.clipPath(mPath1);
         } catch (Exception e) {
         }
 
@@ -488,7 +488,7 @@ public class SimulationPageAnim extends HorizonPageAnim {
         canvas.save();
         try {
             canvas.clipPath(mPath0);
-            canvas.clipPath(mPath1, Region.Op.INTERSECT);
+            canvas.clipPath(mPath1);
         } catch (Exception e) {
         }
 

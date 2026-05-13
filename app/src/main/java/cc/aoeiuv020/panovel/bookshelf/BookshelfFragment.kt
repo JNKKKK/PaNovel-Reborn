@@ -12,7 +12,6 @@ import cc.aoeiuv020.panovel.main.MainActivity
 import cc.aoeiuv020.panovel.settings.ItemAction.Pinned
 import cc.aoeiuv020.panovel.settings.ItemAction.RemoveBookshelf
 import cc.aoeiuv020.panovel.settings.ListSettings
-import cc.aoeiuv020.panovel.settings.ServerSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 
@@ -93,19 +92,6 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
     fun showNovelList(list: List<NovelManager>) {
         novelListAdapter.data = list
         binding.srlRefresh.isRefreshing = false
-        if (ServerSettings.askUpdate) {
-            presenter.askUpdate(list)
-        }
-    }
-
-    fun showAskUpdateResult(hasUpdateList: List<Long>) {
-        // 就算是空列表也要传进去，更新一下刷新时间，
-        // 空列表可能是因为连不上服务器，
-        novelListAdapter.hasUpdate(hasUpdateList)
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    fun askUpdateError(message: String, e: Throwable) {
     }
 
     fun showError(message: String, e: Throwable) {

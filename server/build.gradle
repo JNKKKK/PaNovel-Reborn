@@ -1,4 +1,0 @@
-dependencies {
-    api 'org.jsoup:jsoup:' + jsoup_version
-    implementation project(':core')
-}

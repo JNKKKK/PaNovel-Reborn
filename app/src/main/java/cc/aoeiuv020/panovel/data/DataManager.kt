@@ -8,7 +8,6 @@ import androidx.annotation.WorkerThread
 import cc.aoeiuv020.panovel.api.NovelContext
 import cc.aoeiuv020.panovel.data.entity.*
 import cc.aoeiuv020.panovel.local.ImportRequireValue
-import cc.aoeiuv020.panovel.server.dal.model.QueryResponse
 import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import okhttp3.Cookie
@@ -16,7 +15,6 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import timber.log.Timber
 import java.util.*
-import cc.aoeiuv020.panovel.server.dal.model.autogen.Novel as ServerNovel
 
 /**
  * 封装多个数据库的联用，
@@ -32,8 +30,6 @@ object DataManager {
     lateinit var cookie: CookieManager
         private set
     lateinit var cache: CacheManager
-        private set
-    lateinit var server: ServerManager
         private set
     @SuppressLint("StaticFieldLeak")
     lateinit var local: LocalManager
@@ -51,7 +47,6 @@ object DataManager {
         api = ApiManager(context)
         cookie = CookieManager(context)
         cache = CacheManager(context)
-        server = ServerManager(context)
         local = LocalManager(context)
         download = DownloadManager(context)
     }
@@ -62,33 +57,13 @@ object DataManager {
 
     fun listBookshelf(): List<NovelManager> = app.listBookshelf(ListSettings.bookshelfOrderBy).map { it.toManager() }
 
-    /**
-     * 收到更新推送, 主动更新一下看看是不是真的有更新，
-     *
-     * @return 返回小说对象，以及是否真的刷出了更新，
-     */
-    fun receiveUpdate(novel: ServerNovel): Pair<Novel, Boolean> {
-        val localNovel = app.queryOrNewNovel(NovelMinimal(novel))
-        return localNovel to if (localNovel.chaptersCount < (novel.chaptersCount ?: 0)) {
-            // 章节数更多了表示确实有更新，
-            // 不能太相信推送的数据，一切以本地自己刷新的为准，
-            val oldCount = localNovel.chaptersCount
-            localNovel.toManager().requestChapters(true)
-            val newCount = localNovel.chaptersCount
-            newCount > oldCount
-        } else {
-            false
-        }
-    }
-
     fun getNovelManager(id: Long): NovelManager =
             app.query(id).toManager()
 
     private fun Novel.toManager() = if (site.startsWith(".")) {
-        // 网站名是点.开头的表示本地小说，让LocalManager提供数据，
-        NovelManager(this, app, local.getNovelProvider(this), cache, null, download.dnmLocal)
+        NovelManager(this, app, local.getNovelProvider(this), cache, download.dnmLocal)
     } else {
-        NovelManager(this, app, api.getNovelProvider(this), cache, server, download.dnmLocal)
+        NovelManager(this, app, api.getNovelProvider(this), cache, download.dnmLocal)
     }
 
     fun allNovelContexts() = api.contexts
@@ -265,14 +240,10 @@ object DataManager {
 
     fun addToBookshelf(bookList: BookList) {
         app.addBookshelf(bookList)
-        // 向极光订阅对应tag,
-        server.addTags(getNovelFromBookList(bookList.nId))
     }
 
     fun removeFromBookshelf(bookList: BookList) {
         app.removeBookshelf(bookList)
-        // 向极光取消订阅对应tag,
-        server.removeTags(getNovelFromBookList(bookList.nId))
     }
 
     /**
@@ -280,30 +251,21 @@ object DataManager {
      */
     fun importBookshelfWithProgress(list: List<NovelWithProgress>) = app.db.runInTransaction {
         Timber.d("$list")
-        val novelList = list.mapNotNull {
-            // 查询或插入，得到小说对象，再更新进度，
+        list.mapNotNull {
             val novel = app.queryOrNewNovel(NovelMinimal(it))
             if (!app.checkSiteSupport(novel)) {
-                // 网站不在支持列表就不添加，
-                // 基本信息已经写入数据库也无所谓了，
                 return@mapNotNull null
             }
             novel.readAtChapterIndex = it.readAtChapterIndex
             novel.readAtTextIndex = it.readAtTextIndex
-            // 顺便更新下阅读至的章节名，
             if (novel.chapters != null) {
                 novel.readAtChapterName = cache.loadChapters(novel)?.getOrNull(novel.readAtChapterIndex)?.name ?: ""
             }
-            // 加入书架，
             novel.bookshelf = true
-            // 不调用方法updateBookshelf，因为这个方法包含订阅更新推送，
             app.updateBookshelf(novel)
-            // 普通更新阅读进度，比起来少了阅读时间，无所谓了，
             updateReadStatus(novel)
             novel
         }
-        // 向极光订阅/取消对应tag,
-        server.addTags(novelList)
     }
 
     /**
@@ -311,28 +273,19 @@ object DataManager {
      */
     fun importBookshelf(list: List<NovelMinimal>) = app.db.runInTransaction {
         Timber.d("$list")
-        val novelList = list.mapNotNull {
-            // 查询或插入，得到小说对象，再更新进度，
+        list.mapNotNull {
             val novel = app.queryOrNewNovel(it)
             if (!app.checkSiteSupport(novel)) {
-                // 网站不在支持列表就不添加，
-                // 基本信息已经写入数据库也无所谓了，
                 return@mapNotNull null
             }
-            // 顺便更新下阅读至的章节名，
             if (novel.chapters != null) {
                 novel.readAtChapterName = cache.loadChapters(novel)?.getOrNull(novel.readAtChapterIndex)?.name ?: ""
             }
-            // 加入书架，
             novel.bookshelf = true
-            // 不调用方法updateBookshelf，因为这个方法包含订阅更新推送，
             app.updateBookshelf(novel)
-            // 普通更新阅读进度，比起来少了阅读时间，无所谓了，
             updateReadStatus(novel)
             novel
         }
-        // 向极光订阅/取消对应tag,
-        server.addTags(novelList)
     }
 
     /**
@@ -374,15 +327,6 @@ object DataManager {
 
     fun cleanHistory() = app.cleanHistory()
 
-    /**
-     * 重置书架订阅情况，覆盖此前的所有tags,
-     * 向极光订阅书架上的小说，
-     * 只能异步，所以传入回调，
-     * 回调是收到极光的广播时调用，在ui线程的，
-     */
-    fun resetSubscript() =
-            server.setTags(app.listBookshelf(ListSettings.bookshelfOrderBy))
-
     fun removeAllCookies() {
         removeWebViewCookies()
         syncCookies(appContext)
@@ -416,37 +360,6 @@ object DataManager {
         cache.saveChapters(novel, chapterList)
         Timber.d("importLocalNovel result: $novel")
         return novel
-    }
-
-    /**
-     * 返回有更新的小说的id,
-     */
-    fun askUpdate(list: List<NovelManager>): List<Long> {
-        Timber.d("askUpdate ${list.map { it.novel.bookId }}")
-        // 用无视服务器端返回的顺序，方便改成只返回部分数据，
-        // 连接不上服务器时返回emptyMap，
-        val resultMap: Map<Long, QueryResponse> = server.askUpdate(list.mapNotNull {
-            // 本地小说不询问更新，
-            if (it.novel.isLocalNovel) null else it.novel
-        })
-        return list.mapNotNull {
-            val novel = it.novel
-            // 不在返回map里的无视，如果连接不上服务器就全都无视，
-            val result = resultMap[novel.nId] ?: return@mapNotNull null
-            if (result.chaptersCount > novel.chaptersCount) {
-                // 只对比章节数，如果更大就是有更新，返回，最后通知刷新列表，开始刷新小说，
-                Timber.d("${novel.bookId} has update ${result.chaptersCount} > ${novel.chaptersCount}")
-                novel.nId
-            } else {
-                Timber.d("${novel.bookId} no update ${result.chaptersCount} <= ${novel.chaptersCount}")
-                // 如果没更新，就保存服务器上的更新时间，如果更大的话，
-                novel.apply {
-                    // 不更新receiveUpdateTime，不准，有时别人比较晚收到同一个更新然后推上去被拿到，
-                    checkUpdateTime = maxOf(checkUpdateTime, result.checkUpdateTime)
-                }
-                null
-            }
-        }
     }
 
     @WorkerThread

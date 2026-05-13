@@ -1,7 +1,5 @@
 package cc.aoeiuv020.panovel.search
 
-import android.graphics.Color
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +12,6 @@ import cc.aoeiuv020.panovel.data.entity.Site
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 import cc.aoeiuv020.panovel.util.tip
-import com.bumptech.glide.Glide
 
 /**
  * Created by AoEiuV020 on 2018.05.13-16:50:53.
@@ -51,8 +48,6 @@ class SiteListAdapter(
     inner class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
         private val tvStopUpkeep: TextView = itemView.findViewById(R.id.tvStopUpkeep)
         private val tvName: TextView = itemView.findViewById(R.id.tvName)
-        private val ivLogo: ImageView = itemView.findViewById(R.id.ivLogo)
-        private val tvLogo: TextView = itemView.findViewById(R.id.tvLogo)
         private val ivSettings: ImageView = itemView.findViewById(R.id.ivSettings)
         val cbEnabled: CheckBox = itemView.findViewById(R.id.cbEnabled)
         lateinit var site: Site
@@ -79,20 +74,6 @@ class SiteListAdapter(
         fun bind(data: Site) {
             this.site = data
             tvName.text = data.name
-            val logoUri = Uri.parse(data.logo)
-            if (logoUri.scheme == "text") {
-                tvLogo.show()
-                ivLogo.hide()
-                val foregroundColor = logoUri.getQueryParameter("fc") ?: "111111"
-                val backgroundColor = logoUri.getQueryParameter("bc") ?: "ffffff"
-                tvLogo.setBackgroundColor(Color.parseColor("#$backgroundColor"))
-                tvLogo.setTextColor(Color.parseColor("#$foregroundColor"))
-                tvLogo.text = logoUri.host
-            } else {
-                tvLogo.hide()
-                ivLogo.show()
-                Glide.with(ivLogo).load(data.logo).into(ivLogo)
-            }
             cbEnabled.isChecked = data.enabled
             val novelContext = DataManager.api.getNovelContextByName(data.name)
             if (novelContext.upkeep) {

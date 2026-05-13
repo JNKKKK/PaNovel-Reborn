@@ -36,8 +36,8 @@ abstract class SiteDao {
     @Query("select count(*) from Site where name = :name")
     abstract fun checkSiteSupport(name: String): Boolean
 
-    @Query("update Site set baseUrl = :baseUrl, logo = :logo where name = :name")
-    abstract fun updateSiteInfo(name: String, baseUrl: String, logo: String)
+    @Query("update Site set baseUrl = :baseUrl where name = :name")
+    abstract fun updateBaseUrl(name: String, baseUrl: String)
 
     @Query("update Site set pinnedTime = :pinnedTime where name = :name")
     abstract fun updatePinnedTime(name: String, pinnedTime: Date)

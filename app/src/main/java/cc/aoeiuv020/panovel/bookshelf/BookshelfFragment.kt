@@ -92,15 +92,13 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
 
     fun showNovelList(list: List<NovelManager>) {
         novelListAdapter.data = list
+        binding.srlRefresh.isRefreshing = false
         if (ServerSettings.askUpdate) {
             presenter.askUpdate(list)
-        } else {
-            binding.srlRefresh.isRefreshing = false
         }
     }
 
     fun showAskUpdateResult(hasUpdateList: List<Long>) {
-        binding.srlRefresh.isRefreshing = false
         // 就算是空列表也要传进去，更新一下刷新时间，
         // 空列表可能是因为连不上服务器，
         novelListAdapter.hasUpdate(hasUpdateList)
@@ -108,8 +106,6 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
 
     @Suppress("UNUSED_PARAMETER")
     fun askUpdateError(message: String, e: Throwable) {
-        // 询问服务器更新出错不展示，
-        binding.srlRefresh.isRefreshing = false
     }
 
     fun showError(message: String, e: Throwable) {

@@ -43,17 +43,17 @@ class AppDatabaseManager(context: Context) {
     }
 
     @Suppress("unused")
-    fun queryOrNewSite(name: String, baseUrl: String, logo: String, enabled: Boolean, hide: Boolean): Site = db.runInTransaction<Site> {
+    fun queryOrNewSite(name: String, baseUrl: String, enabled: Boolean, hide: Boolean): Site = db.runInTransaction<Site> {
         db.siteDao().query(name) ?: Site(
-                name, baseUrl, logo, enabled, hide = hide
+                name, baseUrl, enabled, hide = hide
         ).also {
             db.siteDao().insert(it)
         }
     }
 
-    fun newSite(name: String, baseUrl: String, logo: String, enabled: Boolean, hide: Boolean): Site = db.runInTransaction<Site> {
+    fun newSite(name: String, baseUrl: String, enabled: Boolean, hide: Boolean): Site = db.runInTransaction<Site> {
         Site(
-            name, baseUrl, logo, enabled, hide = hide, createTime = Date()
+            name, baseUrl, enabled, hide = hide, createTime = Date()
         ).also {
             db.siteDao().insert(it)
         }
@@ -210,8 +210,6 @@ class AppDatabaseManager(context: Context) {
     fun cleanBookList() = db.bookListDao().cleanBookList()
 
     fun cleanHistory() = db.novelDao().cleanHistory()
-    @Suppress("unused")
-    fun updateSiteInfo(site: Site) = db.siteDao().updateSiteInfo(site.name, site.baseUrl, site.logo)
 
     fun hasUpdateNovelList(): List<Novel> = db.novelDao().hasUpdateNovelList()
     fun clean(novel: Novel) = db.novelDao().delete(novel)

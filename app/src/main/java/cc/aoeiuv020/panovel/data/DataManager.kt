@@ -119,10 +119,6 @@ object DataManager {
                 site.baseUrl = context.site.baseUrl
                 dirty = true
             }
-            if (site.logo != context.site.logo) {
-                site.logo = context.site.logo
-                dirty = true
-            }
             // 如果有变化，就更新该字段，
             if (dirty) {
                 app.db.siteDao().updateSite(site)
@@ -132,7 +128,7 @@ object DataManager {
         val existsSiteNameSet = existsSites.map { it.name }.toSet()
         allNovelContexts().filter { it.site.name !in existsSiteNameSet }.forEach { context ->
             context.site.run {
-                app.newSite(name, baseUrl, logo, context.upkeep, context.hide)
+                app.newSite(name, baseUrl, context.upkeep, context.hide)
             }
         }
     }

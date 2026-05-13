@@ -23,8 +23,7 @@ data class NovelSite(
          * 由于要用来拼接path, 这个[baseUrl]不能斜杆/结尾，
          * http://host
          */
-        val baseUrl: String,
-        val logo: String
+        val baseUrl: String
 ) : Data()
 
 /**

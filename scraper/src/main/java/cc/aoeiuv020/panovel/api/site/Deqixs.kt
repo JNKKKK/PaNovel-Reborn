@@ -9,7 +9,6 @@ class Deqixs : DslJsoupNovelContext() { init {
     site {
         name = "得奇小说"
         baseUrl = "https://www.deqixs.co"
-        logo = "https://www.deqixs.co/images/logo.png"
     }
     detailPageTemplate = "/books/%s/"
     contentPageTemplate = "/books/%s.html"
@@ -25,7 +24,7 @@ class Deqixs : DslJsoupNovelContext() { init {
                 name("h1.booktitle")
                 author("div.bookinfo p.booktag a.red")
             }
-            items("#fengtui div.bookbox") {
+            items("#fengtui div.bookbox", allowEmpty = true) {
                 name("h4.bookname > a")
                 author("div.bookinfo div.author") {
                     it.text().removePrefix("作者：")

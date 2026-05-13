@@ -249,11 +249,9 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
     protected class _NovelSite {
         lateinit var name: String
         lateinit var baseUrl: String
-        lateinit var logo: String
         fun createNovelSite(): NovelSite = NovelSite(
                 name = name,
-                baseUrl = baseUrl,
-                logo = logo
+                baseUrl = baseUrl
         )
     }
 
@@ -317,12 +315,13 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
             }
         }
 
-        fun items(query: String, parent: Element = root, init: _NovelItemParser.() -> Unit) {
+        fun items(query: String, parent: Element = root, allowEmpty: Boolean = false, init: _NovelItemParser.() -> Unit) {
             if (::novelItemList.isInitialized) {
                 // 调用single方法生效了，也就是跳到详情页了，
                 return
             }
-            novelItemList = parent.requireElements(query).mapIndexed { index, element ->
+            val elements = if (allowEmpty) parent.select(query) else parent.requireElements(query)
+            novelItemList = elements.mapIndexed { index, element ->
                 _NovelItemParser(index, element).run {
                     init()
                     parse()

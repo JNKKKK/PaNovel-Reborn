@@ -118,11 +118,11 @@ class DefaultNovelItemActionListener(
         val novelManager = vh.novelManager
         scope.launch {
             try {
-                novelManager.updateBookshelf(star)
+                withContext(Dispatchers.IO) {
+                    novelManager.updateBookshelf(star)
+                }
             } catch (e: Exception) {
                 val message = "${if (star) "添加" else "删除"}书架《${vh.novel.name}》失败，"
-                // 这应该是数据库操作出问题，正常情况不会出现才对，
-                // 未知异常统一上报，
                 Reporter.post(message, e)
                 Timber.e(e, message)
                 onError(message, e)
@@ -156,7 +156,9 @@ class DefaultNovelItemActionListener(
     private fun pinned(vh: NovelViewHolder) {
         scope.launch {
             try {
-                vh.novelManager.pinned()
+                withContext(Dispatchers.IO) {
+                    vh.novelManager.pinned()
+                }
             } catch (e: Exception) {
                 val message = "置顶小说《${vh.novel.name}》失败，"
                 Reporter.post(message, e)
@@ -169,7 +171,9 @@ class DefaultNovelItemActionListener(
     private fun cancelPinned(vh: NovelViewHolder) {
         scope.launch {
             try {
-                vh.novelManager.cancelPinned()
+                withContext(Dispatchers.IO) {
+                    vh.novelManager.cancelPinned()
+                }
             } catch (e: Exception) {
                 val message = "取消置顶小说《${vh.novel.name}》失败，"
                 Reporter.post(message, e)
@@ -182,7 +186,9 @@ class DefaultNovelItemActionListener(
     private fun cleanCache(vh: NovelViewHolder) {
         scope.launch {
             try {
-                vh.novelManager.cleanCache()
+                withContext(Dispatchers.IO) {
+                    vh.novelManager.cleanCache()
+                }
             } catch (e: Exception) {
                 val message = "清除小说缓存<${vh.novel.bookId}>失败，"
                 Reporter.post(message, e)
@@ -195,7 +201,9 @@ class DefaultNovelItemActionListener(
     private fun cleanData(vh: NovelViewHolder) {
         scope.launch {
             try {
-                vh.novelManager.cleanData()
+                withContext(Dispatchers.IO) {
+                    vh.novelManager.cleanData()
+                }
             } catch (e: Exception) {
                 val message = "清除小说数据<${vh.novel.bookId}>失败，"
                 Reporter.post(message, e)

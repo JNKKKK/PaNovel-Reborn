@@ -73,7 +73,7 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 ## Key Patterns
 
 - Novel site scrapers extend `DslJsoupNovelContext` in `scraper/src/main/java/cc/aoeiuv020/panovel/api/site/`
-- Only `MockSite.kt` exists as a template — add new scrapers by copying it
+- Add new scrapers by copying `Deqixs.kt` as a starting point
 - Dependency versions are centralized in `version.properties`
 - App package structure is feature-based: `cc.aoeiuv020.panovel.{bookshelf,download,search,settings,...}`
 - Room database schemas are exported to `app/schemas/` for migration validation

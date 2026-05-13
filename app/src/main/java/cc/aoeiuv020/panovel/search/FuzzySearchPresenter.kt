@@ -14,6 +14,7 @@ class FuzzySearchPresenter : Presenter<FuzzySearchActivity>() {
     var name: String? = null
     private var author: String? = null
     private var site: String? = null
+    private var searchJob: Job? = null
 
     fun singleSite(site: String) {
         this.site = site
@@ -27,7 +28,8 @@ class FuzzySearchPresenter : Presenter<FuzzySearchActivity>() {
 
     private fun searchActual(name: String, author: String?) {
         Timber.d("search <$name, $author>")
-        scope.launch {
+        searchJob?.cancel()
+        searchJob = scope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     site?.let {

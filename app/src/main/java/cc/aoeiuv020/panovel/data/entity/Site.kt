@@ -15,7 +15,6 @@ data class Site(
         @PrimaryKey
         val name: String,
         var baseUrl: String,
-        var logo: String,
         // 启用，true表示全站搜索时包括这个站，
         var enabled: Boolean = true,
         /**

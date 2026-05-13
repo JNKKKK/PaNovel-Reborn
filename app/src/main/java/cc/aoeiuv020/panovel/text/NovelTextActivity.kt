@@ -33,7 +33,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import cc.aoeiuv020.panovel.databinding.DialogSelectColorSchemeBinding
@@ -236,8 +236,10 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                             return true
                         }
                     })
-                    .into(object : SimpleTarget<File>() {
+                    .into(object : CustomTarget<File>() {
                         override fun onResourceReady(resource: File, transition: Transition<in File?>?) {
+                        }
+                        override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {
                         }
                     })
         }
@@ -652,7 +654,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                 }
             }
             setView(view)
-            setPositiveButton(android.R.string.yes) { _, _ ->
+            setPositiveButton(android.R.string.ok) { _, _ ->
                 // 确定，临时配色保存到last上次设置的配色，
                 ReaderSettings.lastTextColor = tempColorPref.textColor
                 ReaderSettings.lastBackgroundColor = tempColorPref.backgroundColor

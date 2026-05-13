@@ -139,7 +139,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             tvFont.setOnClickListener {
                 AlertDialog.Builder(view)
                     .setTitle(R.string.select_font)
-                    .setPositiveButton(android.R.string.yes) { _, _ ->
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
                         view.requestFont()
                     }
                     .setNegativeButton(R.string.set_default) { _, _ ->
@@ -186,7 +186,7 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
                         override fun onClick(dialog: DialogInterface?, which: Int) {
                         }
                     }
-                    setPositiveButton(android.R.string.yes, emptyListener)
+                    setPositiveButton(android.R.string.ok, emptyListener)
                 }.create().apply {
                     window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
                 }.safelyShow()

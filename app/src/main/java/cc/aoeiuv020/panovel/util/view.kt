@@ -107,7 +107,7 @@ fun Context.alertColorPicker(initial: Int, callback: (color: Int) -> Unit) =
         .initialColor(initial)
         .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
         .setOnColorChangedListener(callback)
-        .setPositiveButton(android.R.string.yes) { _, color, _ -> callback(color) }
+        .setPositiveButton(android.R.string.ok) { _, color, _ -> callback(color) }
         // 因为取消前可能已经选了颜色，所以要设置一次初始的颜色，
         .setNegativeButton(android.R.string.cancel) { _, _ -> callback(initial) }
         .build().apply {
@@ -291,7 +291,6 @@ fun WebView.onActivityDestroy() {
     clearHistory()
     clearCache(true)
     loadUrl("about:blank")
-    freeMemory()
     pauseTimers()
     destroy()
 }

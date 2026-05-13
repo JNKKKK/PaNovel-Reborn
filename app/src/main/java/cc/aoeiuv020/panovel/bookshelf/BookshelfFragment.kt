@@ -48,8 +48,8 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         binding.rvNovel.layoutManager = if (ListSettings.gridView) {
             androidx.recyclerview.widget.GridLayoutManager(requireContext(), if (ListSettings.largeView) 3 else 5)

@@ -5,6 +5,7 @@ import android.content.IntentFilter
 import android.graphics.*
 import android.os.Build
 import android.text.TextPaint
+import android.util.TypedValue
 import cc.aoeiuv020.pager.Pager
 import cc.aoeiuv020.pager.BasePagerDrawer
 import cc.aoeiuv020.pager.Size
@@ -92,7 +93,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         textPaint = TextPaint().apply {
             isAntiAlias = true
             color = reader.config.textColor
-            textSize = (reader.config.textSize * reader.context.resources.displayMetrics.scaledDensity).toInt().toFloat()
+            textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, reader.config.textSize.toFloat(), reader.context.resources.displayMetrics)
             typeface = reader.config.font
         }
         titlePaint = TextPaint(textPaint).apply {
@@ -107,7 +108,7 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
             }
         }
         messagePaint = TextPaint(textPaint).apply {
-            textSize = (reader.config.messageSize * reader.context.resources.displayMetrics.scaledDensity).toInt().toFloat()
+            textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, reader.config.messageSize.toFloat(), reader.context.resources.displayMetrics)
         }
     }
 

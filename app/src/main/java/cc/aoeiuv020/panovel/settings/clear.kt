@@ -36,7 +36,7 @@ class CacheClearPreferenceFragment : PreferenceFragmentCompat() {
                         AlertDialog.Builder(requireContext()).apply {
                             setTitle(getString(R.string.confirm_clear))
                             setMessage(p.title.toString())
-                            setPositiveButton(android.R.string.yes) { _, _ ->
+                            setPositiveButton(android.R.string.ok) { _, _ ->
                                 val dialog = ProgressDialogCompat(requireContext()).apply {
                                     setMessage(getString(R.string.removing, p.title))
                                     show()

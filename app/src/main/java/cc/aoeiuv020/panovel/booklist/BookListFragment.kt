@@ -129,8 +129,8 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         progressDialog = ProgressDialogCompat(requireContext())
         // Note: 这里不是小说列表，固定用LinearLayoutManager，
         binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)

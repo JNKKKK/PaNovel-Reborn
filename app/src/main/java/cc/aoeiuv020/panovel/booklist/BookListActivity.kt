@@ -173,7 +173,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
                         presenter.remove(list[i])
                     }
                 }.setCancelable(false)
-                .setPositiveButton(android.R.string.yes) { _, _ ->
+                .setPositiveButton(android.R.string.ok) { _, _ ->
                     refresh()
                 }
                 .create().apply {

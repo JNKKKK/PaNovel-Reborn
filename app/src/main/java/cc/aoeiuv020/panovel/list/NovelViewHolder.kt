@@ -159,7 +159,7 @@ class NovelViewHolder(itemView: View,
                 imageView.setImageResource(R.mipmap.no_cover)
             } else {
                 Glide.with(context.applicationContext)
-                        .load(novelManager.getImage(novel.image))
+                        .load(novelManager.getImage(novel.image).toString())
                         .apply(RequestOptions().apply {
                             placeholder(R.mipmap.no_cover)
                             error(R.mipmap.no_cover)

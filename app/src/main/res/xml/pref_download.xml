@@ -45,4 +45,15 @@
         android:summary="@string/auto_download_chapters_count_summary"
         android:title="@string/auto_download_chapters_count" />
 
+    <cc.aoeiuv020.panovel.settings.IntEditTextPreference
+        android:capitalize="words"
+        android:defaultValue="500"
+        android:inputType="number"
+        android:key="downloadInterval"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="@string/download_interval_summary"
+        android:title="@string/download_interval" />
+
 </PreferenceScreen>

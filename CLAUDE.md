@@ -74,6 +74,7 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 
 - Novel site scrapers extend `DslJsoupNovelContext` in `scraper/src/main/java/cc/aoeiuv020/panovel/api/site/`
 - Add new scrapers by copying `Deqixs.kt` as a starting point
+- The `rhino` module wraps Mozilla Rhino for scrapers that need to evaluate JS (e.g., sites with JS-based content decryption); use regex/`pick` first, Rhino when that's insufficient
 - Dependency versions are centralized in `version.properties`
 - App package structure is feature-based: `cc.aoeiuv020.panovel.{bookshelf,download,search,settings,...}`
 - Room database schemas are exported to `app/schemas/` for migration validation

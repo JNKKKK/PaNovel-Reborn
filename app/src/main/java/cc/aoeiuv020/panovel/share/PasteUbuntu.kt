@@ -48,7 +48,7 @@ internal class PasteUbuntu {
 
     fun download(url: String): String {
         val root = jsoupConnect(url)
-        return root.select("#contentColumn > div > div > div > table > tbody > tr > td.code > div > pre").first().text()
+        return root.select("#contentColumn > div > div > div > table > tbody > tr > td.code > div > pre").first()!!.text()
     }
 
     class PasteUbuntuData(

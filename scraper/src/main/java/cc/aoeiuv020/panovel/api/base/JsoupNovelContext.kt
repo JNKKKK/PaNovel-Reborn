@@ -159,7 +159,7 @@ abstract class JsoupNovelContext : OkHttpNovelContext() {
     }
 
     protected inline fun <T> Element.getElement(query: String, block: (Element) -> T?): T? = try {
-        select(query).first().let(block)
+        select(query).first()?.let(block)
     } catch (e: Exception) {
         logger.debug("解析元素($query)失败，", e)
         null

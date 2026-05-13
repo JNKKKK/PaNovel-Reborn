@@ -13,24 +13,19 @@ import cc.aoeiuv020.panovel.server.toServer
  */
 class ServerManager(@Suppress("UNUSED_PARAMETER") context: Context) {
 
-    /**
-     * 订阅书架列表，覆盖所有tag,
-     */
+    @Suppress("UNUSED_PARAMETER")
     fun setTags(list: List<Novel>) {
     }
 
-    /**
-     * 添加这些小说的订阅，
-     */
+    @Suppress("UNUSED_PARAMETER")
     fun addTags(
-        list: List<Novel>, callback: (List<Novel>) -> Unit = { novelList ->
-        }
+        list: List<Novel>, callback: (List<Novel>) -> Unit = { _ -> }
     ) {
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun removeTags(
-        list: List<Novel>, callback: (List<Novel>) -> Unit = { novelList ->
-        }
+        list: List<Novel>, callback: (List<Novel>) -> Unit = { _ -> }
     ) {
     }
 

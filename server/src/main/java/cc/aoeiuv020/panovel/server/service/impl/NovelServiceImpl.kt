@@ -1,7 +1,6 @@
 package cc.aoeiuv020.panovel.server.service.impl
 
 import cc.aoeiuv020.panovel.server.ServerAddress
-import cc.aoeiuv020.panovel.server.common.bookId
 import cc.aoeiuv020.panovel.server.common.toBean
 import cc.aoeiuv020.panovel.server.common.toJson
 import cc.aoeiuv020.panovel.server.dal.model.*
@@ -57,7 +56,7 @@ class NovelServiceImpl(private val serverAddress: ServerAddress) : NovelService 
                 .post(requestBody)
                 .build()
         val call = client.newCall(request)
-        val response: MobResponse = call.execute().body!!.string()!!
+        val response: MobResponse = call.execute().body!!.string()
                 .toBean()
         if (!response.isSuccess()) {
             throw IllegalStateException("请求失败: ${response.data}")

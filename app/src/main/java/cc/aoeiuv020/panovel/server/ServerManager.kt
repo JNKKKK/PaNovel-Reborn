@@ -9,7 +9,6 @@ import kotlinx.serialization.json.jsonObject
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.server.common.bookId
 import cc.aoeiuv020.panovel.server.dal.model.Config
 import cc.aoeiuv020.panovel.server.dal.model.Message
 import cc.aoeiuv020.panovel.server.dal.model.QueryResponse
@@ -97,8 +96,8 @@ object ServerManager  {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun touch(novel: Novel) {
-        // 意义不大，禁用了，
     }
 
     fun message(): Message? {

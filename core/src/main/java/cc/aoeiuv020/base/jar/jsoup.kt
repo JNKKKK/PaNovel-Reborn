@@ -113,7 +113,7 @@ fun Element.textList(): List<String> {
 private fun preserveWhitespace(node: Node?): Boolean {
     // looks only at this element and one level up, to prevent recursion & needless stack searches
     if (node != null && node is Element) {
-        return node.tag().preserveWhitespace() || node.parent() != null && node.parent().tag().preserveWhitespace()
+        return node.tag().preserveWhitespace() || node.parent()?.tag()?.preserveWhitespace() == true
     }
     return false
 }
@@ -225,7 +225,7 @@ private fun absUrl(base: String, attr: String): String =
 fun Element.path(): String = path(absHref())
 
 fun Element.title(): String = attr("title")
-fun Element.ownerPath(): String = URL(ownerDocument().location()).path
+fun Element.ownerPath(): String = URL(ownerDocument()!!.location()).path
 // kotlin的trim有包括utf8的特殊的空格，和java的trim不重复，
 fun TextNode.textNotBlank(): String? = this.text().trim().takeIf(String::isNotBlank)
 

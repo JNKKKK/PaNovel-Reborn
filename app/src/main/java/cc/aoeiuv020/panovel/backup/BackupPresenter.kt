@@ -48,7 +48,7 @@ class BackupPresenter : Presenter<BackupActivity>() {
                         ?: context.filesDir
                                 .resolve(NAME_FOLDER)
                                 .apply { exists() || mkdirs() }
-                val indexList: List<Int> = baseFile.list(FILENAME_FILTER)
+                val indexList: List<Int> = (baseFile.list(FILENAME_FILTER) ?: emptyArray())
                         .map {
                             val (index) = it.pick(NAME_PATTERN)
                             index.toInt()

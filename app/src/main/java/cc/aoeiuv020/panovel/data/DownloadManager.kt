@@ -12,6 +12,8 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.RadioGroup
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import timber.log.Timber
@@ -61,6 +63,9 @@ class DownloadManager(
                     withContext(Dispatchers.Main) {
                         downloadNotification.downloadStart(left.get())
                     }
+                    val rateMutex = Mutex()
+                    var lastRequestTime = 0L
+                    val interval = DownloadSettings.downloadInterval.toLong()
                     // 同时启动多个线程下载，
                     // 判断一下，线程数不要过多，
                     val jobs = List(minOf(threadsLimit, left.get())) {
@@ -78,8 +83,14 @@ class DownloadManager(
                                     ++exists
                                 } else {
                                     try {
-                                        // 方法返回前请求到正文就已经缓存了，
-                                        novelManager.requestContent(index, chapter, false)
+                                        rateMutex.withLock {
+                                            if (interval > 0) {
+                                                val elapsed = System.currentTimeMillis() - lastRequestTime
+                                                if (elapsed < interval) delay(interval - elapsed)
+                                            }
+                                            novelManager.requestContent(index, chapter, false)
+                                            lastRequestTime = System.currentTimeMillis()
+                                        }
                                         ++downloads
                                     } catch (e: Exception) {
                                         val message = "缓存<${novel.bookId}.$index>章节失败，"

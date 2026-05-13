@@ -33,5 +33,10 @@ object DownloadSettings : Pref {
      * 书架小说刷新章节列表后如果新增章节数小于等于该值就自动缓存新章节，
      */
     var autoDownloadCount: Int by Delegates.int(2)
+    /**
+     * 每次下载章节之间的间隔（毫秒），防止请求过快被封，
+     * 0表示不等待，
+     */
+    var downloadInterval: Int by Delegates.int(500)
 
 }

@@ -20,7 +20,8 @@ abstract class NovelContext {
     companion object {
         fun getAllSite(): List<NovelContext> = listOf(
             Deqixs(),
-            Cuoceng()
+            Cuoceng(),
+            Bqquge()
         )
 
 

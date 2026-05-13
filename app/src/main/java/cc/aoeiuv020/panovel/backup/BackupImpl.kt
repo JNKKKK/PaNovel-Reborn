@@ -27,7 +27,7 @@ class BackupImpl : Backup {
             val name = getOptionName(option)
             try {
                 val count = import(base.resolve(option.name), option)
-                sb.appendln("成功导入$name: <$count>条，")
+                sb.appendLine("成功导入$name: <$count>条，")
             } catch (e: Exception) {
                 Timber.e(e, "读取[$name]失败，")
             }
@@ -43,7 +43,7 @@ class BackupImpl : Backup {
             val name = getOptionName(option)
             try {
                 val count = export(base.resolve(option.name), option)
-                sb.appendln("成功导出$name: <$count>条，")
+                sb.appendLine("成功导出$name: <$count>条，")
             } catch (e: Exception) {
                 Timber.e(e, "写入[$name]失败，")
             }
@@ -95,7 +95,7 @@ class BackupImpl : Backup {
 
     private fun importSettings(folder: File): Int {
         val list = folder.listFiles()
-        return list.notNullOrReport().sumBy { file ->
+        return list.notNullOrReport().sumOf { file ->
             when (file.name) {
                 "Ad" -> 0
                 "General" -> importPref(GeneralSettings, file)
@@ -204,7 +204,7 @@ class BackupImpl : Backup {
     }
 
     private fun importBookList(folder: File): Int =
-        folder.listFiles().notNullOrReport().sumBy { file ->
+        folder.listFiles().notNullOrReport().sumOf { file ->
             val bookListBean = Share.importBookList(file.readText())
             DataManager.importBookList(
                 bookListBean.name,
@@ -228,7 +228,7 @@ class BackupImpl : Backup {
         file.outputStream().bufferedWriter().use { output ->
             list.forEach { n ->
                 if (n.readAtChapterIndex > 0 || n.readAtTextIndex > 0) {
-                    output.appendln(
+                    output.appendLine(
                         listOf(
                             n.site, n.author, n.name, n.detail,
                             n.readAtChapterIndex, n.readAtTextIndex,
@@ -252,7 +252,7 @@ class BackupImpl : Backup {
 
     private fun exportBookList(folder: File): Int {
         folder.mkdirs()
-        return DataManager.allBookList().sumBy { bookList ->
+        return DataManager.allBookList().sumOf { bookList ->
             val fileName = "${bookList.id}|${bookList.name}"
             val novelList = DataManager.getNovelMinimalFromBookList(bookList.nId)
             folder.resolve(fileName).writeText(Share.exportBookList(bookList, novelList))
@@ -272,7 +272,7 @@ class BackupImpl : Backup {
             ReaderSettings.contentMargins,
             ReaderSettings.paginationMargins,
             ReaderSettings.timeMargins
-        ).sumBy { pref ->
+        ).sumOf { pref ->
             pref.sharedPreferences.all.also { map ->
                 val jsonObj = buildJsonObject {
                     map.forEach { (k, v) ->

@@ -35,6 +35,7 @@ class TLSSocketFactory(trustManager: X509TrustManager) : SSLSocketFactory() {
 }
 
 object TrustManagerUtils {
+    @Suppress("UNUSED_PARAMETER")
     fun include(pins: Set<String>): X509TrustManager = object : X509TrustManager {
         override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
         override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}

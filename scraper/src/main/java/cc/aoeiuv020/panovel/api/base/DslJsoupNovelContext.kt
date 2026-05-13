@@ -291,7 +291,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
             novelItemList = listOf(
                     _NovelItemParser(0, root).run {
                         // 搜索结果只有一个，认为是跳转到详情页了，没法用items, 默认直接从地址找bookId,
-                        extra = findBookId(root.ownerDocument().location())
+                        extra = findBookId(root.ownerDocument()!!.location())
                         init()
                         parse()
                     }

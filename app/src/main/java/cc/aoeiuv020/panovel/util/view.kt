@@ -1,4 +1,5 @@
 @file:Suppress("unused")
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 
 package cc.aoeiuv020.panovel.util
 
@@ -81,7 +82,7 @@ fun View.setHeight(height: Int) {
 fun Context.changeColor(initial: Int, callback: (color: Int) -> Unit) {
     val layout = View.inflate(this, R.layout.dialog_editor, null)
     val etColor = layout.findViewById<EditText>(R.id.editText).apply {
-        setText(java.lang.Integer.toHexString(initial).toUpperCase())
+        setText(java.lang.Integer.toHexString(initial).uppercase())
     }
     AlertDialog.Builder(this)
         .setTitle(R.string.colorARGB)
@@ -230,8 +231,7 @@ fun Context.uiSelect(
         suspendCancellableCoroutine { cont ->
             val mainScope = CoroutineScope(Dispatchers.Main)
             mainScope.launch {
-                var dialog: DialogInterface? = null
-                dialog = AlertDialog.Builder(this@uiSelect).apply {
+                val dialog = AlertDialog.Builder(this@uiSelect).apply {
                     setTitle(this@uiSelect.getString(R.string.select_placeholder, name))
                     setSingleChoiceItems(items, default) { d, which ->
                         d.dismiss()
@@ -242,7 +242,7 @@ fun Context.uiSelect(
                     }
                 }.create().safelyShow()
                 cont.invokeOnCancellation {
-                    dialog?.dismiss()
+                    dialog.dismiss()
                 }
             }
         }
@@ -267,8 +267,7 @@ fun Context.uiInput(
                         InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
                 }
                 etName.setText(default)
-                var dialog: DialogInterface? = null
-                dialog = AlertDialog.Builder(this@uiInput)
+                val dialog = AlertDialog.Builder(this@uiInput)
                     .setTitle(this@uiInput.getString(R.string.input_placeholder, name))
                     .setView(layout)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -279,7 +278,7 @@ fun Context.uiInput(
                     }
                     .create().safelyShow()
                 cont.invokeOnCancellation {
-                    dialog?.dismiss()
+                    dialog.dismiss()
                 }
             }
         }

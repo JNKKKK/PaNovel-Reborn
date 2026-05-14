@@ -1,5 +1,13 @@
 # Novel Site Scrapers
 
+## Criteria for New Sites
+
+1. Not protected by Cloudflare (no CF challenge pages)
+2. Supports search functionality
+3. No rate limiting on search, or minimal interval that doesn't affect scraping
+4. Content is accessible without login/authentication
+5. Full chapter list is accessible without login
+
 ## Implemented
 
 | Site | Class | URL | Search | Notes |

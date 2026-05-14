@@ -31,7 +31,11 @@ abstract class NovelContext {
             Biquge365(),
             Sudugu(),
             Hongsheng(),
-            Xiayu()
+            Xiayu(),
+            Fsshu(),
+            Biquji(),
+            Bqg730(),
+            Ddbiquge()
         )
 
 

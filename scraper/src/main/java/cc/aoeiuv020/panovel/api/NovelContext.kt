@@ -28,6 +28,7 @@ abstract class NovelContext {
             Snapd(),
             Ixdzs(),
             Quanben(),
+            QuanbenS(),
             Biquge365(),
             Sudugu(),
             Hongsheng(),
@@ -35,7 +36,11 @@ abstract class NovelContext {
             Fsshu(),
             Biquji(),
             Bqg730(),
-            Ddbiquge()
+            Ddbiquge(),
+            Sbiquge(),
+            Bpshu(),
+            Biquqi(),
+            Dingdian()
         )
 
 

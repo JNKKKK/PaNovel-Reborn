@@ -1,8 +1,11 @@
 package cc.aoeiuv020.panovel.main
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 import android.os.Bundle
 import android.view.Menu
@@ -106,6 +109,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
 
         initNotificationChannel()
+        requestNotificationPermission()
 
         progressDialog = ProgressDialogCompat(this)
 
@@ -120,6 +124,18 @@ class MainActivity : AppCompatActivity() {
         Check.asyncCheckVersion(this)
         // 异步获取可能存在的, 我放在网上想推给用户的消息，
         // DevMessage was removed
+    }
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ -> }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     private fun syncSites() {

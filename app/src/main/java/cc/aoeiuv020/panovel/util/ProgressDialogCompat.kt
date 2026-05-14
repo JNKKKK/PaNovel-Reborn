@@ -11,8 +11,14 @@ class ProgressDialogCompat(context: Context) {
     private val tvMessage: TextView = view.findViewById(R.id.tvMessage)
     private val dialog: AlertDialog = AlertDialog.Builder(context)
         .setView(view)
-        .setCancelable(false)
+        .setCancelable(true)
         .create()
+    private var onCancelListener: (() -> Unit)? = null
+
+    fun setOnCancelListener(listener: () -> Unit) {
+        onCancelListener = listener
+        dialog.setOnCancelListener { listener() }
+    }
 
     fun setMessage(message: String) {
         tvMessage.text = message

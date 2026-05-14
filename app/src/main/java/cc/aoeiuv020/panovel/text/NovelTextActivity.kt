@@ -126,6 +126,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
 
         alertDialog = AlertDialog.Builder(this).create()
         progressDialog = ProgressDialogCompat(this)
+        progressDialog.setOnCancelListener { finish() }
 
         val id = intent?.getLongExtra(Novel.KEY_ID, -1L)
         Timber.d("receive id: $id")

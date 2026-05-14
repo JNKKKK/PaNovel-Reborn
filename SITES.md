@@ -28,6 +28,11 @@
 | 全本小說網 | `Quanben` | big5.quanben.io | GET `/index.php?keyword=` | Traditional Chinese, Big5 variant |
 | 笔趣阁365 | `Biquge365` | www.biquge365.net | POST `/s.php` field `keyword` | Standard biquge template |
 | 错层小说 | `Cuoceng` | m.cuoceng.com | GET `/book/so/{keyword}.html` | Mobile-oriented site |
+| 笔趣阁s | `Sbiquge` | www.sbiquge.com | GET `/search.php?q=` | Same template as Fsshu, URL pattern `/{cat}_{id}/` |
+| 笔趣书 | `Bpshu` | www.bpshu.cc | GET `/search.php?q=` | Same template as Fsshu, URL pattern `/{id}/` |
+| 笔趣奇 | `Biquqi` | www.biquqi.com | GET `/search.php?q=` | Same template as Fsshu, URL pattern `/book/{cat}/{id}/` |
+| 全本小说网 | `QuanbenS` | www.quanben.io | GET `/index.php?c=book&a=search&keywords=` | Simplified Chinese variant of Quanben, pinyin slug URLs |
+| 顶点小说网 | `Dingdian` | www.dingdian-xiaoshuo.com | GET `/?c=book&a=search.json2` | JSONP API with custom base64 encoding, pinyin slug URLs |
 
 ## Explored — Cannot Scrape
 
@@ -60,12 +65,29 @@
 | 顶点小说 | www.ddxs.com | 403 Forbidden |
 | ttshu | www.ttshu.cc | 403 Forbidden |
 | kunnu | www.kunnu.com | 403 Forbidden |
+| 23求书 | www.23qb.net | 403 Forbidden |
+| biquge.tw | www.biquge.tw | 403 Forbidden |
+| 无法小说 | www.wfxs.tw | 403 Forbidden |
 
 ### Dead / Expired
 
 | Site | URL | Status |
 |------|-----|--------|
 | 69书 | www.69shu.pro | Expired domain |
+| biquge.lol | www.biquge.lol | ECONNREFUSED |
+| xbiquge.la | www.xbiquge.la | ECONNREFUSED |
+| shubaow | www.shubaow.net | ECONNREFUSED |
+| ybdu | www.ybdu.com | ECONNREFUSED |
+| 81book | www.81book.com | Redirects to 403 |
+| txt99 | www.txt99.cc | Redirects to unrelated site |
+| 23us | www.23us.cc | Now a movie site |
+| biquge.info | www.biquge.info | ECONNREFUSED |
+| bqzhh | www.bqzhh.com | Socket closed |
+| bbiquge | www.bbiquge.net | ECONNREFUSED |
+| xs74 | www.xs74.com | ECONNREFUSED |
+| paoshu8 | www.paoshu8.com | ECONNREFUSED |
+| xqishuta | www.xqishuta.com | ECONNREFUSED |
+| bqg5200 | www.bqg5200.com | ECONNREFUSED |
 
 ### Accessible But No Search
 
@@ -77,9 +99,13 @@
 | 爱看中文 | www.i25zw.com | UTF-8 | No search found |
 | 笔趣阁u | www.biqvgeu.cc | GB2312 | No search found |
 | 笔趣阁luge | www.biqluge.cc | GB2312 | search.php returns 404 |
+| biquge321 | www.biquge321.com | UTF-8 | No search found, content works |
 
 ### Accessible But Content Issues
 
 | Site | URL | Issue |
 |------|-----|-------|
 | 八推书屋 | www.8tsw.com | Chapter content has obfuscated/garbled Unicode characters |
+| bigee | www.bigee.cc | Search and chapter content require JavaScript |
+| 5200小说 | www.5200xiaoshuo.com | Chapter content loaded via JavaScript |
+| biquges.cc | www.biquges.cc | Content garbled/wrong encoding |

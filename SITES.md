@@ -106,6 +106,6 @@
 | Site | URL | Issue |
 |------|-----|-------|
 | 八推书屋 | www.8tsw.com | Chapter content has obfuscated/garbled Unicode characters |
-| bigee | www.bigee.cc | Search and chapter content require JavaScript |
-| 5200小说 | www.5200xiaoshuo.com | Chapter content loaded via JavaScript |
+| bigee | www.bigee.cc | Chapter pages use JS anti-bot challenge (cookie+redirect), search API non-functional |
+| 5200小说 | www.5200xiaoshuo.com | Cloudflare 523 on search/detail pages, chapter content inconsistently accessible |
 | biquges.cc | www.biquges.cc | Content garbled/wrong encoding |

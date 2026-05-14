@@ -4,6 +4,7 @@ import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.GeneralSettings
+import cc.aoeiuv020.panovel.util.ChineseNormalizer
 import timber.log.Timber
 import kotlinx.coroutines.*
 /**
@@ -45,10 +46,9 @@ class FuzzySearchPresenter : Presenter<FuzzySearchActivity>() {
                                     try {
                                         val novelManagers = DataManager.search(site.name, name, author).filter {
                                             val novel = it.novel
-                                            // 过滤，author为空表示模糊搜索，只要小说名包含，
-                                            // author不为空表示精确搜索，要小说名和作者名都匹配，
                                             if (author == null) {
-                                                novel.name.lowercase().contains(name.lowercase())
+                                                ChineseNormalizer.normalize(novel.name).lowercase()
+                                                    .contains(ChineseNormalizer.normalize(name).lowercase())
                                             } else {
                                                 novel.name == name && novel.author == author
                                             }

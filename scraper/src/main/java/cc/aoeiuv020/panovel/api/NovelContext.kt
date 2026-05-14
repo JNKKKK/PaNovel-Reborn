@@ -22,7 +22,16 @@ abstract class NovelContext {
         fun getAllSite(): List<NovelContext> = listOf(
             Deqixs(),
             Cuoceng(),
-            Bqquge()
+            Bqquge(),
+            Lingdian(),
+            Xiaoshuo(),
+            Snapd(),
+            Ixdzs(),
+            Quanben(),
+            Biquge365(),
+            Sudugu(),
+            Hongsheng(),
+            Xiayu()
         )
 
 

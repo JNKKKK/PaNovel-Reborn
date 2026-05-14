@@ -6,8 +6,9 @@
 
 ## 功能
 
+- 24 个在线小说源（笔趣阁系列、速读谷、夏雨书屋等）
 - 本地 TXT / EPUB 文件阅读
-- 可插拔的小说源系统（网站爬虫）
+- 可插拔的小说源系统（网站爬虫），易于新增
 - WebDAV 备份与阅读进度同步
 - 书架管理、书单、搜索
 - 自定义阅读界面（字体、背景、边距、翻页动画等）
@@ -36,7 +37,5 @@ Kotlin 1.9 · Gradle 8.7 · AGP 8.3 · Room · Coroutines · kotlinx-serializati
 | local | 本地文件支持（TXT、EPUB） |
 | reader | 阅读器 UI |
 | pager | 翻页库 |
-| server | 服务端通信 |
 | IronDB | 文件型键值存储（kotlinx-serialization） |
 | filepicker | 文件选择器 |
-| batchRefresher | 批量刷新 CLI 工具 |

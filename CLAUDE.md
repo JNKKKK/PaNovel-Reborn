@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PaNovel is an Android novel reader app being revived. Goals: **run again, easy to maintain, live longer**.
 
-It supports local TXT/EPUB files, WebDAV backup, reading progress sync, and a pluggable site scraper system (currently only a mock template — all 68 original scrapers were removed because the sites are dead).
+It supports local TXT/EPUB files, WebDAV backup, reading progress sync, and a pluggable site scraper system with 24 active scrapers (the original 68 were removed because the sites died; all current scrapers are new implementations).
 
 ## Build Commands
 
@@ -99,7 +99,7 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 ## Migration Status (from original codebase)
 
 - Gradle 4.10→8.7, AGP 3.3→8.3.2, Kotlin 1.3→1.9.22
-- Removed 68 dead site scrapers (all websites offline)
+- Removed 68 dead site scrapers (all websites offline); rebuilt with 24 new scrapers for live sites (see `SITES.md`)
 - Removed Anko entirely — replaced with Timber + Coroutines + AlertDialog.Builder
 - Removed Bugly crash reporting — Reporter now logs via Timber only
 - Removed old version migration system (no upgrades from legacy versions)

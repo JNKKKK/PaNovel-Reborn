@@ -33,6 +33,9 @@
 | 笔趣奇 | `Biquqi` | www.biquqi.com | GET `/search.php?q=` | Same template as Fsshu, URL pattern `/book/{cat}/{id}/` |
 | 全本小说网 | `QuanbenS` | www.quanben.io | GET `/index.php?c=book&a=search&keywords=` | Simplified Chinese variant of Quanben, pinyin slug URLs |
 | 顶点小说网 | `Dingdian` | www.dingdian-xiaoshuo.com | GET `/?c=book&a=search.json2` | JSONP API with custom base64 encoding, pinyin slug URLs |
+| 笔趣阁520 | `Biquge520` | www.biquge520.com | GET `/search.php?q=` | Same template as Biquji, content paginated via `_N.html` suffix |
+| 笔趣感 | `Biqugan` | www.biqugan.com | GET `/search.php?q=` | Mirror of Biquge520, same template |
+| 笔趣阁840 | `Bqg840` | www.bqg840.xyz | GET `/api/search?q=` | JSON API, same family as Bqg730, backend for bige7.com/bqgui.cc |
 
 ## Explored — Cannot Scrape
 
@@ -68,6 +71,27 @@
 | 23求书 | www.23qb.net | 403 Forbidden |
 | biquge.tw | www.biquge.tw | 403 Forbidden |
 | 无法小说 | www.wfxs.tw | 403 Forbidden |
+| biququ | www.biququ.com | 403 Forbidden |
+| xsbooktxt | www.xsbooktxt.com | 403 Forbidden |
+| xbiquge6 | www.xbiquge6.com | 403 Forbidden |
+| bqge | www.bqge.org | 403 Forbidden |
+| 52书库 | www.52shuku.vip | 403 Forbidden |
+| ddyueshu | www.ddyueshu.com | 403 Forbidden |
+| biquyun | www.biquyun.com | 403 Forbidden |
+| mibaoge | www.mibaoge.com | 403 Forbidden |
+| linovelib | tw.linovelib.com | 403 Forbidden |
+| czbooks | czbooks.net | 403 Forbidden |
+| pinshu | www.pinshu.la | 403 Forbidden |
+| qbtr | www.qbtr.cc | 403 Forbidden |
+| biquwo | www.biquwo.org | 403 Forbidden |
+| xsw | www.xsw.la | 403 Forbidden |
+| yqxs | www.yqxs.cc | 403 Forbidden |
+| biquw.net | www.biquw.net | 403 Forbidden |
+| ymoxuan | www.ymoxuan.com | 520 Cloudflare |
+| zanghaihua | www.zanghaihua.net | 522 Cloudflare |
+| 1biquge | www.1biquge.com | WAF/CAPTCHA |
+| tongrenquan | www.tongrenquan.org | 403 Forbidden |
+| 0512book | www.0512book.com | 403 Forbidden (shuquge.cc redirect) |
 
 ### Dead / Expired
 
@@ -88,6 +112,76 @@
 | paoshu8 | www.paoshu8.com | ECONNREFUSED |
 | xqishuta | www.xqishuta.com | ECONNREFUSED |
 | bqg5200 | www.bqg5200.com | ECONNREFUSED |
+| biquge.co | www.biquge.co | Redirect to Spanish placeholder |
+| paoshuzw | www.paoshuzw.com | ECONNREFUSED |
+| ibiquges | www.ibiquges.info | ECONNREFUSED |
+| mayiwxw | www.mayiwxw.com | ECONNREFUSED |
+| dxsxs | www.dxsxs.com | ECONNREFUSED |
+| biquge66 | www.biquge66.net | ECONNREFUSED |
+| mhtxs | www.mhtxs.cc | ECONNREFUSED |
+| siluke | www.siluke.cc | ECONNREFUSED |
+| biqiku | www.biqiku.com | ECONNREFUSED |
+| biquwx | www.biquwx.la | ECONNREFUSED |
+| xbiquge.bz | www.xbiquge.bz | ECONNREFUSED |
+| gebiqu | www.gebiqu.com | ECONNREFUSED |
+| qbiqu | www.qbiqu.com | ECONNREFUSED |
+| biquger | www.biquger.com | ECONNREFUSED |
+| biquge.cx | www.biquge.cx | ECONNREFUSED |
+| biquger.cc | www.biquger.cc | ECONNREFUSED |
+| readbiquge | www.readbiquge.com | ECONNREFUSED |
+| mqbiquge | www.mqbiquge.com | ECONNREFUSED |
+| biquge.name | www.biquge.name | Loading placeholder |
+| ibiquge.la | www.ibiquge.la | ECONNREFUSED |
+| ibiquge.net | www.ibiquge.net | ECONNREFUSED |
+| biquwx.net | www.biquwx.net | ECONNREFUSED |
+| biquw | www.biquw.com | ECONNREFUSED |
+| shuge | www.shuge.cc | ECONNREFUSED |
+| 360txt | www.360txt.net | ECONNREFUSED |
+| wanbentxt | www.wanbentxt.com | Socket closed |
+| quanxiaoshuo | www.quanxiaoshuo.com | ECONNREFUSED |
+| xquge | www.xquge.com | Socket closed |
+| bqzhh.net | www.bqzhh.net | ECONNREFUSED |
+| bqzhh.cc | www.bqzhh.cc | ECONNREFUSED |
+| bqzhh.info | www.bqzhh.info | ECONNREFUSED |
+| biqu | www.biqu.org | ECONNREFUSED |
+| xbiquzw | www.xbiquzw.com | ECONNREFUSED |
+| biquges.org | www.biquges.org | ECONNREFUSED |
+| biquges.com | www.biquges.com | ECONNREFUSED |
+| xbiqukan | www.xbiqukan.com | ECONNREFUSED |
+| biqiuzi | www.biqiuzi.com | ECONNREFUSED |
+| biqusa | www.biqusa.com | ECONNREFUSED |
+| dushu369 | www.dushu369.com | ECONNREFUSED |
+| quwenxue | www.quwenxue.com | ECONNREFUSED |
+| xszww | www.xszww.com | ECONNREFUSED |
+| ybdu8 | www.ybdu8.com | ECONNREFUSED |
+| ispeak | www.ispeak.cc | ECONNREFUSED |
+| kanshuge | www.kanshuge.la | ECONNREFUSED |
+| 35xs | www.35xs.org | Socket closed |
+| 23wxw | www.23wxw.com | Socket closed |
+| mianfeixiaoshuo | www.mianfeixiaoshuo.top | ECONNREFUSED |
+| biqugse | www.biqugse.com | ECONNREFUSED |
+| biqugse.cc | www.biqugse.cc | TLS cert invalid |
+| biquge.lu | www.biquge.lu | Parked/redirect |
+| beqege | www.beqege.com | Redirects to unrelated shop |
+| biqiuge | www.biqiuge.com | Redirects to biqluge.cc |
+| biqugela | www.biqugela.com | Domain for sale |
+| aibiquge | www.aibiquge.com | Domain for sale ($800) |
+| quge.cc | www.quge.cc | Domain for sale |
+| haxwx | www.haxwx.com | Redirects to ad network |
+| bq520 | www.bq520.cc | Redirects to gambling site |
+| qu.la | www.qu.la | Parked domain |
+| biqugeu.net | www.biqugeu.net | Redirects to biqvgeu.cc |
+| bqg70 | www.bqg70.com | Redirects to bq730.cc (already have) |
+| biquwu | www.biquwu.cc | Redirects to fsshu.com (already have) |
+| biquge.tv | www.biquge.tv | Redirects to 8tsw.com |
+| biqu5200 | www.biqu5200.net | Socket closed (biqu5200.vip) |
+| szhhlt | www.szhhlt.com | TLS cert expired |
+| shubao1 | www.shubao1.com | Self-signed cert |
+| b5200 | www.b5200.org | TLS cert expired |
+| bqg200 | www.bqg200.com | TLS cert invalid |
+| xsbiquge.cc | www.xsbiquge.cc | TLS cert invalid |
+| sbiquge.net | www.sbiquge.net | 522 Cloudflare |
+| biquzw | www.biquzw.la | ECONNREFUSED |
 
 ### Accessible But No Search
 
@@ -100,6 +194,11 @@
 | 笔趣阁u | www.biqvgeu.cc | GB2312 | No search found |
 | 笔趣阁luge | www.biqluge.cc | GB2312 | search.php returns 404 |
 | biquge321 | www.biquge321.com | UTF-8 | No search found, content works |
+| 香书小说网 | www.xbiqugu.com | UTF-8 | No search endpoint found, browse-only |
+| 书海阁 | www.shuhaige.tw | UTF-8 | All search paths 404, browse-only |
+| 书云文学 | www.syvvw.cc | UTF-8 | search.php 404, browse-only (shuyuewu.co redirect) |
+| U小说 | www.uuuxsw.cc | UTF-8 | search.php 404, browse-only (uxiaoshuo.com redirect) |
+| 稷下書院 | www.novel543.com | UTF-8 | Traditional Chinese, search returns 403 |
 
 ### Accessible But Content Issues
 
@@ -109,3 +208,11 @@
 | bigee | www.bigee.cc | Chapter pages use JS anti-bot challenge (cookie+redirect), search API non-functional |
 | 5200小说 | www.5200xiaoshuo.com | Cloudflare 523 on search/detail pages, chapter content inconsistently accessible |
 | biquges.cc | www.biquges.cc | Content garbled/wrong encoding |
+
+### JS-Rendered Search (no server-side HTML results)
+
+| Site | URL | Mechanism | Notes |
+|------|-----|-----------|-------|
+| 笔趣阁 | www.bqgui.cc | `/user/search.html` JSON via cookie warmup | Backend is bqg840.xyz (already scraped via Bqg840) |
+| 笔趣阁 | www.bige7.com | `/user/search.html` JSON via cookie warmup | Backend is bqg840.xyz (already scraped via Bqg840) |
+| 顶点小说网 | www.bgg99.cc | External script (`api.tongjiniao.com`) | Search results loaded by 3rd-party service, not feasible |

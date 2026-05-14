@@ -40,7 +40,10 @@ abstract class NovelContext {
             Sbiquge(),
             Bpshu(),
             Biquqi(),
-            Dingdian()
+            Dingdian(),
+            Biquge520(),
+            Biqugan(),
+            Bqg840()
         )
 
 

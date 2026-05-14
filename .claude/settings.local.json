@@ -5,9 +5,7 @@
       "Read",
       "Edit",
       "Write",
-      "WebFetch(domain:www.deqixs.co)",
-      "WebFetch(domain:m.cuoceng.com)",
-      "WebFetch(domain:www.bqquge.com)"
+      "WebFetch(*)"
     ],
     "deny": []
   },

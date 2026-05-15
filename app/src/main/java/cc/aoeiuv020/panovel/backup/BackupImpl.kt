@@ -129,7 +129,6 @@ class BackupImpl : Backup {
             val prim = value.jsonPrimitive
             when (key) {
                 "animationMode" -> editor.putString(key, prim.content)
-                "shareExpiration" -> editor.putString(key, prim.content)
                 "onCheckUpdateClick" -> editor.putString(key, prim.content)
                 "onDotClick" -> editor.putString(key, prim.content)
                 "onDotLongClick" -> editor.putString(key, prim.content)
@@ -195,7 +194,7 @@ class BackupImpl : Backup {
 
     private fun importBookList(folder: File): Int =
         folder.listFiles().notNullOrReport().sumOf { file ->
-            val bookListBean = Share.importBookList(file.readText())
+            val bookListBean = Share.importBookListJson(file.readText())
             DataManager.importBookList(
                 bookListBean.name,
                 bookListBean.list,
@@ -245,7 +244,7 @@ class BackupImpl : Backup {
         return DataManager.allBookList().sumOf { bookList ->
             val fileName = "${bookList.id}|${bookList.name}"
             val novelList = DataManager.getNovelMinimalFromBookList(bookList.nId)
-            folder.resolve(fileName).writeText(Share.exportBookList(bookList, novelList))
+            folder.resolve(fileName).writeText(Share.exportBookListJson(bookList, novelList))
             novelList.size
         }
     }

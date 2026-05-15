@@ -7,6 +7,5 @@ import kotlinx.serialization.Serializable
 class SharedBookList(
         val name: String,
         val list: List<NovelMinimal>,
-        val version: Int,
         val uuid: String
 )

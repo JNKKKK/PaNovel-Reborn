@@ -1,32 +1,29 @@
 package cc.aoeiuv020.panovel.booklist
 
-import cc.aoeiuv020.panovel.util.ProgressDialogCompat
+import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.FileProvider
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.BookList
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.main.MainActivity
 import cc.aoeiuv020.panovel.share.Share
-import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.panovel.util.showKeyboard
-import androidx.appcompat.app.AlertDialog
+import java.io.File
 
-/**
- *
- * Created by AoEiuV020 on 2017.11.22-14:07:56.
- */
 class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
     private var _binding: NovelItemListBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var progressDialog: ProgressDialogCompat
     private val itemListener: BookListFragmentAdapter.ItemListener = object : BookListFragmentAdapter.ItemListener {
         override fun onClick(vh: BookListFragmentAdapter.ViewHolder) {
             BookListActivity.start(requireContext(), vh.bookList.nId)
@@ -54,7 +51,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
     }
 
     fun showRemoving() {
-        requireContext().loading(progressDialog, R.string.removing_bookshelf)
+        (activity as? MainActivity)?.showMessage(getString(R.string.removing_bookshelf))
     }
 
     private fun removeBookshelf(bookList: BookList) {
@@ -67,7 +64,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
     }
 
     fun showAdding() {
-        requireContext().loading(progressDialog, R.string.removing_bookshelf)
+        (activity as? MainActivity)?.showMessage(getString(R.string.removing_bookshelf))
     }
 
     private fun addBookshelf(bookList: BookList) {
@@ -122,6 +119,54 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
         presenter.shareBookList(bookList)
     }
 
+    fun showShareResult(encodedText: String, qrBitmap: Bitmap?) {
+        val ctx = requireContext()
+        val layout = View.inflate(ctx, R.layout.dialog_share_booklist, null)
+        val ivQrCode = layout.findViewById<android.widget.ImageView>(R.id.ivQrCode)
+        val tvMessage = layout.findViewById<android.widget.TextView>(R.id.tvMessage)
+        val btnShareQr = layout.findViewById<android.widget.Button>(R.id.btnShareQr)
+        val btnCopy = layout.findViewById<android.widget.Button>(R.id.btnCopy)
+
+        if (qrBitmap != null) {
+            ivQrCode.setImageBitmap(qrBitmap)
+            ivQrCode.visibility = View.VISIBLE
+            tvMessage.visibility = View.GONE
+            btnShareQr.visibility = View.VISIBLE
+            btnShareQr.setOnClickListener {
+                shareQrBitmap(qrBitmap)
+            }
+        } else {
+            ivQrCode.visibility = View.GONE
+            tvMessage.visibility = View.VISIBLE
+            tvMessage.text = getString(R.string.share_too_large_for_qr)
+            btnShareQr.visibility = View.GONE
+        }
+
+        btnCopy.setOnClickListener {
+            Share.copyToClipboard(ctx, encodedText)
+            (activity as? MainActivity)?.showMessage(getString(R.string.share_copied))
+        }
+
+        AlertDialog.Builder(ctx)
+            .setTitle(R.string.share)
+            .setView(layout)
+            .setPositiveButton(android.R.string.ok, null)
+            .create().safelyShow()
+    }
+
+    private fun shareQrBitmap(bitmap: Bitmap) {
+        val ctx = requireContext()
+        val file = File(ctx.cacheDir, "share_qr.png")
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", file)
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/png"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(intent, getString(R.string.share)))
+    }
+
     private val presenter: BookListOverviewPresenter = BookListOverviewPresenter()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -131,8 +176,6 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        progressDialog = ProgressDialogCompat(requireContext())
-        // Note: 这里不是小说列表，固定用LinearLayoutManager，
         binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
         binding.rvNovel.adapter = mAdapter
         binding.srlRefresh.setOnRefreshListener {
@@ -149,8 +192,6 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
 
     override fun onStart() {
         super.onStart()
-        // 开始查询书单列表，
-        // 每次切到这个页面就刷新，
         refresh()
     }
 
@@ -162,15 +203,6 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
     fun showBookListList(list: List<BookList>) {
         binding.srlRefresh.isRefreshing = false
         mAdapter.data = list
-    }
-
-    fun showUploading() {
-        requireContext().loading(progressDialog, getString(R.string.uploading))
-    }
-
-    fun showSharedUrl(url: String, qrCode: String) {
-        progressDialog.dismiss()
-        Share.alert(context!!, url, qrCode)
     }
 
     fun newBookList() {
@@ -192,13 +224,11 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
 
     fun showComplete(message: String) {
         binding.srlRefresh.isRefreshing = false
-        progressDialog.dismiss()
         (activity as? MainActivity)?.showMessage(message)
     }
 
     fun showError(message: String, e: Throwable) {
         binding.srlRefresh.isRefreshing = false
-        progressDialog.dismiss()
         (activity as? MainActivity)?.showError(message, e)
     }
 }

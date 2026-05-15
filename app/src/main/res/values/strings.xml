@@ -117,7 +117,6 @@
     <string name="date_format">时间格式</string>
     <string name="button_decrease">-</string>
     <string name="button_increase">+</string>
-    <string name="book_list_share_expiration">书单分享期限</string>
     <string name="day">一天</string>
     <string name="month">一月</string>
     <string name="year">一年</string>
@@ -285,6 +284,14 @@
     <string name="confirm_backup_export">确认导出覆盖可能已有的备份？</string>
     <string name="tip_stop_upkeep">停止维护</string>
     <string name="tip_stop_upkeep_reason_default">忘了，可能是原网站有部分功能失效了，</string>
-    <string name="scan_summary">仅支持通过zxing扫码app扫码打开支持的页面或者导入书单或者打开搜索，</string>
+    <string name="import_backup">导入备份</string>
+    <string name="import_local_novel">导入本地小说</string>
+    <string name="import_share_link">导入分享链接</string>
+    <string name="share_copied">已复制到剪贴板</string>
+    <string name="share_too_large_for_qr">书单过大，无法生成二维码</string>
+    <string name="invalid_share_content">请复制有效的分享内容再试</string>
+    <string name="unsupported_qr_content">不支持的二维码内容</string>
+    <string name="share_qr">分享二维码</string>
+    <string name="copy_share_code">复制分享码</string>
 
 </resources>

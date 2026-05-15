@@ -2,16 +2,16 @@ package cc.aoeiuv020.panovel.main
 
 import android.Manifest
 import android.app.AlertDialog
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.activity.result.contract.ActivityResultContracts
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -28,8 +28,8 @@ import cc.aoeiuv020.panovel.open.OpenManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.search.FuzzySearchActivity
 import cc.aoeiuv020.panovel.search.SiteChooseActivity
-import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.settings.SettingsActivity
+import cc.aoeiuv020.panovel.share.Share
 import cc.aoeiuv020.panovel.util.ProgressDialogCompat
 import cc.aoeiuv020.panovel.util.cancelAllNotify
 import cc.aoeiuv020.panovel.util.initNotificationChannel
@@ -37,26 +37,28 @@ import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.*
 import timber.log.Timber
-/**
- *
- * Created by AoEiuV020 on 2017.10.15-15:53:19.
- */
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     lateinit var progressDialog: ProgressDialogCompat
 
-    private val scanLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        result.data?.extras?.getString("SCAN_RESULT")?.let {
-            OpenManager.open(this, it, openListener)
-        }
+    private val scanLauncher = registerForActivityResult(ScanContract()) { result ->
+        result.contents?.let { handleScannedContent(it) }
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) launchScanner()
     }
 
     private val openDocumentLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { OpenManager.open(this, it, openListener) }
     }
+
     private val bookshelfFragment: BookshelfFragment?
         get() = supportFragmentManager.fragments.firstOrNull { it is BookshelfFragment } as BookshelfFragment?
     private val bookListFragment: BookListFragment?
@@ -67,7 +69,6 @@ class MainActivity : AppCompatActivity() {
     private val openListener: OpenManager.OpenListener = object : OpenManager.OpenListener {
         override fun onOtherCase(str: String) {
             progressDialog.dismiss()
-            // 打开的不是网址，就直接精确搜索，
             FuzzySearchActivity.start(this@MainActivity, str)
         }
 
@@ -117,13 +118,8 @@ class MainActivity : AppCompatActivity() {
         syncSites()
         checkEmpty()
 
-        // 异步检查签名，
         Check.asyncCheckSignature(this)
-
-        // 异步检查是否有更新，
         Check.asyncCheckVersion(this)
-        // 异步获取可能存在的, 我放在网上想推给用户的消息，
-        // DevMessage was removed
     }
 
     private val notificationPermissionLauncher = registerForActivityResult(
@@ -160,11 +156,11 @@ class MainActivity : AppCompatActivity() {
                 if (isEmpty) {
                     AlertDialog.Builder(this@MainActivity)
                         .setMessage(getString(R.string.tip_data_empty))
-                        .setPositiveButton(R.string.sImport) { _, _ ->
+                        .setPositiveButton(R.string.import_backup) { _, _ ->
                             BackupActivity.start(this@MainActivity)
                         }
                         .setNeutralButton(R.string.search) { _, _ ->
-                            FuzzySearchActivity.start(this@MainActivity, "异世界")
+                            FuzzySearchActivity.start(this@MainActivity)
                         }
                         .show()
                 }
@@ -207,7 +203,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 回到主页时清空所有通知，包括小说更新通知和其他导出下载等通知，
         cancelAllNotify()
     }
 
@@ -227,34 +222,69 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun scan() {
-        val intent = Intent("com.google.zxing.client.android.SCAN")
-        intent.putExtra("SCAN_MODE", "QR_CODE_MODE")
-        try {
-            scanLauncher.launch(intent)
-        } catch (_: ActivityNotFoundException) {
-            android.widget.Toast.makeText(this, "没安装zxing二维码扫描器，", android.widget.Toast.LENGTH_SHORT).show()
-        } catch (_: SecurityException) {
-            android.widget.Toast.makeText(this, "没权限？这里是调用zxing扫码，", android.widget.Toast.LENGTH_SHORT).show()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            launchScanner()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
-    private fun open() {
-        val layout = View.inflate(this@MainActivity, R.layout.dialog_editor, null)
-        val etName = layout.findViewById<android.widget.EditText>(R.id.editText)
-        etName.hint = getString(R.string.main_open_hint)
-        AlertDialog.Builder(this@MainActivity).apply {
-            setTitle(R.string.open)
-            setView(layout)
-            setPositiveButton(android.R.string.ok) { _, _ ->
-                val url = etName.text.toString()
-                if (url.isNotEmpty()) {
-                    OpenManager.open(this@MainActivity, url, openListener)
+    private fun launchScanner() {
+        val options = ScanOptions().apply {
+            setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+            setPrompt(getString(R.string.scan))
+            setBeepEnabled(false)
+        }
+        scanLauncher.launch(options)
+    }
+
+    private fun handleScannedContent(content: String) {
+        if (Share.isShareContent(content)) {
+            lifecycleScope.launch {
+                try {
+                    val count = withContext(Dispatchers.IO) {
+                        Share.importShareContent(content)
+                    }
+                    openListener.onBookListReceived(count)
+                } catch (e: Exception) {
+                    Reporter.post("导入书单失败", e)
+                    showError("导入书单失败，", e)
                 }
             }
-            setNeutralButton(R.string.local_novel) { _, _ ->
-                openDocumentLauncher.launch(arrayOf("*/*"))
+        } else if (content.startsWith("http")) {
+            OpenManager.open(this, content, openListener)
+        } else {
+            showMessage(getString(R.string.unsupported_qr_content))
+        }
+    }
+
+    private fun importLocalNovel() {
+        openDocumentLauncher.launch(arrayOf("*/*"))
+    }
+
+    private fun importShareLink() {
+        val text = Share.getClipboardText(this)
+        if (text.isNullOrBlank()) {
+            showMessage(getString(R.string.invalid_share_content))
+            return
+        }
+        if (Share.isShareContent(text)) {
+            lifecycleScope.launch {
+                try {
+                    val count = withContext(Dispatchers.IO) {
+                        Share.importShareContent(text)
+                    }
+                    openListener.onBookListReceived(count)
+                } catch (e: Exception) {
+                    Reporter.post("导入书单失败", e)
+                    showError("导入书单失败，", e)
+                }
             }
-        }.create().safelyShow()
+        } else if (text.startsWith("http")) {
+            OpenManager.open(this, text, openListener)
+        } else {
+            showMessage(getString(R.string.invalid_share_content))
+        }
     }
 
     private fun downloadAll() {
@@ -274,7 +304,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
-        menu.findItem(R.id.scan)?.isVisible = OtherSettings.scan
         return true
     }
 
@@ -283,7 +312,8 @@ class MainActivity : AppCompatActivity() {
             R.id.settings -> SettingsActivity.start(this)
             R.id.search -> FuzzySearchActivity.start(this)
             R.id.scan -> scan()
-            R.id.open -> open()
+            R.id.importLocal -> importLocalNovel()
+            R.id.importShare -> importShareLink()
             R.id.cacheAll -> downloadAll()
             R.id.source -> SiteChooseActivity.start(this)
             R.id.explain -> showExplain()

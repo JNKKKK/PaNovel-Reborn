@@ -7,13 +7,6 @@
         android:key="refreshOnSearch"
         android:title="@string/refresh_on_search" />
 
-    <cc.aoeiuv020.panovel.settings.ListPreference
-        android:entries="@array/expiration_names"
-        android:defaultValue="NONE"
-        android:entryValues="@array/expiration_values"
-        android:key="shareExpiration"
-        android:title="@string/book_list_share_expiration" />
-
     <cc.aoeiuv020.panovel.settings.ColorPickerPreference
         android:defaultValue="0xff000000"
         android:key="chapterColorDefault"
@@ -38,10 +31,5 @@
         app:lightnessSlider="true"
         app:wheelType="CIRCLE" />
 
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="scan"
-        android:summary="@string/scan_summary"
-        android:title="@string/scan" />
 
 </PreferenceScreen>

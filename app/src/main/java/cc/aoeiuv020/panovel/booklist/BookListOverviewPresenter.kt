@@ -1,19 +1,14 @@
 package cc.aoeiuv020.panovel.booklist
 
+import android.graphics.Bitmap
 import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.BookList
-import cc.aoeiuv020.panovel.qrcode.QrCodeGenerator
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.share.Share
 import kotlinx.coroutines.*
 import timber.log.Timber
 
-/**
- *
- * Created by AoEiuV020 on 2017.11.22-14:31:17.
- */
 class BookListOverviewPresenter : Presenter<BookListFragment>() {
     fun refresh() {
         requestBookListList()
@@ -36,17 +31,16 @@ class BookListOverviewPresenter : Presenter<BookListFragment>() {
     }
 
     fun shareBookList(bookList: BookList) {
-        view?.showUploading()
         scope.launch {
             try {
-                val (url, qrCode) = withContext(Dispatchers.IO) {
-                    val url = Share.shareBookList(bookList, OtherSettings.shareExpiration)
-                    val qrCode = QrCodeGenerator.generate(url)
-                    Pair(url, qrCode)
+                val (encodedText, qrBitmap) = withContext(Dispatchers.IO) {
+                    val encoded = Share.encode(bookList)
+                    val bitmap = Share.generateQrBitmap(encoded)
+                    Pair(encoded, bitmap)
                 }
-                view?.showSharedUrl(url, qrCode)
+                view?.showShareResult(encodedText, qrBitmap)
             } catch (e: Exception) {
-                val message = "上传书单失败，"
+                val message = "分享书单失败，"
                 Reporter.post(message, e)
                 Timber.e(e, message)
                 view?.showError(message, e)
@@ -60,7 +54,6 @@ class BookListOverviewPresenter : Presenter<BookListFragment>() {
                 withContext(Dispatchers.IO) {
                     DataManager.renameBookList(bookList, newName)
                 }
-                // 干脆整个刷新，没必要找麻烦，
                 view?.refresh()
             } catch (e: Exception) {
                 val message = "书单重命名失败，"
@@ -77,7 +70,6 @@ class BookListOverviewPresenter : Presenter<BookListFragment>() {
                 withContext(Dispatchers.IO) {
                     DataManager.copyBookList(bookList, newName)
                 }
-                // 干脆整个刷新，没必要找麻烦，
                 view?.refresh()
             } catch (e: Exception) {
                 val message = "书单复制失败，"
@@ -94,7 +86,6 @@ class BookListOverviewPresenter : Presenter<BookListFragment>() {
                 withContext(Dispatchers.IO) {
                     DataManager.removeBookList(bookList)
                 }
-                // 干脆整个刷新，没必要找麻烦，
                 view?.refresh()
             } catch (e: Exception) {
                 val message = "删除书单失败，"
@@ -111,7 +102,6 @@ class BookListOverviewPresenter : Presenter<BookListFragment>() {
                 withContext(Dispatchers.IO) {
                     DataManager.newBookList(name)
                 }
-                // 干脆整个刷新，没必要找麻烦，
                 view?.refresh()
             } catch (e: Exception) {
                 val message = "添加书单失败，"

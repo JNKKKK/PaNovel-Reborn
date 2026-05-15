@@ -12,7 +12,6 @@ import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.share.Share
 import cc.aoeiuv020.panovel.text.NovelTextActivity
 import cc.aoeiuv020.panovel.databinding.ActivityNovelDetailBinding
 import cc.aoeiuv020.panovel.util.alert
@@ -89,7 +88,9 @@ class NovelDetailActivity : AppCompatActivity(), MvpView {
 
     fun showNovelDetail(novel: Novel) {
         binding.srlRefresh.isRefreshing = false
+        val wasNull = this.novel == null
         this.novel = novel
+        if (wasNull) invalidateOptionsMenu()
         binding.toolbarLayout.title = novel.name
         // TODO: 调整上半部分展示内容，作者名网站名什么都加上，
         // TODO: 下面考虑用viewPager两页实现简介和目录，
@@ -145,11 +146,18 @@ class NovelDetailActivity : AppCompatActivity(), MvpView {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_detail, menu)
+        val isLocal = novel?.isLocalNovel == true
+        menu.findItem(R.id.share)?.isVisible = !isLocal
+        menu.findItem(R.id.browse)?.isVisible = !isLocal
         return true
     }
 
-    fun showSharedUrl(url: String, qrCode: String) {
-        Share.alert(this, url, qrCode)
+    fun shareNovelUrl(url: String) {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, url)
+        }
+        startActivity(Intent.createChooser(intent, getString(R.string.share)))
     }
 
 }

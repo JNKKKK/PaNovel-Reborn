@@ -1,7 +1,6 @@
 package cc.aoeiuv020.panovel.settings
 
 import android.content.res.ColorStateList
-import cc.aoeiuv020.panovel.share.Expiration
 import cc.aoeiuv020.panovel.util.Delegates
 import cc.aoeiuv020.panovel.util.Pref
 
@@ -17,11 +16,6 @@ object OtherSettings : Pref {
      * 默认关闭是要搜索完成后下拉才会刷新搜索结果的章节，
      */
     var refreshOnSearch: Boolean by Delegates.boolean(false)
-
-    /**
-     * 书单分享后网上保存的时限，
-     */
-    var shareExpiration: Expiration by Delegates.enum(Expiration.NONE)
 
     var chapterColorDefault: Int by Delegates.int(0xff000000.toInt())
 
@@ -43,8 +37,4 @@ object OtherSettings : Pref {
                 chapterColorDefault
             )
         )
-    // 主页菜单扫一扫开关，
-    var scan: Boolean by Delegates.boolean(false)
-
-
 }

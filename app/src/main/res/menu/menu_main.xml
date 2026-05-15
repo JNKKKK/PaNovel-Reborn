@@ -11,14 +11,17 @@
 
     <item
         android:id="@+id/scan"
-        android:icon="@drawable/ic_scan"
         android:title="@string/scan"
-        app:iconTint="@android:color/white"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/open"
-        android:title="@string/open"
+        android:id="@+id/importLocal"
+        android:title="@string/import_local_novel"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/importShare"
+        android:title="@string/import_share_link"
         app:showAsAction="never" />
 
     <item
@@ -35,7 +38,8 @@
         android:id="@+id/settings"
         android:title="@string/settings"
         app:showAsAction="never" />
-<item
+
+    <item
         android:id="@+id/explain"
         android:title="@string/explain"
         app:showAsAction="never" />

@@ -6,7 +6,6 @@ import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.data.entity.Novel
-import cc.aoeiuv020.panovel.qrcode.QrCodeGenerator
 import cc.aoeiuv020.panovel.report.Reporter
 import timber.log.Timber
 import kotlinx.coroutines.*
@@ -59,12 +58,10 @@ class NovelDetailPresenter(
     fun share() {
         scope.launch {
             try {
-                val (url, qrCode) = withContext(Dispatchers.IO) {
-                    val url = novelManager.getDetailUrl()
-                    val qrCode = QrCodeGenerator.generate(url)
-                    url to qrCode
+                val url = withContext(Dispatchers.IO) {
+                    novelManager.getDetailUrl()
                 }
-                view?.showSharedUrl(url, qrCode)
+                view?.shareNovelUrl(url)
             } catch (e: Exception) {
                 val message = "获取小说<${novel.bookId}>详情页地址失败，"
                 Reporter.post(message, e)

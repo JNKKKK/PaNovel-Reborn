@@ -8,21 +8,15 @@ import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.local.ImportRequireValue
 import cc.aoeiuv020.panovel.local.LocalNovelType
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.share.Share
 import cc.aoeiuv020.panovel.util.uiInput
 import cc.aoeiuv020.panovel.util.uiSelect
 import timber.log.Timber
 import kotlinx.coroutines.*
 
-/**
- * 应用内打开相关的，
- * Created by AoEiuV020 on 2018.03.07-21:40:28.
- */
 object OpenManager {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     fun open(context: Context, str: String, openListener: OpenListener) {
-        // Uri.parse没有检测，不会抛异常，不正常的uri会在getScheme返回null,
         open(context, Uri.parse(str), openListener)
     }
 
@@ -37,7 +31,6 @@ object OpenManager {
                 openListener.onOtherCase(uri.toString())
             }
             !uri.scheme!!.startsWith("http") -> {
-                // 协议不是http或https的话统统当成本地小说打开，
                 openListener.onLoading(context.getString(R.string.local_novel_importing))
                 scope.launch {
                     try {
@@ -78,24 +71,7 @@ object OpenManager {
                     }
                 }
             }
-            Share.check(uri.toString()) -> {
-                // 如果是书单分享的地址，直接添加书单，
-                openListener.onLoading(context.getString(R.string.book_list_downloading))
-                scope.launch {
-                    try {
-                        val count = withContext(Dispatchers.IO) {
-                            Share.receiveBookList(uri.toString())
-                        }
-                        openListener.onBookListReceived(count)
-                    } catch (e: Exception) {
-                        val message = "获取书单失败，"
-                        Reporter.post(message, e)
-                        Timber.e(e, message)
-                        openListener.onError(message, e)
-                    }
-                }
-            }
-            else -> // 如果可以从地址得到小说对象，打开详情页，
+            else ->
                 scope.launch {
                     try {
                         val novel = withContext(Dispatchers.IO) {

@@ -75,8 +75,15 @@ class Xiayu : DslJsoupNovelContext() { init {
         allChapters
     }
     content {
-        document {
-            items("#chapterBody > p")
+        val doc = parse(connect(getNovelContentUrl(extra)))
+        val body = doc.selectFirst("#chapterBody") ?: return@content emptyList()
+        val paragraphs = body.select("p")
+        if (paragraphs.isNotEmpty()) {
+            paragraphs.map { it.text().trim() }.filter { it.isNotEmpty() }
+        } else {
+            body.html().split(Regex("<br\\s*/?>"))
+                .map { it.replace("&nbsp;", " ").replace(Regex("<[^>]+>"), "").trim() }
+                .filter { it.isNotEmpty() }
         }
     }
 }}

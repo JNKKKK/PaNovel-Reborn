@@ -9,6 +9,7 @@ import okio.Buffer
 import java.io.InputStream
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
@@ -53,6 +54,7 @@ abstract class OkHttpNovelContext : NovelContext() {
 /*
                 .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("localhost", 8080)))
 */
+                .callTimeout(10, TimeUnit.SECONDS)
                 .sslAllowAll()
                 .addInterceptor(LogInterceptor())
                 .addInterceptor(HeaderInterceptor())

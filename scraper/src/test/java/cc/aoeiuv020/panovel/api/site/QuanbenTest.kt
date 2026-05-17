@@ -1,12 +1,15 @@
 package cc.aoeiuv020.panovel.api.site
 
+import cc.aoeiuv020.panovel.api.RetryRule
 import cc.aoeiuv020.panovel.api.SiteIntegrationTest
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Rule
 import org.junit.experimental.categories.Category
 
 @Category(SiteIntegrationTest::class)
 class QuanbenTest {
+    @get:Rule val retryRule = RetryRule()
     private val context = Quanben()
 
     @Test

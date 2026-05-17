@@ -66,12 +66,6 @@ abstract class JsoupNovelContext : OkHttpNovelContext() {
         }
     }
 
-    /**
-     * 下一页相关的暂不支持，
-     */
-    override fun getNextPage(extra: String): String? = getNextPage(parse(extra))
-
-    protected open fun getNextPage(root: Document): String? = null
 
 
     private val replaceWhiteWithNewLineRegex = Regex("\\s+")
@@ -105,19 +99,22 @@ abstract class JsoupNovelContext : OkHttpNovelContext() {
     /**
      * 下面的封装关键在于分开必要和不必要的，是否捕获Exception,
      * 必要的解析失败时统一抛异常，
-     * TODO: 改成query可以为空，默认就返回当前元素，
      */
-    protected fun Element.requireElements(query: String, name: String = TAG_LIST): Elements = try {
-        select(query).notEmpty(query)
-    } catch (e: Exception) {
-        throw IllegalStateException("解析[$name]($query)失败，", e)
-    }
+    protected fun Element.requireElements(query: String? = null, name: String = TAG_LIST): Elements =
+        if (query.isNullOrEmpty()) Elements(listOf(this))
+        else try {
+            select(query).notEmpty(query)
+        } catch (e: Exception) {
+            throw IllegalStateException("解析[$name]($query)失败，", e)
+        }
 
-    protected inline fun <T> Element.requireElements(query: String, name: String = TAG_LIST, block: (Elements) -> T): T = try {
-        select(query).notEmpty(query).let(block)
-    } catch (e: Exception) {
-        throw IllegalStateException("解析[$name]($query)失败，", e)
-    }
+    protected inline fun <T> Element.requireElements(query: String? = null, name: String = TAG_LIST, block: (Elements) -> T): T =
+        if (query.isNullOrEmpty()) block(Elements(listOf(this)))
+        else try {
+            select(query).notEmpty(query).let(block)
+        } catch (e: Exception) {
+            throw IllegalStateException("解析[$name]($query)失败，", e)
+        }
 
     protected fun Element.requireElement(query: String, name: String = TAG_ELEMENT): Element = try {
         select(query).first()!!

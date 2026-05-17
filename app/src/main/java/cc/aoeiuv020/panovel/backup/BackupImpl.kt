@@ -103,7 +103,7 @@ class BackupImpl : Backup {
                 "Other" -> importPref(OtherSettings, file)
                 "Reader" -> importPref(ReaderSettings, file)
                 "Download" -> importPref(DownloadSettings, file)
-                "Interface" -> importPref(InterfaceSettings, file)
+                "Interface" -> 0
                 "Location" -> importPref(LocationSettings, file)
                 "Server" -> 0
                 "Reader_BatteryMargins" -> importPref(ReaderSettings.batteryMargins, file)
@@ -151,7 +151,6 @@ class BackupImpl : Backup {
                 "pinnedBackgroundColor" -> editor.putInt(key, prim.int)
                 "refreshOnSearch" -> editor.putBoolean(key, prim.boolean)
                 "volumeKeyScroll" -> editor.putBoolean(key, prim.boolean)
-                "tabGravityCenter" -> editor.putBoolean(key, prim.boolean)
                 "animationSpeed" -> editor.putFloat(key, prim.float)
                 "centerPercent" -> editor.putFloat(key, prim.float)
                 "dotSize" -> editor.putFloat(key, prim.float)
@@ -179,7 +178,7 @@ class BackupImpl : Backup {
                 "dateFormat" -> editor.putString(key, prim.content)
                 "segmentIndentation" -> editor.putString(key, prim.content)
                 "enabled" -> editor.putBoolean(key, prim.boolean)
-                "dotNotifyUpdate" -> editor.putBoolean(key, prim.boolean)
+                "dotNotifyUpdate" -> --count
                 "bottom" -> editor.putInt(key, prim.int)
                 "left" -> editor.putInt(key, prim.int)
                 "right" -> editor.putInt(key, prim.int)
@@ -254,7 +253,7 @@ class BackupImpl : Backup {
         @Suppress("RemoveExplicitTypeArguments")
         var count = listOf<Pref>(
             GeneralSettings, ListSettings, OtherSettings, ReaderSettings,
-            DownloadSettings, InterfaceSettings, LocationSettings,
+            DownloadSettings, LocationSettings,
             ReaderSettings.batteryMargins,
             ReaderSettings.bookNameMargins,
             ReaderSettings.chapterNameMargins,

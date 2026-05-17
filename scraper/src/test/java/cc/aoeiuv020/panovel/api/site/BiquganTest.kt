@@ -1,12 +1,15 @@
 package cc.aoeiuv020.panovel.api.site
 
+import cc.aoeiuv020.panovel.api.RetryRule
 import cc.aoeiuv020.panovel.api.SiteIntegrationTest
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Rule
 import org.junit.experimental.categories.Category
 
 @Category(SiteIntegrationTest::class)
 class BiquganTest {
+    @get:Rule val retryRule = RetryRule()
     private val context = Biqugan()
 
     @Test
@@ -38,7 +41,7 @@ class BiquganTest {
     fun testChapters() {
         val chapters = context.getNovelChaptersAsc("0/143")
         assertTrue("should have chapters", chapters.isNotEmpty())
-        assertTrue("should have many chapters (paginated)", chapters.size > 100)
+        assertTrue("should have many chapters (paginated across multiple pages)", chapters.size > 200)
         println("chapters: ${chapters.size}")
         println("  first: ${chapters.first().name} [${chapters.first().extra}]")
         println("  last: ${chapters.last().name}")

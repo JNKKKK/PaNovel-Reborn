@@ -16,6 +16,7 @@ class CacheClearPreferenceFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.pref_cache_clear, rootKey)
+        removeIconSpace(preferenceScreen)
 
         val map = mapOf("cache" to {
             DataManager.cleanAllCache()

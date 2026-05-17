@@ -56,13 +56,11 @@ open class NovelListAdapter(
             diffResult.dispatchUpdatesTo(this)
         }
 
-    // 打开时存个比最小时间大的，自动刷新没刷新过的，也就是刚搜索出来的，
-    // 设置一天，以防万一时区问题，
-    // 如果小说刷新时间checkUpdateTime小于这个时间就联网刷新章节列表，
     private var refreshTime = Date(TimeUnit.DAYS.toMillis(1))
 
     fun refresh() {
         refreshTime = Date()
+        notifyItemRangeChanged(0, itemCount)
     }
 
     // 这里确保一个adapter只读取一份设置，否则可能改变设置后回来发现新加载的元素是新设置，

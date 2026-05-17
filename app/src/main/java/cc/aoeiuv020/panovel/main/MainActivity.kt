@@ -213,14 +213,6 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun showExplain() {
-        AlertDialog.Builder(this).apply {
-            setTitle(getString(R.string.explain))
-            setMessage(assets.open("Explain.txt").reader().readText())
-            setPositiveButton(android.R.string.ok, null)
-        }.create().safelyShow()
-    }
-
     private fun scan() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             launchScanner()
@@ -316,7 +308,6 @@ class MainActivity : AppCompatActivity() {
             R.id.importShare -> importShareLink()
             R.id.cacheAll -> downloadAll()
             R.id.source -> SiteChooseActivity.start(this)
-            R.id.explain -> showExplain()
             else -> return super.onOptionsItemSelected(item)
         }
         return true

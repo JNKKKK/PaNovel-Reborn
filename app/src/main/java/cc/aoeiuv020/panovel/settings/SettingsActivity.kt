@@ -69,6 +69,7 @@ class SettingsActivity : AppCompatActivity(),
 class SettingsHeaderFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.pref_headers, rootKey)
+        removeIconSpace(preferenceScreen)
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {

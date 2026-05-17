@@ -172,13 +172,7 @@ class NovelViewHolder(itemView: View,
         // TODO: 本地小说不显示这个，
         checkUpdate?.text = DateUtils.getRelativeTimeSpanString(novel.checkUpdateTime.time, System.currentTimeMillis(), TimeUnit.SECONDS.toMillis(1))
         readAt?.text = novel.readAtChapterName
-        val hasNew = if (ListSettings.dotNotifyUpdate) {
-            // 判断上次刷出更新时间在阅读时间之后，
-            this.novel.receiveUpdateTime > this.novel.readTime
-        } else {
-            // 判断阅读进度章节小于最后一章，
-            this.novel.chaptersCount - 1 > this.novel.readAtChapterIndex
-        }
+        val hasNew = this.novel.receiveUpdateTime > this.novel.readTime
         Timber.d("show hasNew: $hasNew")
         refreshingDot?.refreshed(hasNew)
     }
@@ -212,8 +206,14 @@ class NovelViewHolder(itemView: View,
         Timber.d("bind <${this.novel.run { "$site.$author.$name" }}>")
         refreshingNovelSet.remove(novel.nId)
         if (novel.nId == this.novel.nId) {
-            // 显示刷新结果，
             show(novelManager)
+        } else {
+            // ViewHolder was recycled — notify adapter to rebind the correct item
+            val adapter = bindingAdapter as? NovelListAdapter ?: return
+            val position = adapter.data.indexOfFirst { it.novel.nId == novel.nId }
+            if (position >= 0) {
+                adapter.notifyItemChanged(position)
+            }
         }
     }
 

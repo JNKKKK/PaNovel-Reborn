@@ -39,8 +39,4 @@
         android:title="@string/settings"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/explain"
-        android:title="@string/explain"
-        app:showAsAction="never" />
 </menu>

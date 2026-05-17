@@ -1,12 +1,15 @@
 package cc.aoeiuv020.panovel.api.site
 
+import cc.aoeiuv020.panovel.api.RetryRule
 import cc.aoeiuv020.panovel.api.SiteIntegrationTest
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Rule
 import org.junit.experimental.categories.Category
 
 @Category(SiteIntegrationTest::class)
 class XiayuTest {
+    @get:Rule val retryRule = RetryRule()
     private val context = Xiayu()
 
     @Test
@@ -48,8 +51,19 @@ class XiayuTest {
     fun testContent() {
         val content = context.getNovelContent("1Q63/xWqQZ")
         assertTrue("should have content lines", content.isNotEmpty())
+        assertTrue("should have many content lines", content.size > 10)
         assertTrue("first line should have text", content.first().isNotBlank())
         println("content lines: ${content.size}")
+        println("  first: ${content.first().take(80)}...")
+    }
+
+    @Test
+    fun testContentBrFormat() {
+        val content = context.getNovelContent("MA69/rYQQA")
+        assertTrue("should have content lines", content.isNotEmpty())
+        assertTrue("should have many content lines", content.size > 10)
+        assertTrue("first line should have text", content.first().isNotBlank())
+        println("content (br format) lines: ${content.size}")
         println("  first: ${content.first().take(80)}...")
     }
 }

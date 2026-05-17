@@ -40,6 +40,7 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
         }, onError = ::showError)
     }
     private val presenter: BookshelfPresenter = BookshelfPresenter()
+    private var firstResume = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -70,10 +71,14 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
     }
 
 
-    override fun onStart() {
-        // 阅读后回来时要刷新，
-        refresh()
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
+        if (firstResume) {
+            firstResume = false
+            forceRefresh()
+        } else {
+            refresh()
+        }
     }
 
     fun refresh() {

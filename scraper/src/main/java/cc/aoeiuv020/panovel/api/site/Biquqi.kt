@@ -52,10 +52,9 @@ class Biquqi : DslJsoupNovelContext() { init {
         document(firstPage) {
             items(".book_list2 ul li > a")
         }.let { allChapters.addAll(it) }
-        val lastPageLink = firstPage.select(".pages a[aria-label=Next]").first()
-        val pageCount = lastPageLink?.attr("href")
-            ?.let { Regex("index_(\\d+)\\.html").find(it)?.groupValues?.get(1)?.toIntOrNull() }
-            ?: 1
+        val pageCount = firstPage.select("li").mapNotNull { li ->
+            biquqiPaginationRegex.matchEntire(li.text().trim())?.groupValues?.get(2)?.toIntOrNull()
+        }.firstOrNull() ?: 1
         for (page in 2..pageCount) {
             val pageUrl = "${chapterUrl}index_$page.html"
             val doc = parse(connect(pageUrl))
@@ -84,6 +83,7 @@ class Biquqi : DslJsoupNovelContext() { init {
     }
 }}
 
+private val biquqiPaginationRegex = Regex("(\\d+)/(\\d+)")
 private val pageIndicatorRegex = Regex("第\\(\\d+/\\d+\\)页")
 private val totalPagesRegex = Regex("第\\(\\d+/(\\d+)\\)页")
 

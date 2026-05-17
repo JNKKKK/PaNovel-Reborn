@@ -10,6 +10,7 @@ import android.os.Environment
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceGroup
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.util.Pref
@@ -22,6 +23,7 @@ abstract class BasePreferenceFragment(
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         attach(prefObj)
         setPreferencesFromResource(prefId, rootKey)
+        removeIconSpace(preferenceScreen)
     }
 }
 
@@ -72,4 +74,11 @@ class LocationPreferenceFragment : BasePreferenceFragment(LocationSettings, R.xm
 
 class OthersPreferenceFragment : BasePreferenceFragment(OtherSettings, R.xml.pref_others)
 
-class InterfacePreferenceFragment : BasePreferenceFragment(InterfaceSettings, R.xml.pref_interface)
+fun removeIconSpace(group: PreferenceGroup) {
+    for (i in 0 until group.preferenceCount) {
+        val pref = group.getPreference(i)
+        pref.isIconSpaceReserved = false
+        if (pref is PreferenceGroup) removeIconSpace(pref)
+    }
+}
+

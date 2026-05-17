@@ -15,10 +15,6 @@
         app:title="@string/pref_header_read" />
 
     <Preference
-        app:fragment="cc.aoeiuv020.panovel.settings.InterfacePreferenceFragment"
-        app:title="@string/pref_header_interface" />
-
-    <Preference
         app:fragment="cc.aoeiuv020.panovel.settings.DownloadPreferenceFragment"
         app:title="@string/pref_header_download" />
 

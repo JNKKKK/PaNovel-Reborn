@@ -16,6 +16,7 @@ import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.databinding.ActivitySingleSearchBinding
 import cc.aoeiuv020.panovel.report.Reporter
+import cc.aoeiuv020.panovel.util.ProgressDialogCompat
 import cc.aoeiuv020.panovel.util.onActivityDestroy
 import cc.aoeiuv020.panovel.util.safelyShow
 import timber.log.Timber
@@ -34,6 +35,7 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
 
     private lateinit var siteName: String
     private lateinit var presenter: SingleSearchPresenter
+    private lateinit var progressDialog: ProgressDialogCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +51,7 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
         }
         Timber.d("receive site: $siteName")
         title = siteName
+        progressDialog = ProgressDialogCompat(this)
 
         binding.srlRefresh.isRefreshing = true
         binding.srlRefresh.setOnRefreshListener {
@@ -156,8 +159,9 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
     }
 
     private fun open() {
-        // TODO: 这里需要个loading dialog,
         getCurrentUrl()?.let { url ->
+            progressDialog.setMessage(getString(R.string.loading, getString(R.string.optimization_read)))
+            progressDialog.show()
             presenter.open(url)
         }
     }
@@ -167,12 +171,13 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
     }
 
     fun openNovelDetail(novel: Novel) {
+        progressDialog.dismiss()
         NovelDetailActivity.start(this, novel)
     }
 
     fun showError(message: String, e: Throwable) {
+        progressDialog.dismiss()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
-            // 太丑了，
             return
         }
         androidx.appcompat.app.AlertDialog.Builder(this)
@@ -202,10 +207,8 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.search -> FuzzySearchActivity.startSingleSite(this, siteName)
             R.id.browse -> getCurrentUrl()?.let { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
             R.id.open -> open()
-            R.id.close -> finish()
             R.id.removeCookies -> removeCookies()
             else -> return super.onOptionsItemSelected(item)
         }

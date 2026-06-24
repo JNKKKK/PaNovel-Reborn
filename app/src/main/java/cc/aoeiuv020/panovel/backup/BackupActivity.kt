@@ -204,7 +204,6 @@ class BackupActivity : AppCompatActivity(), MvpView {
     }
 
     private val snack: Snackbar by lazy {
-        // TODO: 有时候不会弹出，只在收起时闪一下，可能是设置了跟着软键盘弹起的原因，
         Snackbar.make(binding.clRoot, "", Snackbar.LENGTH_SHORT)
     }
 

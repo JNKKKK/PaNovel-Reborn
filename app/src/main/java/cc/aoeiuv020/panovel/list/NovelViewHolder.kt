@@ -52,76 +52,47 @@ class NovelViewHolder(itemView: View,
     val context: Context = itemView.context
 
     init {
-        // 这里的引用的设置修改后不会马上生效，因为ViewHolder会被复用，
-        // 无所谓了，要是从外面传进来的话就太烦了，
-
         val typedValue = TypedValue()
         context.theme.resolveAttribute(android.R.attr.selectableItemBackground, typedValue, true)
-        // 长按时波纹背景，
         val selectableItemBackground = typedValue.resourceId
 
-        if (ListSettings.onDotClick != ItemAction.None) {
-            refreshingDot?.setOnClickListener {
-                itemListener.onDotClick(this)
-            }
-            refreshingDot?.setBackgroundResource(selectableItemBackground)
+        refreshingDot?.setOnClickListener {
+            itemListener.onDotClick(this)
         }
+        refreshingDot?.setOnLongClickListener { itemListener.onItemLongClick(this) }
+        refreshingDot?.setBackgroundResource(selectableItemBackground)
 
-        if (ListSettings.onDotLongClick != ItemAction.None) {
-            refreshingDot?.setOnLongClickListener {
-                itemListener.onDotLongClick(this)
-            }
-            refreshingDot?.setBackgroundResource(selectableItemBackground)
+        checkUpdate?.setOnClickListener {
+            itemListener.onCheckUpdateClick(this)
         }
+        checkUpdate?.setOnLongClickListener { itemListener.onItemLongClick(this) }
+        checkUpdate?.setBackgroundResource(selectableItemBackground)
 
-        if (ListSettings.onCheckUpdateClick != ItemAction.None) {
-            checkUpdate?.setOnClickListener {
-                itemListener.onCheckUpdateClick(this)
-            }
-            checkUpdate?.setBackgroundResource(selectableItemBackground)
+        name?.setOnClickListener {
+            itemListener.onNameClick(this)
         }
+        name?.setOnLongClickListener { itemListener.onItemLongClick(this) }
 
-        if (ListSettings.onNameClick != ItemAction.None) {
-            name?.setOnClickListener {
-                itemListener.onNameClick(this)
-            }
-            // 格子视图小说名的背景是渐变黑，不能改成波纹，
+        last?.setOnClickListener {
+            itemListener.onLastChapterClick(this)
         }
+        last?.setOnLongClickListener { itemListener.onItemLongClick(this) }
+        last?.setBackgroundResource(selectableItemBackground)
 
-        if (ListSettings.onNameLongClick != ItemAction.None) {
-            name?.setOnLongClickListener {
-                itemListener.onNameLongClick(this)
-            }
-            // 格子视图小说名的背景是渐变黑，不能改成波纹，
+        itemView.setOnClickListener {
+            itemListener.onItemClick(this)
         }
-
-        if (ListSettings.onLastChapterClick != ItemAction.None) {
-            last?.setOnClickListener {
-                itemListener.onLastChapterClick(this)
-            }
-            last?.setBackgroundResource(selectableItemBackground)
+        itemView.setOnLongClickListener {
+            itemListener.onItemLongClick(this)
         }
+        itemView.setBackgroundResource(selectableItemBackground)
 
-        if (ListSettings.onItemClick != ItemAction.None) {
-            itemView.setOnClickListener {
-                itemListener.onItemClick(this)
-            }
-            itemView.setBackgroundResource(selectableItemBackground)
-        }
-
-        if (ListSettings.onItemLongClick != ItemAction.None) {
-            itemView.setOnLongClickListener {
-                itemListener.onItemLongClick(this)
-            }
-            itemView.setBackgroundResource(selectableItemBackground)
-        }
-
-        // TODO: star控件改成支持onCheckChanged，这样的话，要试试外部调用移出书架指定isChecked会不会调用click事件，
         star?.setOnClickListener {
             it as CheckableImageView
             it.toggle()
             itemListener.onStarChanged(this, it.isChecked)
         }
+        star?.setOnLongClickListener { itemListener.onItemLongClick(this) }
         refreshingDot?.setDotColor(dotColor)
         refreshingDot?.setDotSize((dotSize * context.resources.displayMetrics.density).toInt())
 
@@ -168,9 +139,12 @@ class NovelViewHolder(itemView: View,
             }
         }
         star?.isChecked = novel.bookshelf
-        // 显示“x分钟前”，
-        // TODO: 本地小说不显示这个，
-        checkUpdate?.text = DateUtils.getRelativeTimeSpanString(novel.checkUpdateTime.time, System.currentTimeMillis(), TimeUnit.SECONDS.toMillis(1))
+        if (novel.isLocalNovel) {
+            checkUpdate?.visibility = android.view.View.GONE
+        } else {
+            checkUpdate?.visibility = android.view.View.VISIBLE
+            checkUpdate?.text = DateUtils.getRelativeTimeSpanString(novel.checkUpdateTime.time, System.currentTimeMillis(), TimeUnit.SECONDS.toMillis(1))
+        }
         readAt?.text = novel.readAtChapterName
         val hasNew = this.novel.receiveUpdateTime > this.novel.readTime
         Timber.d("show hasNew: $hasNew")

@@ -8,6 +8,8 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.entity.Novel
@@ -19,7 +21,7 @@ import cc.aoeiuv020.panovel.util.alertError
 import cc.aoeiuv020.panovel.util.noCover
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import android.content.Intent
 import timber.log.Timber
 
@@ -38,7 +40,10 @@ class NovelDetailActivity : AppCompatActivity(), MvpView {
     private lateinit var alertDialog: AlertDialog
     private lateinit var presenter: NovelDetailPresenter
     private var novel: Novel? = null
-    private var isRefreshEnable = false
+    private var novelId: Long = -1L
+
+    private var introductionFragment: DetailIntroductionFragment? = null
+    private var chaptersFragment: DetailChaptersFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,28 +62,44 @@ class NovelDetailActivity : AppCompatActivity(), MvpView {
             finish()
             return
         }
-
+        novelId = id
 
         binding.toolbarLayout.title = id.toString()
+
+        setupViewPager()
 
         binding.fabRead.setOnClickListener {
             NovelTextActivity.start(this, id)
         }
 
-        binding.srlRefresh.setOnRefreshListener {
-            refresh()
-        }
-        // 拉到顶部才允许下拉刷新，
-        // 为了支持内部嵌套列表，
-        binding.srlRefresh.setOnChildScrollUpCallback { _, _ -> !isRefreshEnable }
-        binding.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { _: AppBarLayout, verticalOffset: Int ->
-            isRefreshEnable = verticalOffset == 0
-        })
+        binding.srlRefresh.isEnabled = false
         binding.srlRefresh.isRefreshing = true
 
         presenter = NovelDetailPresenter(id)
         presenter.attach(this)
         presenter.start()
+    }
+
+    private fun setupViewPager() {
+        val tabTitles = listOf(
+            getString(R.string.detail),
+            getString(R.string.contents)
+        )
+
+        introductionFragment = DetailIntroductionFragment.newInstance("")
+        chaptersFragment = DetailChaptersFragment.newInstance(novelId)
+
+        binding.viewPager.adapter = object : FragmentStateAdapter(this) {
+            override fun getItemCount(): Int = 2
+            override fun createFragment(position: Int): Fragment = when (position) {
+                0 -> introductionFragment!!
+                else -> chaptersFragment!!
+            }
+        }
+
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = tabTitles[position]
+        }.attach()
     }
 
     override fun onDestroy() {
@@ -92,9 +113,15 @@ class NovelDetailActivity : AppCompatActivity(), MvpView {
         this.novel = novel
         if (wasNull) invalidateOptionsMenu()
         binding.toolbarLayout.title = novel.name
-        // TODO: 调整上半部分展示内容，作者名网站名什么都加上，
-        // TODO: 下面考虑用viewPager两页实现简介和目录，
-        binding.tvIntroduction.text = novel.introduction
+
+        binding.tvAuthor.text = novel.author
+        binding.tvSite.text = if (novel.isLocalNovel) getString(R.string.local_novel) else novel.site
+        if (novel.chaptersCount > 0) {
+            binding.tvChapterCount.text = getString(R.string.chapter_count_format, novel.chaptersCount)
+        }
+
+        introductionFragment?.updateText(novel.introduction)
+
         if (novel.image == noCover) {
             binding.image.setImageResource(R.mipmap.no_cover)
         } else {

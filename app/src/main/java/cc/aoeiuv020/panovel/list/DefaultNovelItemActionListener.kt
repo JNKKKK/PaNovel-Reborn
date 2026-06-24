@@ -10,7 +10,6 @@ import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.search.FuzzySearchActivity
 import cc.aoeiuv020.panovel.settings.ItemAction
 import cc.aoeiuv020.panovel.settings.ItemAction.*
-import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.text.NovelTextActivity
 import cc.aoeiuv020.panovel.util.uiInput
 import cc.aoeiuv020.panovel.util.uiSelect
@@ -83,35 +82,27 @@ class DefaultNovelItemActionListener(
     }
 
     override fun onDotClick(vh: NovelViewHolder) {
-        on(ListSettings.onDotClick, vh)
-    }
-
-    override fun onDotLongClick(vh: NovelViewHolder): Boolean {
-        return on(ListSettings.onDotLongClick, vh)
+        on(Refresh, vh)
     }
 
     override fun onCheckUpdateClick(vh: NovelViewHolder) {
-        on(ListSettings.onCheckUpdateClick, vh)
+        on(Refresh, vh)
     }
 
     override fun onNameClick(vh: NovelViewHolder) {
-        on(ListSettings.onNameClick, vh)
-    }
-
-    override fun onNameLongClick(vh: NovelViewHolder): Boolean {
-        return on(ListSettings.onNameLongClick, vh)
+        on(OpenDetail, vh)
     }
 
     override fun onLastChapterClick(vh: NovelViewHolder) {
-        on(ListSettings.onLastChapterClick, vh)
+        on(ReadLastChapter, vh)
     }
 
     override fun onItemClick(vh: NovelViewHolder) {
-        on(ListSettings.onItemClick, vh)
+        on(ReadContinue, vh)
     }
 
     override fun onItemLongClick(vh: NovelViewHolder): Boolean {
-        return on(ListSettings.onItemLongClick, vh)
+        return on(MoreAction, vh)
     }
 
     override fun onStarChanged(vh: NovelViewHolder, star: Boolean) {

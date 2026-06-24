@@ -18,16 +18,6 @@ object ListSettings : Pref {
     var dotSize: Float by Delegates.float(16f)
 
 
-    // 点击事件设置，
-    var onDotClick: ItemAction by Delegates.enum(ItemAction.Refresh)
-    var onDotLongClick: ItemAction by Delegates.enum(ItemAction.Pinned)
-    var onCheckUpdateClick: ItemAction by Delegates.enum(ItemAction.Refresh)
-    var onNameClick: ItemAction by Delegates.enum(ItemAction.OpenDetail)
-    var onNameLongClick: ItemAction by Delegates.enum(ItemAction.RefineSearch)
-    var onLastChapterClick: ItemAction by Delegates.enum(ItemAction.ReadLastChapter)
-    var onItemClick: ItemAction by Delegates.enum(ItemAction.ReadContinue)
-    var onItemLongClick: ItemAction by Delegates.enum(ItemAction.MoreAction)
-
     /**
      * 书架的排序标准，
      * 置顶的固定置顶，

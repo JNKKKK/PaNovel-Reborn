@@ -1,6 +1,6 @@
 # TODO Comments Analysis
 
-Total: 19 TODOs across the codebase.
+Total: 12 TODOs across the codebase.
 
 ## Scraper Module — DONE
 
@@ -9,17 +9,16 @@ All resolved:
 - ~~Cache main page URL~~ — Discarded (micro-optimization, not worth it)
 - ~~`requireElements` empty query support~~ — Implemented
 
-## App - UI/UX (7)
+## App - UI/UX — DONE
 
-| File | TODO |
-|------|------|
-| `app/.../BookListActivity.kt:53` | Switch to swipe-to-delete (better UX) |
-| `app/.../NovelDetailActivity.kt:95` | Improve detail header — show author name, site name, etc. |
-| `app/.../NovelDetailActivity.kt:96` | Use ViewPager with two pages for description and chapter list |
-| `app/.../SingleSearchActivity.kt:159` | Needs a loading dialog here |
-| `app/.../BackupActivity.kt:207` | Snackbar sometimes doesn't show, only flashes when collapsing — possibly keyboard-follow issue |
-| `app/.../NovelViewHolder.kt:119` | Star widget should support `onCheckChanged`; check if external `isChecked` triggers click |
-| `app/.../NovelViewHolder.kt:172` | Don't show this for local novels |
+All resolved:
+- ~~Switch to swipe-to-delete~~ — Discarded
+- ~~Improve detail header — show author name, site name, etc.~~ — Done
+- ~~Use ViewPager with two pages for description and chapter list~~ — Done
+- ~~Needs a loading dialog~~ — Done
+- ~~Snackbar sometimes doesn't show~~ — Discarded
+- ~~Star widget `onCheckChanged`~~ — Discarded (click action settings removed; hardcoded behavior)
+- ~~Don't show update time for local novels~~ — Done
 
 ## App - Data/Logic (5)
 

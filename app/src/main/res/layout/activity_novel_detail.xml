@@ -21,7 +21,7 @@
             <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/app_bar"
                 android:layout_width="match_parent"
-                android:layout_height="400dp"
+                android:layout_height="300dp"
                 android:fitsSystemWindows="true"
                 android:theme="@style/AppTheme.AppBarOverlay">
 
@@ -43,6 +43,12 @@
                         tools:ignore="ContentDescription"
                         tools:src="@mipmap/ic_launcher" />
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_gravity="bottom"
+                        android:background="@drawable/novel_name_background_dark" />
+
                     <androidx.appcompat.widget.Toolbar
                         android:id="@+id/toolbar"
                         android:layout_width="match_parent"
@@ -53,19 +59,71 @@
                 </com.google.android.material.appbar.CollapsingToolbarLayout>
             </com.google.android.material.appbar.AppBarLayout>
 
-            <androidx.core.widget.NestedScrollView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="16dp"
+                android:orientation="vertical"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-                <TextView
-                    android:id="@+id/tvIntroduction"
+                <LinearLayout
+                    android:id="@+id/infoBar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    tools:text="小说简介，" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="12dp"
+                    android:paddingTop="22dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="12dp">
 
-            </androidx.core.widget.NestedScrollView>
+                    <TextView
+                        android:id="@+id/tvAuthor"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:drawablePadding="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="?android:textColorPrimary"
+                        android:textSize="14sp"
+                        tools:text="天蚕土豆" />
+
+                    <TextView
+                        android:id="@+id/tvSite"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="13sp"
+                        tools:text="笔趣阁" />
+
+                    <TextView
+                        android:id="@+id/tvChapterCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="13sp"
+                        tools:text="1234章" />
+
+                </LinearLayout>
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tabLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:tabGravity="fill"
+                    app:tabMode="fixed" />
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPager"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fabRead"

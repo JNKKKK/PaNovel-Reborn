@@ -49,8 +49,6 @@ class BookListActivity : AppCompatActivity(), MvpView {
     }
 
     private fun onItemLongClick(vh: NovelViewHolder): Boolean {
-        // 长按弹出删除菜单，只要这个就够了，
-        // TODO: 改成支持滑动删除感觉更好，
         val list = listOf(R.string.remove to {
             presenter.remove(vh.novelManager)
             this@BookListActivity.novelListAdapter.remove(vh.layoutPosition)

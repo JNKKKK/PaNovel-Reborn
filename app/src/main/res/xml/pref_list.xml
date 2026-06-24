@@ -53,64 +53,6 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/settings_click_action">
-
-        <cc.aoeiuv020.panovel.settings.ListPreference
-            android:defaultValue="Refresh"
-            android:entries="@array/item_action_name"
-            android:entryValues="@array/item_action_values"
-            android:key="onDotClick"
-            android:title="@string/settings_click_red_dot" />
-
-        <cc.aoeiuv020.panovel.settings.ListPreference
-            android:defaultValue="Pinned"
-            android:entries="@array/item_action_name"
-            android:entryValues="@array/item_action_values"
-            android:key="onDotLongClick"
-            android:title="@string/settings_long_click_red_dot" />
-
-        <cc.aoeiuv020.panovel.settings.ListPreference
-            android:defaultValue="Refresh"
-            android:entries="@array/item_action_name"
-            android:entryValues="@array/item_action_values"
-            android:key="onCheckUpdateClick"
-            android:title="@string/settings_click_refresh_time" />
-
-        <cc.aoeiuv020.panovel.settings.ListPreference
-            android:defaultValue="OpenDetail"
-            android:entries="@array/item_action_name"
-            android:entryValues="@array/item_action_values"
-            android:key="onNameClick"
-            android:title="@string/settings_click_name" />
-
-        <cc.aoeiuv020.panovel.settings.ListPreference
-            android:defaultValue="RefineSearch"
-            android:entries="@array/item_action_name"
-            android:entryValues="@array/item_action_values"
-            android:key="onNameLongClick"
-            android:title="@string/settings_long_click_name" />
-
-        <cc.aoeiuv020.panovel.settings.ListPreference
-            android:defaultValue="ReadLastChapter"
-            android:entries="@array/item_action_name"
-            android:entryValues="@array/item_action_values"
-            android:key="onLastChapterClick"
-            android:title="@string/settings_click_last_chapter" />
-
-        <cc.aoeiuv020.panovel.settings.ListPreference
-            android:defaultValue="ReadContinue"
-            android:entries="@array/item_action_name"
-            android:entryValues="@array/item_action_values"
-            android:key="onItemClick"
-            android:title="@string/settings_click_whole_item" />
-
-        <cc.aoeiuv020.panovel.settings.ListPreference
-            android:defaultValue="MoreAction"
-            android:entries="@array/item_action_name"
-            android:entryValues="@array/item_action_values"
-            android:key="onItemLongClick"
-            android:title="@string/settings_long_click_whole_item" />
-    </PreferenceCategory>
 
 
 </PreferenceScreen>

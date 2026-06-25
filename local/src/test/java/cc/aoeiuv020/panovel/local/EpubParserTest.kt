@@ -16,6 +16,51 @@ import java.nio.charset.Charset
  * Created by AoEiuV020 on 2018.06.16-17:52:10.
  */
 class EpubParserTest : ParserTest(EpubParser::class) {
+    /**
+     * 用打包进测试资源的epub真正跑一遍解析，不依赖作者本地的文件，
+     * 这样CI上也能跑到，回归时能抓到真问题，
+     */
+    @Test
+    fun zeroToOne() {
+        val file = getResource("/zero-to-one.epub") ?: return
+        val charset = "UTF-8"
+        val parser = EpubParser(file, Charset.forName(charset))
+        val chapters = chapters(
+                parser,
+                // epub4j把整个名字放进firstname, lastname为空，所以trim后就是作者全名，
+                author = "彼得·蒂尔",
+                name = "从0到1:开启商业与未来的秘密（图文精编版） (奇点系列)",
+                requester = charset,
+                image = "cover.jpeg",
+                // 这本epub没有dc:description, 封面页也没有简介，
+                introduction = null
+        )
+        // 目录84个navPoint深度优先展开 + 封面页插到最前面，
+        assertEquals(85, chapters.size)
+
+        chapters.first().let {
+            assertEquals("Cover", it.name)
+            assertEquals("titlepage.xhtml", it.extra)
+            val content = parser.getNovelContent(it)
+            // 封面只有一行，是封面图片，
+            assertEquals(1, content.size)
+            // 图片地址里带临时文件路径，会变，只断言首尾，
+            assertTrue("cover should be an image line", content.first().startsWith("![img](jar:"))
+            assertTrue("cover should point at cover.jpeg", content.first().endsWith("/cover.jpeg)"))
+        }
+
+        // 第一个正文章节，验证正文提取以及"开头是章节名就去掉"的逻辑没有把正文吃掉，
+        chapters[8].let {
+            assertEquals("第1章 未来的挑战", it.name)
+            assertEquals("text/part0008.html", it.extra)
+            val content = parser.getNovelContent(it)
+            assertEquals(25, content.size)
+            assertEquals("第1章", content.first())
+            assertEquals("未来的挑战", content[1])
+            assertTrue("last line should be real text", content.last().isNotBlank())
+        }
+    }
+
     @Test
     fun toc() {
         val file = getFile("/home/aoeiuv/tmp/panovel/epub/[和ヶ原聡司].打工吧！魔王大人16.epub") ?: return

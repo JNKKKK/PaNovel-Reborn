@@ -113,7 +113,7 @@ open class NovelListAdapter(
     fun addAll(list: List<NovelManager>) {
         val oldCount = itemCount
         _data.addAll(list)
-        // TODO: 要看看会不要自动滚到底部，不要滚，
+        // 末尾插入，不会自动滚动；调用方FuzzySearchActivity另有保存/恢复滚动状态的处理，
         notifyItemRangeInserted(oldCount, itemCount - oldCount)
     }
 

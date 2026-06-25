@@ -19,8 +19,8 @@ object OtherSettings : Pref {
 
     var chapterColorDefault: Int by Delegates.int(0xff000000.toInt())
 
-    // TODO: 这个默认颜色改暗些，
-    var chapterColorCached: Int by Delegates.int(0xff00ff00.toInt())
+    // 缓存章节默认颜色，用深绿，纯绿0xff00ff00在浅色背景上太刺眼看不清，
+    var chapterColorCached: Int by Delegates.int(0xff008000.toInt())
     var chapterColorReadAt: Int by Delegates.int(0xffff0000.toInt())
     val chapterColorList
         get() = ColorStateList(

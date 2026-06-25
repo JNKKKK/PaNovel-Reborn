@@ -1,6 +1,6 @@
 # TODO Comments Analysis
 
-Total: 7 TODOs across the codebase.
+Total: 4 TODOs across the codebase.
 
 ## Scraper Module — DONE
 
@@ -29,13 +29,12 @@ All resolved:
 - ~~Action handling messy/inconsistent~~ — Done (unified bookshelf handling in listener; VH no longer round-trips through `onStarChanged`)
 - ~~ViewHolder reuse breaks after view settings change~~ — Done (layout drives `getItemViewType`, so RecyclerView rebuilds VHs on settings change)
 
-## App - Minor (3)
+## App - Minor — DONE
 
-| File | TODO |
-|------|------|
-| `app/.../NovelListAdapter.kt:117` | Check if it auto-scrolls to bottom — don't want that |
-| `app/.../NovelTextActivity.kt:230` | Smart case? Contracts |
-| `app/.../other.kt:22` | Default color should be darker |
+All resolved:
+- ~~Check if addAll auto-scrolls to bottom~~ — Done (verified: end-insert doesn't scroll; FuzzySearchActivity also saves/restores scroll state)
+- ~~Smart case? Contracts~~ — Done (extracted single `notNullOrReport()` call so a null exception isn't reported twice)
+- ~~Default cached-chapter color should be darker~~ — Done (pure green 0xff00ff00 → dark green 0xff008000)
 
 ## Reader Module (1)
 

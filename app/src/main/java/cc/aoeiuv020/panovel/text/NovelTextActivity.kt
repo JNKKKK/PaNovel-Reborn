@@ -225,10 +225,10 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                     .load(glideUrl)
                     .listener(object : RequestListener<File> {
                         override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<File>, isFirstResource: Boolean): Boolean {
-                            exceptionHandler(e.notNullOrReport())
-                            // 一般来说就是网络问题，
-                            // TODO: smart case? Contracts,
-                            Reporter.post("加载图片<${image.url}>失败", e.notNullOrReport())
+                            // 一般来说就是网络问题，notNullOrReport只调一次，避免e为null时重复上报，
+                            val cause = e.notNullOrReport()
+                            exceptionHandler(cause)
+                            Reporter.post("加载图片<${image.url}>失败", cause)
                             return true
                         }
 

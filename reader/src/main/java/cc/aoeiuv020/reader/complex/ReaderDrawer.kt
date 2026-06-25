@@ -123,8 +123,8 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         }
 
         if (chapterIndex !in reader.chapterList.indices) {
-            // TODO: 打开小说时必到这里两次，
-            Timber.w("chapter index out of bounds <$chapterIndex/${reader.chapterList.size}>")
+            // 打开小说时pager初始化会先画一两次，那时chapterList还没设置，属正常，不是警告，
+            Timber.d("chapter index out of bounds <$chapterIndex/${reader.chapterList.size}>")
             return
         }
 

@@ -1,6 +1,6 @@
 # TODO Comments Analysis
 
-Total: 4 TODOs across the codebase.
+Total: 0 TODOs across the codebase.
 
 ## Scraper Module — DONE
 
@@ -36,26 +36,22 @@ All resolved:
 - ~~Smart case? Contracts~~ — Done (extracted single `notNullOrReport()` call so a null exception isn't reported twice)
 - ~~Default cached-chapter color should be darker~~ — Done (pure green 0xff00ff00 → dark green 0xff008000)
 
-## Reader Module (1)
+## Reader Module — DONE
 
-| File | TODO |
-|------|------|
-| `reader/.../ReaderDrawer.kt:126` | This fires twice when opening a novel |
+All resolved:
+- ~~drawCurrentPage fires twice when opening a novel~~ — Done (expected transient before chapterList is set; downgraded warning to debug)
 
-## Pager Module (2)
+## Pager Module — DONE
 
-| File | TODO |
-|------|------|
-| `pager/.../PageAnimation.java:226` | Refresh sometimes causes flicker, plus missing/duplicate character bugs |
-| `pager/.../SimulationPageAnim.java:381` | Empty exception handler (swallowed exception) |
+All resolved:
+- ~~Refresh flicker + missing/duplicate characters~~ — Done (abort the in-flight animation before redrawing so refresh ends with a single clean draw)
+- ~~Empty exception handler in SimulationPageAnim~~ — Done (log the swallowed clipPath exception via Timber)
 
-## Local Module (1)
+## Local Module — DONE
 
-| File | TODO |
-|------|------|
-| `local/.../EpubExporter.kt:16` | Other readers can't recognize the exported EPUB |
+All resolved:
+- ~~Other readers can't recognize the exported EPUB~~ — Done (chapters now emitted as well-formed XHTML with xmlns + XHTML media type and `.xhtml` extension; removed the bogus cover-guide pointing at the first text chapter)
 
-## Priority Recommendations
+## Notes
 
-1. **`SimulationPageAnim.java:381`** — swallowed exception, should at least log it
-2. **`EpubExporter.kt:16`** — exported EPUBs not recognized by other readers
+- `local/src/test/.../EpubParserTest.kt` has a **pre-existing** compile error (lines ~305-332: `it` used outside lambda scope, `firstname`/`lastname` references) — unrelated to the TODO work, but `:local:test` won't run until it's fixed.

@@ -223,9 +223,10 @@ public abstract class PageAnimation implements PagerAnimation {
 
     @Override
     public void refresh() {
-        // TODO: 刷新时一定概率闪烁，以及其他问题，缺字重字之类的，
-        drawCurrent();
+        // 先结束在飞的动画，再重绘，否则在动画途中刷新会和滚动合成抢同一组bitmap，
+        // 导致闪烁、缺字重字；顺序反过来后refresh的最后一步是一次干净的重绘，
         abortAnim();
+        drawCurrent();
     }
 
     public enum Direction {

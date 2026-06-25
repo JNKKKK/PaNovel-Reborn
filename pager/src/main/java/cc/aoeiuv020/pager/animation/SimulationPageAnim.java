@@ -15,6 +15,7 @@ import android.os.Build;
 import android.view.View;
 
 import cc.aoeiuv020.pager.IMargins;
+import timber.log.Timber;
 
 /**
  * Created by newbiechen on 17-7-24.
@@ -378,7 +379,8 @@ public class SimulationPageAnim extends HorizonPageAnim {
             }
             canvas.clipPath(mPath1);
         } catch (Exception e) {
-            // TODO: handle exception
+            // clipPath在某些设备/路径下可能抛异常，吞掉避免崩溃，但要记录便于排查，
+            Timber.w(e, "clipPath failed in simulation page animation");
         }
 
         int leftx;

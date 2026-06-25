@@ -100,8 +100,14 @@ class EpubExporter(
             // 空章节不导出，
             if (content.isEmpty()) return@forEachIndexed
             val name = chapter.name
-            val fileName = "chapter$index.html"
+            val fileName = "chapter$index.xhtml"
             val root = Document.createShell(("file://$OPS_PATH/$fileName"))
+            // EPUB要求章节是良构的XHTML，否则很多阅读器无法识别，
+            // jsoup默认输出HTML5语法（标签可不闭合等），这里改成XML语法输出，
+            root.outputSettings()
+                    .syntax(Document.OutputSettings.Syntax.xml)
+                    .escapeMode(org.jsoup.nodes.Entities.EscapeMode.xhtml)
+            root.selectFirst("html")?.attr("xmlns", "http://www.w3.org/1999/xhtml")
             root.title(name)
             val div = root.body().appendElement("div")
                     .text("")
@@ -148,11 +154,8 @@ class EpubExporter(
             }
             val bytes = (root.outerHtml()).toByteArray(Charsets.UTF_8)
             val resource = Resource(bytes, fileName)
+            resource.mediaType = io.documentnode.epub4j.domain.MediaTypes.XHTML
             book.addSection(name, resource)
-            // 这个guide不知道是否重要，
-            if (index == 0) {
-                book.guide.coverPage = resource
-            }
         }
 
         // EpubWriter不带缓冲，加个缓冲，不确定有多大效果，

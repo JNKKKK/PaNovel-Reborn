@@ -34,17 +34,25 @@ class DownloadManager(
     }
 
     fun downloadAll(list: List<NovelManager>) {
-        for (novelManager in list) {
-            Timber.d("downloadAll ")
-            download(novelManager, 0, Int.MAX_VALUE)
-            // TODO: 考虑改成等待异步线程一本一本下载，
+        // 一本一本顺序下载，避免多本并发把站点请求量翻倍、绕过下载限速间隔，
+        scope.launch {
+            for (novelManager in list) {
+                Timber.d("downloadAll ${novelManager.novel.name}")
+                downloadSuspending(novelManager, 0, Int.MAX_VALUE)
+            }
         }
     }
 
     fun download(novelManager: NovelManager, fromIndex: Int, count: Int) {
+        scope.launch {
+            downloadSuspending(novelManager, fromIndex, count)
+        }
+    }
+
+    private suspend fun downloadSuspending(novelManager: NovelManager, fromIndex: Int, count: Int) {
         if (count <= 0) return
         val novel = novelManager.novel
-        scope.launch {
+        run {
             try {
                 withContext(Dispatchers.IO) {
                     val chapters = novelManager.requestChapters(false)

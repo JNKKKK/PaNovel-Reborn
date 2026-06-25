@@ -192,15 +192,9 @@ class NovelViewHolder(itemView: View,
     }
 
     /**
-     * 外部调用，小说移出书架，
+     * 仅同步爱心控件的选中状态，持久化由listener负责，
      */
-    fun removeBookshelf() {
-        star?.isChecked = false
-        itemListener.onStarChanged(this, false)
-    }
-
-    fun addBookshelf() {
-        star?.isChecked = true
-        itemListener.onStarChanged(this, true)
+    fun setStarChecked(checked: Boolean) {
+        star?.isChecked = checked
     }
 }

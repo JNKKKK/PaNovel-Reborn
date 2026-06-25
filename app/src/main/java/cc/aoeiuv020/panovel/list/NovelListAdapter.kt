@@ -63,13 +63,10 @@ open class NovelListAdapter(
         notifyItemRangeChanged(0, itemCount)
     }
 
-    // 这里确保一个adapter只读取一份设置，否则可能改变设置后回来发现新加载的元素是新设置，
-    private val dotColor = ListSettings.dotColor
-    private val dotSize = ListSettings.dotSize
-
-    // TODO: 改了视图设置后viewHolder复用会出问题，比如格式视图结果itemView还是列表的，
+    // 当前设置对应的item布局，作为viewType使用，这样改了视图设置回来后，
+    // viewType变化会让RecyclerView重建ViewHolder，而不会把列表布局的view复用给格子item，
     @LayoutRes
-    private val layout: Int = when {
+    private fun currentLayout(): Int = when {
         ListSettings.gridView && ListSettings.largeView -> R.layout.novel_item_grid_big
         ListSettings.gridView && !ListSettings.largeView -> R.layout.novel_item_grid_small
         !ListSettings.gridView && ListSettings.largeView -> R.layout.novel_item_big
@@ -91,9 +88,13 @@ open class NovelListAdapter(
         notifyItemRangeChanged(0, itemCount)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(layout, parent, false)
-        return NovelViewHolder(itemView, dotColor, dotSize, refreshingNovelSet, shouldRefreshSet
+    // viewType就是布局res，保证不同布局的ViewHolder不会互相复用，
+    @LayoutRes
+    override fun getItemViewType(position: Int): Int = currentLayout()
+
+    override fun onCreateViewHolder(parent: ViewGroup, @LayoutRes viewType: Int): BaseViewHolder {
+        val itemView = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
+        return NovelViewHolder(itemView, ListSettings.dotColor, ListSettings.dotSize, refreshingNovelSet, shouldRefreshSet
                 , initItem, actualActionDoneListener, onError)
     }
 

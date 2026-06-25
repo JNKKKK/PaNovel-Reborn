@@ -35,9 +35,8 @@ class DefaultNovelItemActionListener(
             OpenDetail -> NovelDetailActivity.start(vh.context, vh.novel)
             RefineSearch -> FuzzySearchActivity.start(vh.context, vh.novel)
             Export -> exportNovel(vh)
-            // TODO: 有点混乱不统一，改支之前考虑清楚，主要是有的操作需要更新vh界面，
-            AddBookshelf -> vh.addBookshelf() // vh里再反过来调用onStarChanged，
-            RemoveBookshelf -> vh.removeBookshelf() // vh里再反过来调用onStarChanged，
+            AddBookshelf -> setBookshelf(vh, true)
+            RemoveBookshelf -> setBookshelf(vh, false)
             Refresh -> vh.refresh()
             Cache -> download(vh)
             Pinned -> pinned(vh)
@@ -106,6 +105,19 @@ class DefaultNovelItemActionListener(
     }
 
     override fun onStarChanged(vh: NovelViewHolder, star: Boolean) {
+        // 爱心控件已经在点击时切换了选中状态，这里只持久化，不再回设界面，
+        persistBookshelf(vh, star)
+    }
+
+    /**
+     * 菜单触发的加入/移出书架，与爱心控件不同，需要主动同步界面选中状态，
+     */
+    private fun setBookshelf(vh: NovelViewHolder, star: Boolean) {
+        vh.setStarChecked(star)
+        persistBookshelf(vh, star)
+    }
+
+    private fun persistBookshelf(vh: NovelViewHolder, star: Boolean) {
         val novelManager = vh.novelManager
         scope.launch {
             try {

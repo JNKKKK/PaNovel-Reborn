@@ -147,9 +147,8 @@ object DataManager {
     fun syncCookies(context: Context?) = cookie.sync(context)
 
     /**
-     * TODO: 这里有NovelContext拿到cookies后的文件操作，
-     * 但是WebView cookies操作好像只能在主线程，
-     * 索性都放主线程吧，不是很费时，
+     * 这里有NovelContext拿到cookies后的文件操作，
+     * 但是WebView cookies操作只能在主线程，索性都放主线程，cookie量很小不费时，
      */
     @MainThread
     fun pullCookiesFromWebView(context: NovelContext) {

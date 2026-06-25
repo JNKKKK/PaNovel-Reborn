@@ -16,7 +16,6 @@ class ApiManager(context: Context) {
         NovelContext.files(context.filesDir.resolve("api"))
     }
 
-    // TODO: 动漫之家还是维护，等开放了，测试后再添加，
     @Suppress("RemoveExplicitTypeArguments")
     val contexts: List<NovelContext> by lazy {
         NovelContext.getAllSite()

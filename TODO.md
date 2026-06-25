@@ -1,6 +1,6 @@
 # TODO Comments Analysis
 
-Total: 12 TODOs across the codebase.
+Total: 7 TODOs across the codebase.
 
 ## Scraper Module — DONE
 
@@ -20,15 +20,14 @@ All resolved:
 - ~~Star widget `onCheckChanged`~~ — Discarded (click action settings removed; hardcoded behavior)
 - ~~Don't show update time for local novels~~ — Done
 
-## App - Data/Logic (5)
+## App - Data/Logic — DONE
 
-| File | TODO |
-|------|------|
-| `app/.../ApiManager.kt:19` | Dmzj is still up — add after testing when it reopens |
-| `app/.../DataManager.kt:150` | File I/O happens here after NovelContext gets cookies |
-| `app/.../DownloadManager.kt:40` | Consider switching to async sequential per-book download |
-| `app/.../DefaultNovelItemActionListener.kt:39` | Action handling is messy/inconsistent — think through before refactoring (some ops need to update VH) |
-| `app/.../NovelListAdapter.kt:72` | ViewHolder reuse breaks after view settings change (e.g., grid item reused as list item) |
+All resolved:
+- ~~Dmzj scraper — add when it reopens~~ — Discarded (external gate; site status tracked in SITES.md)
+- ~~Cookie file I/O on main thread~~ — Discarded (deliberate, documented; cookie set is tiny)
+- ~~Switch to sequential per-book download~~ — Done (`downloadAll` now serializes via a suspend core instead of firing every book concurrently)
+- ~~Action handling messy/inconsistent~~ — Done (unified bookshelf handling in listener; VH no longer round-trips through `onStarChanged`)
+- ~~ViewHolder reuse breaks after view settings change~~ — Done (layout drives `getItemViewType`, so RecyclerView rebuilds VHs on settings change)
 
 ## App - Minor (3)
 
@@ -60,6 +59,4 @@ All resolved:
 ## Priority Recommendations
 
 1. **`SimulationPageAnim.java:381`** — swallowed exception, should at least log it
-2. **`NovelViewHolder.kt:172`** — visible bug (UI element shown for local novels when it shouldn't be)
-3. **`NovelListAdapter.kt:72`** — ViewHolder reuse bug after settings change
-4. **`EpubExporter.kt:16`** — exported EPUBs not recognized by other readers
+2. **`EpubExporter.kt:16`** — exported EPUBs not recognized by other readers

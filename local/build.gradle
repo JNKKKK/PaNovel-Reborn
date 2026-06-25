@@ -1,3 +1,13 @@
+apply plugin: 'jacoco'
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
 dependencies {
     implementation project(':core')
     implementation 'net.sourceforge.jchardet:jchardet:1.0'

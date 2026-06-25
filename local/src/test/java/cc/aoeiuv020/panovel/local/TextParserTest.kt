@@ -9,24 +9,6 @@ import java.nio.charset.Charset
  */
 class TextParserTest : ParserTest(TextParser::class) {
 
-    @Test
-    fun big() {
-        val file = getFile("/home/aoeiuv/tmp/panovel/txt/yqnng/novel.txt") ?: return
-        val charset = "GBK"
-        val parser = TextParser(file, Charset.forName(charset))
-        chapters(
-                parser,
-                author = "卜非",
-                name = "与千年女鬼同居的日子",
-                requester = charset,
-                image = null,
-                introduction = "为了赚点零花钱代人扫墓，结果一只女鬼跟着回了家，额滴个神呀，从此诡异的事情接二连三的发生在了自己身边。\n" +
-                        "红衣夜女杀人案、枯井中的无脸之人、河中的人形怪物……\n" +
-                        "更为奇怪的是，那些平时连想都不敢想的女神都主动凑了过来。\n" +
-                        "虽然这只女鬼长得俊俏又漂亮，可等知道她的真正身份之后，我和我的小伙伴顿时都惊呆了。"
-        )
-    }
-
     /**
      * 本app导出的小说的导入测试，
      */

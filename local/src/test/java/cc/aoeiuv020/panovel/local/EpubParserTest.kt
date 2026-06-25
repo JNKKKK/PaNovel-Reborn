@@ -5,7 +5,7 @@ import cc.aoeiuv020.base.jar.absXlinkHref
 import cc.aoeiuv020.base.jar.textList
 import cc.aoeiuv020.regex.pick
 import net.sf.jazzlib.ZipFile
-import nl.siegmann.epublib.epub.EpubReader
+import io.documentnode.epub4j.epub.EpubReader
 import org.jsoup.Jsoup
 import org.junit.Assert.*
 import org.junit.Test

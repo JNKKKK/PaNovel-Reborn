@@ -50,17 +50,6 @@
         android:orientation="horizontal">
 
         <RadioButton
-            android:id="@+id/rbSimple"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:text="@string/simple"
-            android:textColor="@android:color/primary_text_dark" />
-
-        <RadioButton
             android:id="@+id/rbSimulation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

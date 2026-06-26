@@ -20,6 +20,13 @@ class ProgressDialogCompat(context: Context) {
         dialog.setOnCancelListener { listener() }
     }
 
+    /**
+     * 点击对话框外面是否取消，默认行为不保证，需要明确取消时调用，
+     */
+    fun setCanceledOnTouchOutside(cancel: Boolean) {
+        dialog.setCanceledOnTouchOutside(cancel)
+    }
+
     fun setMessage(message: String) {
         tvMessage.text = message
     }

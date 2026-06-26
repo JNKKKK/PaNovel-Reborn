@@ -21,6 +21,8 @@
     <string name="text_color_placeholder">0x%08X</string>
     <string name="text_color">文字色</string>
     <string name="refresh">刷新</string>
+    <string name="refreshing">正在刷新章节…</string>
+    <string name="refresh_failed">刷新失败，已保留缓存内容</string>
     <string name="history">历史</string>
     <string name="downloading_from_current_chapter_placeholder">从当前章节(%d)开始下载</string>
     <string name="downloading_placeholder">下载中 已存在%d章 下载%d章 失败%d章 剩余%d章</string>
@@ -85,7 +87,6 @@
     <string name="scan">扫一扫</string>
 
     <string name="animation">动画</string>
-    <string name="simple">简单</string>
     <string name="simulation">仿真</string>
     <string name="cover">覆盖</string>
     <string name="slide">滑动</string>

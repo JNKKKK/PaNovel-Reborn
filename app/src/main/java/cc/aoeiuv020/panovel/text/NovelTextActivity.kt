@@ -70,6 +70,9 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     private lateinit var alertDialog: AlertDialog
     private lateinit var progressDialog: ProgressDialogCompat
 
+    // 刷新当前章节专用的加载框，不能复用progressDialog，那个取消时会finish整个阅读界面，
+    private val refreshDialog: ProgressDialogCompat by lazy { ProgressDialogCompat(this) }
+
     private val backgroundImageLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
             try {
@@ -309,32 +312,32 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     }
 
     fun refreshCurrentChapter() {
-        reader.refreshCurrentChapter()
-    }
-
-    /**
-     * 切换动画时调用,
-     * 重置阅读器，
-     */
-    private fun resetReader() {
-        reader.destroy()
-        binding.flContent.removeAllViews() // 多余，上面已经移除，
-        initReader(novel)
-        showChaptersAsc(chaptersAsc)
+        // 弹出加载框作为明确的刷新反馈，
+        loading(refreshDialog, R.string.refreshing)
+        // 点外面也能取消，网络超时太久时用户可以主动取消刷新，
+        refreshDialog.setCanceledOnTouchOutside(true)
+        val job = reader.refreshCurrentChapter { success ->
+            refreshDialog.dismiss()
+            if (!success) {
+                // 刷新失败时保留原有缓存内容，仅提示用户，
+                android.widget.Toast.makeText(
+                    this, R.string.refresh_failed, android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        // 点外面或返回键取消刷新，取消后保留原有内容，
+        refreshDialog.setOnCancelListener {
+            job?.cancel()
+        }
     }
 
     fun setAnimationSpeed(animationSpeed: Float) {
         reader.config.animationSpeed = animationSpeed
     }
 
-    fun setAnimationMode(animationMode: AnimationMode, oldAnimationMode: AnimationMode) {
-        Timber.d("setAnimationMode $oldAnimationMode to $animationMode")
-        if ((animationMode == AnimationMode.SIMPLE && oldAnimationMode != AnimationMode.SIMPLE)
-                || (animationMode != AnimationMode.SIMPLE && oldAnimationMode == AnimationMode.SIMPLE)) {
-            resetReader()
-        } else {
-            reader.config.animationMode = animationMode
-        }
+    fun setAnimationMode(animationMode: AnimationMode) {
+        Timber.d("setAnimationMode $animationMode")
+        reader.config.animationMode = animationMode
     }
 
     fun setMargins(margins: Margins, name: ReaderConfigName) {
@@ -537,22 +540,6 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         FuzzySearchActivity.start(this, novel)
     }
 
-    fun refreshChapterList() {
-        loading(progressDialog, R.string.novel_chapters)
-        Timber.d("refreshChapterList")
-        if (_novel == null) {
-            // 以防万一，太乱了，
-            return
-        }
-        // 保存一下的进度，
-        if (::reader.isInitialized) {
-            novel.readAt(reader.currentChapter, chaptersAsc)
-            novel.readAtTextIndex = reader.textProgress
-            Timber.d("save status: <${novel.run { "$readAtChapterIndex.$readAtChapterName/$readAtTextIndex" }}")
-        }
-        presenter.refreshChapterList()
-    }
-
     /**
      * 上一对配色，文字色/背景（图|色），
      */
@@ -750,7 +737,6 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.refresh -> refreshChapterList()
             R.id.search -> refineSearch()
             R.id.detail -> detail()
             else -> return super.onOptionsItemSelected(item)

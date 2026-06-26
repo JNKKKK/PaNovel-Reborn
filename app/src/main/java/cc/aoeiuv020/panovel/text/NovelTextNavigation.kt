@@ -51,14 +51,10 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             view.lastColorScheme()
             true
         }
-        mPanelDefault.findViewById<View>(R.id.ivRefresh).apply {
-            setOnClickListener {
-                view.refreshCurrentChapter()
-            }
-            setOnLongClickListener {
-                view.refreshChapterList()
-                true
-            }
+        mPanelDefault.findViewById<View>(R.id.ivRefresh).setOnClickListener {
+            view.refreshCurrentChapter()
+            // 收起导航面板，否则刷新的正文被面板挡住，看起来像没反应，
+            view.hide()
         }
         mPanelDefault.findViewById<View>(R.id.ivDownload).setOnClickListener {
             view.download()
@@ -301,7 +297,6 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             }
 
             rgAnimationMode.check(when (ReaderSettings.animationMode) {
-                AnimationMode.SIMPLE -> R.id.rbSimple
                 AnimationMode.SIMULATION -> R.id.rbSimulation
                 AnimationMode.COVER -> R.id.rbCover
                 AnimationMode.SLIDE -> R.id.rbSlide
@@ -310,18 +305,16 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             })
             rgAnimationMode.setOnCheckedChangeListener { _, checkedId ->
                 val animationMode = when (checkedId) {
-                    R.id.rbSimple -> AnimationMode.SIMPLE
                     R.id.rbSimulation -> AnimationMode.SIMULATION
                     R.id.rbCover -> AnimationMode.COVER
                     R.id.rbSlide -> AnimationMode.SLIDE
                     R.id.rbNone -> AnimationMode.NONE
                     R.id.rbScroll -> AnimationMode.SCROLL
-                    else -> AnimationMode.SIMPLE
+                    else -> AnimationMode.SIMULATION
                 }
-                val oldAnimationMode = ReaderSettings.animationMode
-                if (oldAnimationMode != animationMode) {
+                if (ReaderSettings.animationMode != animationMode) {
                     ReaderSettings.animationMode = animationMode
-                    view.setAnimationMode(animationMode, oldAnimationMode)
+                    view.setAnimationMode(animationMode)
                 }
             }
         }

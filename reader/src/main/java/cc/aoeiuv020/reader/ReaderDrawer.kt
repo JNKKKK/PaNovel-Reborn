@@ -1,4 +1,4 @@
-package cc.aoeiuv020.reader.complex
+package cc.aoeiuv020.reader
 
 import android.content.Intent
 import android.content.IntentFilter
@@ -9,7 +9,6 @@ import android.util.TypedValue
 import cc.aoeiuv020.pager.Pager
 import cc.aoeiuv020.pager.BasePagerDrawer
 import cc.aoeiuv020.pager.Size
-import cc.aoeiuv020.reader.*
 import cc.aoeiuv020.reader.ReaderConfigName.*
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -23,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Created by AoEiuV020 on 2017.12.03-04:09:17.
  */
 @SuppressWarnings("SimpleDateFormat")
-class ReaderDrawer(private val reader: ComplexReader, private val novel: String, private val requester: TextRequester)
+class ReaderDrawer(private val reader: Reader, private val novel: String, private val requester: TextRequester)
     : BasePagerDrawer() {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     val pagesCache: androidx.collection.LruCache<Int, List<Page>?> = androidx.collection.LruCache(8)
@@ -339,14 +338,17 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
     }
 
     private val requestingList = Collections.newSetFromMap(ConcurrentHashMap<Int, Boolean>())
-    private fun request(requestIndex: Int, refresh: Boolean = false) {
+    private fun request(requestIndex: Int, refresh: Boolean = false, onComplete: (success: Boolean) -> Unit = {}): Job? {
         if (requestingList.contains(requestIndex)) {
             // 已经在异步请求章节了，
-            return
+            onComplete(false)
+            return null
         }
+        // 失败时如果原本有内容就保留，避免刷新失败导致章节变空不可读，
+        val previousPages = pagesCache[requestIndex]
         requestingList.add(requestIndex)
         Timber.d("$this lazyRequest $requestIndex, refresh = $refresh")
-        scope.launch {
+        return scope.launch {
             try {
                 val pages = withContext(reader.ioDispatcher) {
                     val text = requester.requestChapter(requestIndex, refresh)
@@ -359,15 +361,26 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
                 if (requestIndex == chapterIndex) {
                     pager?.refresh()
                 }
+                onComplete(true)
+            } catch (e: CancellationException) {
+                // 用户取消刷新，保留原有内容，不回调不提示，
+                requestingList.remove(requestIndex)
+                throw e
             } catch (e: Exception) {
                 val message = "小说章节获取失败：$requestIndex, ${reader.chapterList[requestIndex]}"
                 Timber.e(e, message)
-                // 缓存空的页面，到时候显示本章空内容，
-                pagesCache.put(requestIndex, listOf())
+                if (previousPages != null && previousPages.isNotEmpty()) {
+                    // 之前有内容就保留，比如刷新失败，
+                    pagesCache.put(requestIndex, previousPages)
+                } else {
+                    // 缓存空的页面，到时候显示本章空内容，
+                    pagesCache.put(requestIndex, listOf())
+                }
                 requestingList.remove(requestIndex)
                 if (requestIndex == chapterIndex) {
                     pager?.refresh()
                 }
+                onComplete(false)
             }
         }
     }
@@ -477,8 +490,8 @@ class ReaderDrawer(private val reader: ComplexReader, private val novel: String,
         return false
     }
 
-    fun refreshCurrentChapter() {
-        pagesCache.remove(chapterIndex)
-        request(chapterIndex, true)
+    fun refreshCurrentChapter(onComplete: (success: Boolean) -> Unit = {}): Job? {
+        // 不提前清空缓存，刷新失败时request会保留原有内容，成功时会被覆盖，
+        return request(chapterIndex, true, onComplete)
     }
 }

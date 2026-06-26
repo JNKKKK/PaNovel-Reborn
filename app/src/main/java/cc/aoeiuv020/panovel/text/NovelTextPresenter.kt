@@ -26,10 +26,6 @@ class NovelTextPresenter(
         requestNovel()
     }
 
-    fun refreshChapterList() {
-        requestChapters(true)
-    }
-
     private fun requestNovel() {
         scope.launch {
             try {

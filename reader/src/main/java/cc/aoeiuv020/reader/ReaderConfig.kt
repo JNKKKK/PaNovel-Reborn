@@ -24,7 +24,7 @@ class ReaderConfig(
         textColor: Int,
         backgroundColor: Int,
         backgroundImage: Uri?,
-        animationMode: AnimationMode = AnimationMode.SIMPLE,
+        animationMode: AnimationMode = AnimationMode.SIMULATION,
         animationSpeed: Float = 0.8f,
         font: Typeface? = null,
         centerPercent: Float = 0.5f,

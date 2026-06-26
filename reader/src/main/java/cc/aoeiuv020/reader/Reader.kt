@@ -1,19 +1,15 @@
-package cc.aoeiuv020.reader.complex
+package cc.aoeiuv020.reader
 
 import android.content.Context
 import android.view.ViewGroup
 import cc.aoeiuv020.pager.Pager
-import cc.aoeiuv020.reader.BaseNovelReader
-import cc.aoeiuv020.reader.ReaderConfig
-import cc.aoeiuv020.reader.TextRequester
-import cc.aoeiuv020.reader.toIMargins
 import kotlinx.coroutines.*
 
 /**
  *
  * Created by AoEiuV020 on 2017.12.01-20:31:49.
  */
-class ComplexReader(override var context: Context, novel: String, private val parent: ViewGroup, requester: TextRequester, override var config: ReaderConfig)
+class Reader(override var context: Context, novel: String, private val parent: ViewGroup, requester: TextRequester, override var config: ReaderConfig)
     : BaseNovelReader(novel, requester) {
     private val pageView: Pager = Pager(context)
     private val drawer = ReaderDrawer(this, novel, requester)
@@ -86,8 +82,8 @@ class ComplexReader(override var context: Context, novel: String, private val pa
         }
     }
 
-    override fun refreshCurrentChapter() {
-        drawer.refreshCurrentChapter()
+    override fun refreshCurrentChapter(onComplete: (success: Boolean) -> Unit): Job? {
+        return drawer.refreshCurrentChapter(onComplete)
     }
 
     override fun scrollNext(): Boolean = pageView.scrollNext()

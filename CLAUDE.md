@@ -65,7 +65,6 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 | local | Java | Local file support (TXT, EPUB via epub4j-core) |
 | pager | Android | Pagination library |
 | reader | Android | Novel reader UI |
-| filepicker | Android | File picker UI |
 
 ## Writing Scrapers
 
@@ -169,45 +168,7 @@ If the site uses multiple content formats, add a separate test for each format.
 - Serialization: kotlinx-serialization throughout (no GSON)
 - Activity results: `ActivityResultContracts` (no deprecated `startActivityForResult`)
 - Preferences UI: AndroidX `PreferenceFragmentCompat` (no deprecated `PreferenceFragment`)
-
-## Tech Stack
-
-- Kotlin 1.9.22, Java 17 target, Gradle 8.7, AGP 8.3.2
-- Target/Compile SDK 34, Min SDK 16, Multidex enabled
-- AndroidX, Material Design, Glide 4.16.0, OkHttp 4.12.0
-- Room 2.6.1 (KSP), JSoup 1.17.2, Rhino 1.7.14
-- Timber 5.0.1 (logging), Kotlin Coroutines 1.7.3 (async)
-- kotlinx-serialization-json 1.6.2, epub4j-core 4.2.1 (EPUB support)
-- AndroidX Preference 1.2.1
-- SLF4J for non-Android modules
-
-## Migration Status (from original codebase)
-
-- Gradle 4.10→8.7, AGP 3.3→8.3.2, Kotlin 1.3→1.9.22
-- Removed 68 dead site scrapers (all websites offline); rebuilt with 24 new scrapers for live sites (see `SITES.md`)
-- Removed Anko entirely — replaced with Timber + Coroutines + AlertDialog.Builder
-- Removed Bugly crash reporting — Reporter now logs via Timber only
-- Removed old version migration system (no upgrades from legacy versions)
-- Replaced all custom cc.aoeiuv020.* utility wrappers with standard library calls
-- Replaced epublib stubs with real epub4j-core from Maven Central
-- OkHttp 3→4 API migration
-- ViewBinding migration from kotlin-android-extensions
-- Replaced GSON with kotlinx-serialization across all modules
-- Replaced `startActivityForResult` with `ActivityResultContracts`
-- Replaced `ProgressDialog` with `ProgressDialogCompat` (AlertDialog-based)
-- Replaced deprecated `PreferenceFragment`/`PreferenceActivity` with AndroidX `PreferenceFragmentCompat`
-- Replaced raw Thread/Handler patterns with Kotlin Coroutines
-- Replaced `ExecutorService` with `Dispatchers.IO` in reader module
-- Added DiffUtil to RecyclerView adapters
-- Removed global `App.context` — replaced with `PrefContext` + `AppContainer`
-- Fixed `PendingIntent` flags for Android 12+ compatibility
-- IronDB rewritten to use `KSerializer<T>` instead of `java.lang.reflect.Type`
-- Removed ad system entirely (GDT SDK, splash ads, list ads, AdSettings)
-- Consolidated backup to single `BackupImpl` (removed versioned V1-V3 importers)
-- Simplified book list sharing to single `SharedBookList` (removed V1/V2 legacy formats)
-- Removed `server` module and `batchRefresher` module entirely (server infra dead, push notifications via JPush removed)
-- Removed `DnsUtils` (was only used for server config via DNS TXT records)
-- `./gradlew assembleDebug` passes on JDK 21
+- File save/open: Storage Access Framework (`ACTION_CREATE_DOCUMENT` / `ActivityResultContracts`), no storage permission needed. Novel export uses the `CreateDocumentActivity` bridge to pop the system "save as" dialog from a bare `Context`
 
 ## Release Workflow
 

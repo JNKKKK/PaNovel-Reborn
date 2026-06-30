@@ -104,7 +104,8 @@ class BackupImpl : Backup {
                 "Reader" -> importPref(ReaderSettings, file)
                 "Download" -> importPref(DownloadSettings, file)
                 "Interface" -> 0
-                "Location" -> importPref(LocationSettings, file)
+                // 路径设置已移除，旧备份里的Location忽略，
+                "Location" -> 0
                 "Server" -> 0
                 "Reader_BatteryMargins" -> importPref(ReaderSettings.batteryMargins, file)
                 "Reader_BookNameMargins" -> importPref(ReaderSettings.bookNameMargins, file)
@@ -253,7 +254,7 @@ class BackupImpl : Backup {
         @Suppress("RemoveExplicitTypeArguments")
         var count = listOf<Pref>(
             GeneralSettings, ListSettings, OtherSettings, ReaderSettings,
-            DownloadSettings, LocationSettings,
+            DownloadSettings,
             ReaderSettings.batteryMargins,
             ReaderSettings.bookNameMargins,
             ReaderSettings.chapterNameMargins,

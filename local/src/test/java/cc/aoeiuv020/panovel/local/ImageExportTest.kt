@@ -40,7 +40,9 @@ class ImageExportTest : ParserTest(TextParser::class) {
             )
         )
         val out = folder.newFile("img.txt")
-        TextExporter(out, Charset.forName("UTF-8")).export(info, provider) { _, _ -> }
+        out.outputStream().use {
+            TextExporter(it, Charset.forName("UTF-8")).export(info, provider) { _, _ -> }
+        }
 
         val text = out.readText(Charset.forName("UTF-8"))
         // 网络封面写入，
@@ -63,7 +65,9 @@ class ImageExportTest : ParserTest(TextParser::class) {
             lines = listOf("普通正文")
         )
         val out = folder.newFile("img2.txt")
-        TextExporter(out, Charset.forName("UTF-8")).export(info, provider) { _, _ -> }
+        out.outputStream().use {
+            TextExporter(it, Charset.forName("UTF-8")).export(info, provider) { _, _ -> }
+        }
 
         val text = out.readText(Charset.forName("UTF-8"))
         assertTrue("local cover should not be written", !text.contains("封面："))
@@ -95,7 +99,9 @@ class ImageExportTest : ParserTest(TextParser::class) {
 
         val out = folder.newFile("img.epub")
         var done = false
-        EpubExporter(out).export(info, provider) { c, t -> if (c == t) done = true }
+        out.outputStream().use {
+            EpubExporter(it).export(info, provider) { c, t -> if (c == t) done = true }
+        }
         assertTrue("export completed", done)
 
         val parser = EpubParser(out, Charset.forName("UTF-8"))

@@ -4,6 +4,7 @@ import cc.aoeiuv020.base.jar.interrupt
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
+import cc.aoeiuv020.panovel.local.CreateDocumentActivity
 import cc.aoeiuv020.panovel.local.LocalNovelType
 import cc.aoeiuv020.panovel.local.NovelExporter
 import cc.aoeiuv020.panovel.report.Reporter
@@ -219,8 +220,8 @@ class DefaultNovelItemActionListener(
     private fun exportNovel(vh: NovelViewHolder) {
         scope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    val context = vh.context
+                val context = vh.context
+                val (type, charset) = withContext(Dispatchers.IO) {
                     val types = LocalNovelType.values()
                     val items = types.map { type ->
                         when (type) {
@@ -232,7 +233,7 @@ class DefaultNovelItemActionListener(
                     val defaultIndex = 0
                     val type = context.uiSelect(context.getString(R.string.file_type), items, defaultIndex)?.let { selectIndex ->
                         types[selectIndex]
-                    } ?: return@withContext
+                    } ?: return@withContext null
                     val charset = if (type == LocalNovelType.TEXT) {
                         context.uiInput(context.getString(R.string.file_charset), Charsets.UTF_8.name())?.let {
                             try {
@@ -240,12 +241,19 @@ class DefaultNovelItemActionListener(
                             } catch (e: UnsupportedCharsetException) {
                                 interrupt(context.getString(R.string.tip_not_support_charset, it))
                             }
-                        } ?: return@withContext
+                        } ?: return@withContext null
                     } else {
                         Charsets.UTF_8
                     }
+                    type to charset
+                } ?: return@launch
 
-                    NovelExporter.export(vh.context, type, charset, vh.novelManager)
+                // 弹出系统"另存为"，让用户每次自行选择保存位置，文件名按现有规则预填，
+                val suggestedName = NovelExporter.fileName(vh.novel, type)
+                val target = CreateDocumentActivity.createDocument(context, type.mime, suggestedName)
+                        ?: return@launch
+                withContext(Dispatchers.IO) {
+                    NovelExporter.export(context, type, charset, vh.novelManager, target)
                 }
             } catch (e: Exception) {
                 val message = "导出小说<${vh.novel.bookId}>失败，"

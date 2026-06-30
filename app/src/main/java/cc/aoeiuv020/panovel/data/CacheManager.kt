@@ -5,13 +5,8 @@ import cc.aoeiuv020.irondb.Database
 import cc.aoeiuv020.irondb.Iron
 import cc.aoeiuv020.irondb.read
 import cc.aoeiuv020.irondb.write
-import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
-import cc.aoeiuv020.panovel.report.Reporter
-import android.widget.Toast
-import cc.aoeiuv020.panovel.settings.LocationSettings
-import java.io.File
 import java.util.*
 
 /**
@@ -19,27 +14,8 @@ import java.util.*
  */
 class CacheManager(context: Context) {
     private val contentDBMap = WeakHashMap<Long, Database>()
-    // 所有都保存在/data/data/cc.aoeiuv020.panovel/cache/novel
-    private var root: Database
-
-    init {
-        root = initCacheLocation(context)
-    }
-
-    fun resetCacheLocation(context: Context) {
-        contentDBMap.clear()
-        root = initCacheLocation(context)
-    }
-
-    private fun initCacheLocation(context: Context): Database = try {
-        Iron.db(File(LocationSettings.cacheLocation))
-    } catch (e: Exception) {
-        Reporter.post("初始化缓存目录<${LocationSettings.cacheLocation}>失败，", e)
-        Toast.makeText(context, context.getString(R.string.tip_init_cache_failed_place_holder, LocationSettings.cacheLocation), Toast.LENGTH_SHORT).show()
-        // 失败一次就改成默认的，以免反复失败，
-        LocationSettings.cacheLocation = context.cacheDir.resolve(NAME_FOLDER).absolutePath
-        Iron.db(File(LocationSettings.cacheLocation))
-    }
+    // 所有缓存固定保存在应用私有目录 /data/data/cc.aoeiuv020.panovel/cache/novel
+    private val root: Database = Iron.db(context.cacheDir.resolve(NAME_FOLDER))
 
     private fun getContentDB(novel: Novel) = contentDBMap.getOrPut(novel.nId) {
         root.sub(novel.site).sub(novel.author).sub(novel.name).sub(KEY_CONTENT)

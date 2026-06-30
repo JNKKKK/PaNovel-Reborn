@@ -38,4 +38,3 @@ Kotlin 1.9 · Gradle 8.7 · AGP 8.3 · Room · Coroutines · kotlinx-serializati
 | reader | 阅读器 UI |
 | pager | 翻页库 |
 | IronDB | 文件型键值存储（kotlinx-serialization） |
-| filepicker | 文件选择器 |

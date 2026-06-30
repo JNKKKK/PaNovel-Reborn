@@ -1,7 +1,7 @@
 package cc.aoeiuv020.panovel.local
 
 import cc.aoeiuv020.regex.pick
-import java.io.File
+import java.io.OutputStream
 import java.net.URL
 import java.nio.charset.Charset
 
@@ -9,12 +9,12 @@ import java.nio.charset.Charset
  * Created by AoEiuV020 on 2018.06.19-22:17:27.
  */
 class TextExporter(
-        private val file: File,
+        private val out: OutputStream,
         private val charset: Charset
 ) : LocalNovelExporter {
     private val imagePattern = "^!\\[img\\]\\((.*)\\)$"
     override fun export(info: LocalNovelInfo, contentProvider: ContentProvider, progressCallback: (Int, Int) -> Unit) {
-        file.outputStream().bufferedWriter(charset).use { output ->
+        out.bufferedWriter(charset).use { output ->
 
             val chapters = info.chapters
             val total = chapters.size

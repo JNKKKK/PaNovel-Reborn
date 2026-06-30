@@ -33,7 +33,11 @@ data class LocalNovelChapter(
  * 本地小说的类型，
  */
 enum class LocalNovelType(
-        val suffix: String
+        val suffix: String,
+        /**
+         * 用于Storage Access Framework新建文档时的MIME类型，
+         */
+        val mime: String
 ) {
-    TEXT(".txt"), EPUB(".epub")
+    TEXT(".txt", "text/plain"), EPUB(".epub", "application/epub+zip")
 }

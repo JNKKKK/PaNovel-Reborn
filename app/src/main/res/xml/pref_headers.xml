@@ -19,10 +19,6 @@
         app:title="@string/pref_header_download" />
 
     <Preference
-        app:fragment="cc.aoeiuv020.panovel.settings.LocationPreferenceFragment"
-        app:title="@string/pref_header_location" />
-
-    <Preference
         android:key="backup"
         app:title="@string/pref_backup" />
 

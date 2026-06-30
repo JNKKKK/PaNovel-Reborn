@@ -20,8 +20,10 @@ class TextExporterTest : ParserTest(TextParser::class) {
 
         val out = folder.newFile("exported.txt")
         var isDone = false
-        TextExporter(out, Charset.forName(charset)).export(info, srcParser) { current, total ->
-            if (current == total) isDone = true
+        out.outputStream().use {
+            TextExporter(it, Charset.forName(charset)).export(info, srcParser) { current, total ->
+                if (current == total) isDone = true
+            }
         }
         assertTrue("export should signal completion", isDone)
         assertTrue("exported file should not be empty", out.length() > 0)
@@ -58,7 +60,9 @@ class TextExporterTest : ParserTest(TextParser::class) {
         val info = srcParser.parse()
 
         val out = folder.newFile("exported-gbk.txt")
-        TextExporter(out, Charset.forName(charset)).export(info, srcParser) { _, _ -> }
+        out.outputStream().use {
+            TextExporter(it, Charset.forName(charset)).export(info, srcParser) { _, _ -> }
+        }
 
         val reInfo = TextParser(out, Charset.forName(charset)).parse()
         assertEquals("与千年女鬼同居的日子", reInfo.name)

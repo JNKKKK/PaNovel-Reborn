@@ -2,14 +2,14 @@ package cc.aoeiuv020.panovel.local
 
 import android.app.PendingIntent
 import android.content.Context
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import cc.aoeiuv020.panovel.util.PrefContext
 import cc.aoeiuv020.panovel.R
-import cc.aoeiuv020.panovel.backup.BackupPresenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.NovelManager
+import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.main.MainActivity
-import cc.aoeiuv020.panovel.settings.LocationSettings
 import cc.aoeiuv020.panovel.util.NotificationChannelId
 import cc.aoeiuv020.panovel.util.NotifyLoopProxy
 import cc.aoeiuv020.panovel.util.notNullOrReport
@@ -18,8 +18,9 @@ import com.bumptech.glide.request.RequestOptions
 import android.content.Intent
 import timber.log.Timber
 import kotlinx.coroutines.*
-import java.io.File
+import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 import java.net.URL
 import java.nio.charset.Charset
 
@@ -29,28 +30,26 @@ import java.nio.charset.Charset
 class NovelExporter(
         private val type: LocalNovelType,
         private val charset: Charset,
-        private val file: File,
+        private val out: OutputStream,
         private val progressCallback: (Int, Int) -> Unit
 )  {
     companion object {
-        const val NAME_FOLDER = "Export"
+        /**
+         * 导出文件的默认文件名，供调用方在弹出系统"另存为"时预填，
+         * 本地小说的site就是后缀，不要重复了，
+         */
+        fun fileName(novel: Novel, type: LocalNovelType): String = if (novel.site.startsWith(".")) {
+            novel.run { "$name.$author${type.suffix}" }
+        } else {
+            novel.run { "$name.$author.$site${type.suffix}" }
+        }
 
-        fun export(context: Context, type: LocalNovelType, charset: Charset, novelManager: NovelManager) {
+        /**
+         * 导出到用户通过Storage Access Framework选择的[target], 免存储权限，
+         */
+        fun export(context: Context, type: LocalNovelType, charset: Charset, novelManager: NovelManager, target: Uri) {
             val novel = novelManager.novel
-            // 本地小说的site就是后缀，不要重复了，
-            val fileName = if (novel.site.startsWith(".")) {
-                novel.run { "$name.$author${type.suffix}" }
-            } else {
-                novel.run { "$name.$author.$site${type.suffix}" }
-            }
-            // 尝试导出到sd卡，没有就导出到私有目录，虽然这样的导出好像没什么意义，
-            val baseFile = File(LocationSettings.exportLocation)
-                    .apply { exists() || mkdirs() }
-                    .takeIf { it.canWrite() }
-                    ?: context.filesDir
-                            .resolve(BackupPresenter.NAME_FOLDER)
-                            .apply { exists() || mkdirs() }
-            val file = baseFile.resolve(fileName)
+            val displayName = fileName(novel, type)
             // 太早了Intent不能用，<-- 我也不知道这在说什么，
             val notificationBuilder: NotificationCompat.Builder by lazy {
                 val intent = Intent(context, MainActivity::class.java)
@@ -71,21 +70,25 @@ class NovelExporter(
                 notificationBuilder.setProgress(0, 0, true)
                 proxy.start(notificationBuilder.build())
             }
-            NovelExporter(type, charset, file) { current, total ->
-                Timber.d("exporting $current/$total")
-                scope.launch {
-                    if (current == total) {
-                        notificationBuilder.setContentTitle(context.getString(R.string.export_title_complete_placeholder, novel.name))
-                        notificationBuilder.setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(R.string.export_complete_big_placeholder, file.path)))
-                        notificationBuilder.setProgress(total, current, false)
-                        notificationBuilder.setSmallIcon(android.R.drawable.stat_sys_download_done)
-                        proxy.complete(notificationBuilder.build())
-                    } else {
-                        notificationBuilder.setProgress(total, current, false)
-                        proxy.modify(notificationBuilder.build())
+            val output = context.contentResolver.openOutputStream(target)
+                    ?: throw IOException("无法打开导出目标，")
+            output.use { stream ->
+                NovelExporter(type, charset, stream) { current, total ->
+                    Timber.d("exporting $current/$total")
+                    scope.launch {
+                        if (current == total) {
+                            notificationBuilder.setContentTitle(context.getString(R.string.export_title_complete_placeholder, novel.name))
+                            notificationBuilder.setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(R.string.export_complete_big_placeholder, displayName)))
+                            notificationBuilder.setProgress(total, current, false)
+                            notificationBuilder.setSmallIcon(android.R.drawable.stat_sys_download_done)
+                            proxy.complete(notificationBuilder.build())
+                        } else {
+                            notificationBuilder.setProgress(total, current, false)
+                            proxy.modify(notificationBuilder.build())
+                        }
                     }
-                }
-            }.export(novelManager)
+                }.export(novelManager)
+            }
         }
     }
 
@@ -102,8 +105,8 @@ class NovelExporter(
                 requester = novel.chapters
         )
         val exporter = when (type) {
-            LocalNovelType.TEXT -> TextExporter(file, charset)
-            LocalNovelType.EPUB -> EpubExporter(file)
+            LocalNovelType.TEXT -> TextExporter(out, charset)
+            LocalNovelType.EPUB -> EpubExporter(out)
         }
         val contentProvider = object : ContentProvider {
             val container = DataManager.novelContentsCached(novel)

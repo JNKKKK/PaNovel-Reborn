@@ -10,7 +10,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.File
+import java.io.OutputStream
 
 /**
  * TODO: 其他阅读器无法识别，
@@ -18,7 +18,7 @@ import java.io.File
  * Created by AoEiuV020 on 2018.06.19-22:53:24.
  */
 class EpubExporter(
-        private val file: File
+        private val out: OutputStream
 ) : LocalNovelExporter {
     private val imagePattern = "^!\\[img\\]\\((.*)\\)$"
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass.simpleName)
@@ -160,7 +160,7 @@ class EpubExporter(
 
         // EpubWriter不带缓冲，加个缓冲，不确定有多大效果，
         // 这里use多余，write里面close了，
-        file.outputStream().buffered().use { output ->
+        out.buffered().use { output ->
             EpubWriter().write(book, output)
         }
 

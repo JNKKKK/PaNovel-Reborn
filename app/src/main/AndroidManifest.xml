@@ -33,6 +33,9 @@
             android:label="@string/backup_web_dav"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" />
         <activity android:name=".search.SiteSettingsActivity" />
+        <activity
+            android:name=".local.CreateDocumentActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!--suppress DeprecatedClassUsageInspection -->
         <meta-data
             android:name="cc.aoeiuv020.panovel.util.JarGlideModule"

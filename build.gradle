@@ -4,7 +4,7 @@ buildscript {
     ext {
         applicationModules = ['app']
         javaModules = ["scraper", "local", "core", "IronDB", "rhino"]
-        androidModules = ["pager", "reader", 'filepicker']
+        androidModules = ["pager", "reader"]
         def versionFile = rootProject.file('version.properties')
         if (versionFile.exists()) {
             def input = versionFile.newInputStream()

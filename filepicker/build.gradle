@@ -1,8 +1,0 @@
-android {
-    namespace "cc.aoeiuv020.filepicker"
-}
-
-dependencies {
-    implementation project(':core')
-    implementation 'androidx.preference:preference:1.2.1'
-}

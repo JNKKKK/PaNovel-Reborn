@@ -51,10 +51,6 @@ object DataManager {
         download = DownloadManager(context)
     }
 
-    fun resetCacheLocation(context: Context) {
-        cache.resetCacheLocation(context)
-    }
-
     fun listBookshelf(): List<NovelManager> = app.listBookshelf(ListSettings.bookshelfOrderBy).map { it.toManager() }
 
     fun getNovelManager(id: Long): NovelManager =

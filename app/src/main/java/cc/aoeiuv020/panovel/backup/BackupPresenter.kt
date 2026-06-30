@@ -8,7 +8,6 @@ import cc.aoeiuv020.panovel.util.PrefContext
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.backup.webdav.BackupWebDavHelper
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.settings.LocationSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.regex.pick
 import java.io.File
@@ -42,9 +41,11 @@ class BackupPresenter : Presenter<BackupActivity>() {
     fun start() {
         scope.launch {
             try {
-                val baseFile = File(LocationSettings.backupLocation)
-                        .apply { exists() || mkdirs() }
-                        .takeIf { it.canWrite() }
+                // 优先SD卡的应用私有目录，不可用就回退到内部私有目录，
+                val baseFile = context.getExternalFilesDir(null)
+                        ?.resolve(NAME_FOLDER)
+                        ?.apply { exists() || mkdirs() }
+                        ?.takeIf { it.canWrite() }
                         ?: context.filesDir
                                 .resolve(NAME_FOLDER)
                                 .apply { exists() || mkdirs() }

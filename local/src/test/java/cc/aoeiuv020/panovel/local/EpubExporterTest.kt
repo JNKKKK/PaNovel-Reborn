@@ -26,8 +26,10 @@ class EpubExporterTest : ParserTest(EpubParser::class) {
 
         val out = folder.newFile("exported.epub")
         var isDone = false
-        EpubExporter(out).export(info, srcParser) { current, total ->
-            if (current == total) isDone = true
+        out.outputStream().use {
+            EpubExporter(it).export(info, srcParser) { current, total ->
+                if (current == total) isDone = true
+            }
         }
         assertTrue("export should signal completion", isDone)
 

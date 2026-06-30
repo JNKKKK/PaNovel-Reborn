@@ -10,7 +10,6 @@ import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.list.NovelListAdapter
-import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.databinding.ActivityFuzzySearchBinding
 import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.getStringExtra
@@ -77,11 +76,7 @@ class FuzzySearchActivity : AppCompatActivity(), MvpView {
             } else false
         }
 
-        binding.novelItemList.rvNovel.layoutManager = if (ListSettings.gridView) {
-            androidx.recyclerview.widget.GridLayoutManager(this, if (ListSettings.largeView) 3 else 5)
-        } else {
-            androidx.recyclerview.widget.LinearLayoutManager(this)
-        }
+        binding.novelItemList.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         presenter = FuzzySearchPresenter()
         presenter.attach(this)
         binding.novelItemList.rvNovel.adapter = novelListAdapter

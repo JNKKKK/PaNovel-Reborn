@@ -36,7 +36,6 @@
     <string name="title_activity_settings">设置</string>
 
     <string name="pref_header_general">全局设置</string>
-    <string name="pref_header_list">列表设置</string>
     <string name="pref_header_read">阅读设置</string>
     <string name="pref_backup">备份</string>
     <string name="pref_others">杂项</string>
@@ -101,8 +100,6 @@
     <string name="book_list_downloading">书单下载中…</string>
     <string name="open">打开</string>
     <string name="judging">判断中…</string>
-    <string name="red_dot_size">小红点大小</string>
-    <string name="red_dot_color">小红点颜色</string>
     <string name="full_screen_click_next_page">全屏点击翻下页</string>
     <string name="volume_key_scroll">音量键翻页</string>
     <string name="center_percent">中心比例</string>
@@ -140,7 +137,6 @@
     <string name="more_action">更多操作</string>
     <string name="pinned_bookshelf">书架置顶</string>
     <string name="cancel_pinned">取消置顶</string>
-    <string name="settings_bookshelf">书架设置</string>
     <string name="settings_click_action">点击事件设置</string>
     <string name="settings_click_red_dot">点击小红点</string>
     <string name="settings_long_click_red_dot">长按小红点</string>
@@ -154,9 +150,6 @@
     <string name="removing_bookshelf">正在从书架移除</string>
     <string name="remove_bookshelf_complete">移出书架成功</string>
     <string name="add_bookshelf_complete">加入书架成功</string>
-    <string name="settings_view">视图设置</string>
-    <string name="grid_view">格子视图</string>
-    <string name="large_view">大型视图</string>
     <string name="brightness">亮度</string>
     <string name="follow_system">跟随系统</string>
     <string name="automatic">自动</string>
@@ -197,12 +190,6 @@
     <string name="exporting_title_placeholder">正在导出《%s》</string>
     <string name="export_title_complete_placeholder">导出《%s》完成</string>
     <string name="export_complete_big_placeholder">已导出至：%s</string>
-    <string name="settings_order_by">排序方式</string>
-    <string name="fixed_id">固定ID</string>
-    <string name="read_time">阅读时间</string>
-    <string name="update_time">更新时间</string>
-    <string name="smart">综合</string>
-    <string name="site">网站名</string>
     <string name="remember">记住</string>
     <string name="label_qq_group">QQ群：</string>
     <string name="auto_download_chapters_count">自动下载章节数</string>
@@ -257,7 +244,6 @@
     <string name="channel_description_downloading">正文较大情况下载比较费时，通过该通知提示下载进度，已下载字节数/总字节数，</string>
     <string name="channel_name_export">导出小说</string>
     <string name="channel_description_export">导出小说时通知提示导出进度和结果，</string>
-    <string name="top_background_color">置顶背景色</string>
     <string name="backup_web_dav">WebDav网盘</string>
     <string name="backup_server_name">服务器地址</string>
     <string name="backup_username">用户名</string>

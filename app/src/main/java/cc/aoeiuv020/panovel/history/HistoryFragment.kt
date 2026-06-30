@@ -10,7 +10,6 @@ import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.main.MainActivity
-import cc.aoeiuv020.panovel.settings.ListSettings
 
 
 /**
@@ -35,11 +34,7 @@ class HistoryFragment : androidx.fragment.app.Fragment(), MvpView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.rvNovel.layoutManager = if (ListSettings.gridView) {
-            androidx.recyclerview.widget.GridLayoutManager(context, if (ListSettings.largeView) 3 else 5)
-        } else {
-            androidx.recyclerview.widget.LinearLayoutManager(context)
-        }
+        binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
         binding.rvNovel.adapter = novelListAdapter
         binding.srlRefresh.setOnRefreshListener {
             forceRefresh()

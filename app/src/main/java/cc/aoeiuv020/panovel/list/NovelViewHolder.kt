@@ -12,7 +12,6 @@ import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.bookshelf.RefreshingDotView
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.settings.ItemAction
-import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.text.CheckableImageView
 import cc.aoeiuv020.panovel.util.noCover
 import com.bumptech.glide.Glide
@@ -23,14 +22,19 @@ import java.util.concurrent.TimeUnit
 
 
 class NovelViewHolder(itemView: View,
-                      dotColor: Int,
-                      dotSize: Float,
                       private val refreshingNovelSet: MutableSet<Long>,
                       private val shouldRefreshSet: MutableSet<Long>,
                       initItem: (NovelViewHolder) -> Unit = {},
                       actionDoneListener: (ItemAction, NovelViewHolder) -> Unit = { _, _ -> },
                       onError: (String, Throwable) -> Unit
 ) : NovelListAdapter.BaseViewHolder(itemView) {
+    companion object {
+        // 列表外观固定使用默认值，不再可配置，
+        private const val PINNED_BACKGROUND_COLOR = 0xffefefef.toInt()
+        private const val DOT_COLOR = 0xffff0000.toInt()
+        private const val DOT_SIZE = 16f
+    }
+
     private val itemListener = DefaultNovelItemActionListener(actionDoneListener, onError)
 
     // 所有View可空，准备支持不同布局，小的布局可能大部分View都没有，
@@ -93,8 +97,8 @@ class NovelViewHolder(itemView: View,
             itemListener.onStarChanged(this, it.isChecked)
         }
         star?.setOnLongClickListener { itemListener.onItemLongClick(this) }
-        refreshingDot?.setDotColor(dotColor)
-        refreshingDot?.setDotSize((dotSize * context.resources.displayMetrics.density).toInt())
+        refreshingDot?.setDotColor(DOT_COLOR)
+        refreshingDot?.setDotSize((DOT_SIZE * context.resources.displayMetrics.density).toInt())
 
         initItem(this)
     }
@@ -117,7 +121,7 @@ class NovelViewHolder(itemView: View,
     private fun show(novelManager: NovelManager) {
         this.novelManager = novelManager
         if (novel.pinnedTime.time > TimeUnit.DAYS.toMillis(1)) {
-            itemView.setBackgroundColor(ListSettings.pinnedBackgroundColor)
+            itemView.setBackgroundColor(PINNED_BACKGROUND_COLOR)
         } else {
             itemView.background = null
         }

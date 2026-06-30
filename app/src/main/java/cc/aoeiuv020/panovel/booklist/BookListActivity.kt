@@ -13,7 +13,6 @@ import cc.aoeiuv020.panovel.data.entity.BookList
 import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.list.NovelViewHolder
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.databinding.ActivityBookListBinding
 import android.content.Intent
 import android.widget.Toast
@@ -83,11 +82,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
             return
         }
 
-        binding.includeNovelList.rvNovel.layoutManager = if (ListSettings.gridView) {
-            androidx.recyclerview.widget.GridLayoutManager(this, if (ListSettings.largeView) 3 else 5)
-        } else {
-            androidx.recyclerview.widget.LinearLayoutManager(this)
-        }
+        binding.includeNovelList.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         presenter = BookListDetailPresenter(bookListId)
         binding.includeNovelList.rvNovel.adapter = novelListAdapter
         binding.includeNovelList.srlRefresh.setOnRefreshListener {

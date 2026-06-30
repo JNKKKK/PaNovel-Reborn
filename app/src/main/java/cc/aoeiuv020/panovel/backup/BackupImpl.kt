@@ -99,7 +99,8 @@ class BackupImpl : Backup {
             when (file.name) {
                 "Ad" -> 0
                 "General" -> importPref(GeneralSettings, file)
-                "List" -> importPref(ListSettings, file)
+                // 列表设置已移除，旧备份里的List忽略，
+                "List" -> 0
                 "Other" -> importPref(OtherSettings, file)
                 "Reader" -> importPref(ReaderSettings, file)
                 "Download" -> importPref(DownloadSettings, file)
@@ -138,7 +139,6 @@ class BackupImpl : Backup {
                 "onLastChapterClick" -> editor.putString(key, prim.content)
                 "onNameClick" -> editor.putString(key, prim.content)
                 "onNameLongClick" -> editor.putString(key, prim.content)
-                "bookshelfOrderBy" -> editor.putString(key, prim.content)
 
                 "adEnabled" -> {}
                 "keepScreenOn" -> editor.putBoolean(key, prim.boolean)
@@ -147,14 +147,10 @@ class BackupImpl : Backup {
                 "fullScreenClickNextPage" -> editor.putBoolean(key, prim.boolean)
                 "fitWidth" -> editor.putBoolean(key, prim.boolean)
                 "fitHeight" -> editor.putBoolean(key, prim.boolean)
-                "gridView" -> editor.putBoolean(key, prim.boolean)
-                "largeView" -> editor.putBoolean(key, prim.boolean)
-                "pinnedBackgroundColor" -> editor.putInt(key, prim.int)
                 "refreshOnSearch" -> editor.putBoolean(key, prim.boolean)
                 "volumeKeyScroll" -> editor.putBoolean(key, prim.boolean)
                 "animationSpeed" -> editor.putFloat(key, prim.float)
                 "centerPercent" -> editor.putFloat(key, prim.float)
-                "dotSize" -> editor.putFloat(key, prim.float)
                 "autoSaveReadStatus" -> editor.putInt(key, prim.int)
                 "brightness" -> editor.putInt(key, prim.int)
                 "autoRefreshInterval" -> editor.putInt(key, prim.int)
@@ -163,7 +159,6 @@ class BackupImpl : Backup {
                 "chapterColorCached" -> editor.putInt(key, prim.int)
                 "chapterColorDefault" -> editor.putInt(key, prim.int)
                 "chapterColorReadAt" -> editor.putInt(key, prim.int)
-                "dotColor" -> editor.putInt(key, prim.int)
                 "searchThreadsLimit" -> editor.putInt(key, prim.int)
                 "downloadThreadsLimit" -> DownloadSettings.downloadThreadsLimit = prim.int
                 "downloadCount" -> DownloadSettings.downloadCount = prim.int
@@ -253,7 +248,7 @@ class BackupImpl : Backup {
         folder.mkdirs()
         @Suppress("RemoveExplicitTypeArguments")
         var count = listOf<Pref>(
-            GeneralSettings, ListSettings, OtherSettings, ReaderSettings,
+            GeneralSettings, OtherSettings, ReaderSettings,
             DownloadSettings,
             ReaderSettings.batteryMargins,
             ReaderSettings.bookNameMargins,

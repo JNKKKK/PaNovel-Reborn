@@ -20,8 +20,6 @@ abstract class BasePreferenceFragment(
 
 class GeneralPreferenceFragment : BasePreferenceFragment(GeneralSettings, R.xml.pref_general)
 
-class ListPreferenceFragment : BasePreferenceFragment(ListSettings, R.xml.pref_list)
-
 class ReaderPreferenceFragment : BasePreferenceFragment(ReaderSettings, R.xml.pref_read)
 
 class DownloadPreferenceFragment : BasePreferenceFragment(DownloadSettings, R.xml.pref_download)

@@ -9,28 +9,9 @@ import java.util.*
  */
 @Dao
 abstract class NovelDao {
+    // 置顶优先，其余按阅读时间和更新时间综合排序，
     @Query("select * from Novel where bookshelf = 1 order by pinnedTime desc, max(receiveUpdateTime, readTime) desc")
-    abstract fun listBookshelfOrderBySmart(): List<Novel>
-
-    @Query("select * from Novel where bookshelf = 1 order by pinnedTime desc, readTime desc")
-    abstract fun listBookshelfOrderByReadTime(): List<Novel>
-
-    @Query("select * from Novel where bookshelf = 1 order by pinnedTime desc, receiveUpdateTime desc")
-    abstract fun listBookshelfOrderByReceiveUpdateTime(): List<Novel>
-
-    // 越晚加入的小说id越大，结果越靠前，
-    @Query("select * from Novel where bookshelf = 1 order by pinnedTime desc, id desc")
-    abstract fun listBookshelfOrderById(): List<Novel>
-
-    // 没有中文拼音排序，
-    @Query("select * from Novel where bookshelf = 1 order by pinnedTime desc, name ")
-    abstract fun listBookshelfOrderByName(): List<Novel>
-
-    @Query("select * from Novel where bookshelf = 1 order by pinnedTime desc, author ")
-    abstract fun listBookshelfOrderByAuthor(): List<Novel>
-
-    @Query("select * from Novel where bookshelf = 1 order by pinnedTime desc, site ")
-    abstract fun listBookshelfOrderBySite(): List<Novel>
+    abstract fun listBookshelf(): List<Novel>
 
     @Query("update Novel set bookshelf = :bookshelf where id = :id")
     abstract fun updateBookshelf(id: Long, bookshelf: Boolean)

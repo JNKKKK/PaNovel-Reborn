@@ -8,7 +8,6 @@ import androidx.annotation.WorkerThread
 import cc.aoeiuv020.panovel.api.NovelContext
 import cc.aoeiuv020.panovel.data.entity.*
 import cc.aoeiuv020.panovel.local.ImportRequireValue
-import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import okhttp3.Cookie
 import okhttp3.HttpUrl
@@ -51,7 +50,7 @@ object DataManager {
         download = DownloadManager(context)
     }
 
-    fun listBookshelf(): List<NovelManager> = app.listBookshelf(ListSettings.bookshelfOrderBy).map { it.toManager() }
+    fun listBookshelf(): List<NovelManager> = app.listBookshelf().map { it.toManager() }
 
     fun getNovelManager(id: Long): NovelManager =
             app.query(id).toManager()

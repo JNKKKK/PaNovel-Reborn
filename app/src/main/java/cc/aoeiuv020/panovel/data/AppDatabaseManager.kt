@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.annotation.VisibleForTesting
 import cc.aoeiuv020.panovel.data.db.AppDatabase
 import cc.aoeiuv020.panovel.data.entity.*
-import cc.aoeiuv020.panovel.settings.OrderBy
 import java.util.*
 
 /**
@@ -93,15 +92,7 @@ class AppDatabaseManager(context: Context) {
     fun updateBookshelf(novel: Novel) =
             db.novelDao().updateBookshelf(novel.nId, novel.bookshelf)
 
-    fun listBookshelf(orderBy: OrderBy): List<Novel> = when (orderBy) {
-        OrderBy.Id -> db.novelDao().listBookshelfOrderById()
-        OrderBy.ReadTime -> db.novelDao().listBookshelfOrderByReadTime()
-        OrderBy.UpdateTime -> db.novelDao().listBookshelfOrderByReceiveUpdateTime()
-        OrderBy.Smart -> db.novelDao().listBookshelfOrderBySmart()
-        OrderBy.Name -> db.novelDao().listBookshelfOrderByName()
-        OrderBy.Author -> db.novelDao().listBookshelfOrderByAuthor()
-        OrderBy.Site -> db.novelDao().listBookshelfOrderBySite()
-    }
+    fun listBookshelf(): List<Novel> = db.novelDao().listBookshelf()
 
     fun pinned(novel: Novel) = db.novelDao().updatePinnedTime(novel.nId, Date())
     fun cancelPinned(novel: Novel) = db.novelDao().updatePinnedTime(novel.nId, Date(0))

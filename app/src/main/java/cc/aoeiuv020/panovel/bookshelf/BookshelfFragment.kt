@@ -11,7 +11,6 @@ import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.main.MainActivity
 import cc.aoeiuv020.panovel.settings.ItemAction.Pinned
 import cc.aoeiuv020.panovel.settings.ItemAction.RemoveBookshelf
-import cc.aoeiuv020.panovel.settings.ListSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 
@@ -51,11 +50,7 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.rvNovel.layoutManager = if (ListSettings.gridView) {
-            androidx.recyclerview.widget.GridLayoutManager(requireContext(), if (ListSettings.largeView) 3 else 5)
-        } else {
-            androidx.recyclerview.widget.LinearLayoutManager(requireContext())
-        }
+        binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
         binding.rvNovel.adapter = novelListAdapter
         binding.srlRefresh.setOnRefreshListener {
             forceRefresh()

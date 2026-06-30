@@ -3,13 +3,11 @@ package cc.aoeiuv020.panovel.list
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.settings.ItemAction
-import cc.aoeiuv020.panovel.settings.ListSettings
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -63,17 +61,6 @@ open class NovelListAdapter(
         notifyItemRangeChanged(0, itemCount)
     }
 
-    // 当前设置对应的item布局，作为viewType使用，这样改了视图设置回来后，
-    // viewType变化会让RecyclerView重建ViewHolder，而不会把列表布局的view复用给格子item，
-    @LayoutRes
-    private fun currentLayout(): Int = when {
-        ListSettings.gridView && ListSettings.largeView -> R.layout.novel_item_grid_big
-        ListSettings.gridView && !ListSettings.largeView -> R.layout.novel_item_grid_small
-        !ListSettings.gridView && ListSettings.largeView -> R.layout.novel_item_big
-        !ListSettings.gridView && !ListSettings.largeView -> R.layout.novel_item_small
-        else -> R.layout.novel_item_big
-    }
-
     // 保存正在刷新的小说的id，避免重复刷新，以及view复用导致一直显示正在刷新中，
     // 一个列表共用一个，多个列表多个，
     private val refreshingNovelSet = mutableSetOf<Long>()
@@ -88,13 +75,9 @@ open class NovelListAdapter(
         notifyItemRangeChanged(0, itemCount)
     }
 
-    // viewType就是布局res，保证不同布局的ViewHolder不会互相复用，
-    @LayoutRes
-    override fun getItemViewType(position: Int): Int = currentLayout()
-
-    override fun onCreateViewHolder(parent: ViewGroup, @LayoutRes viewType: Int): BaseViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
-        return NovelViewHolder(itemView, ListSettings.dotColor, ListSettings.dotSize, refreshingNovelSet, shouldRefreshSet
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.novel_item_big, parent, false)
+        return NovelViewHolder(itemView, refreshingNovelSet, shouldRefreshSet
                 , initItem, actualActionDoneListener, onError)
     }
 

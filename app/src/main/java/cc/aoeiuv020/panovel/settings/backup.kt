@@ -10,14 +10,9 @@ object BackupSettings : Pref {
     override val name: String
         get() = "Backup"
 
-    /**
-     * 备份选中的单选框索引，最后一个其他就是-1,
-     */
-    var checkedButtonIndex: Int by Delegates.int(0)
-
-    // 几个开关，
+    // 备份时各内容的勾选状态，记住用户上次的选择，
     var cbBookshelf: Boolean by Delegates.boolean(true)
     var cbBookList: Boolean by Delegates.boolean(true)
-    var cbProgress: Boolean by Delegates.boolean(true)
+    var cbHistory: Boolean by Delegates.boolean(true)
     var cbSettings: Boolean by Delegates.boolean(true)
 }

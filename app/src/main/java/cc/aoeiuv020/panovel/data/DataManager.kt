@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.api.NovelContext
 import cc.aoeiuv020.panovel.data.entity.*
 import cc.aoeiuv020.panovel.local.ImportRequireValue
@@ -240,76 +241,6 @@ object DataManager {
         app.removeBookshelf(bookList)
     }
 
-    /**
-     * 小说导入书架，包含进度，
-     */
-    fun importBookshelfWithProgress(list: List<NovelWithProgress>) = app.db.runInTransaction {
-        Timber.d("$list")
-        list.mapNotNull {
-            val novel = app.queryOrNewNovel(NovelMinimal(it))
-            if (!app.checkSiteSupport(novel)) {
-                return@mapNotNull null
-            }
-            novel.readAtChapterIndex = it.readAtChapterIndex
-            novel.readAtTextIndex = it.readAtTextIndex
-            if (novel.chapters != null) {
-                novel.readAtChapterName = cache.loadChapters(novel)?.getOrNull(novel.readAtChapterIndex)?.name ?: ""
-            }
-            novel.bookshelf = true
-            app.updateBookshelf(novel)
-            updateReadStatus(novel)
-            novel
-        }
-    }
-
-    /**
-     * 小说导入书架，不包含进度，
-     */
-    fun importBookshelf(list: List<NovelMinimal>) = app.db.runInTransaction {
-        Timber.d("$list")
-        list.mapNotNull {
-            val novel = app.queryOrNewNovel(it)
-            if (!app.checkSiteSupport(novel)) {
-                return@mapNotNull null
-            }
-            if (novel.chapters != null) {
-                novel.readAtChapterName = cache.loadChapters(novel)?.getOrNull(novel.readAtChapterIndex)?.name ?: ""
-            }
-            novel.bookshelf = true
-            app.updateBookshelf(novel)
-            updateReadStatus(novel)
-            novel
-        }
-    }
-
-    /**
-     * 小说导入进度，
-     */
-    fun importNovelWithProgress(list: Sequence<NovelWithProgressAndPinnedTime>): Int = app.db.runInTransaction<Int> {
-        Timber.d("$list")
-        var count = 0
-        list.forEach {
-            // 查询或插入，得到小说对象，再更新进度，
-            val novel = app.queryOrNewNovel(NovelMinimal(it))
-            if (!app.checkSiteSupport(novel)) {
-                // 网站不在支持列表就不添加，
-                // 基本信息已经写入数据库也无所谓了，
-                return@forEach
-            }
-            novel.readAtChapterIndex = it.readAtChapterIndex
-            novel.readAtTextIndex = it.readAtTextIndex
-            novel.pinnedTime = it.pinnedTime
-            // 顺便更新下阅读至的章节名，
-            if (novel.chapters != null) {
-                novel.readAtChapterName = cache.loadChapters(novel)?.getOrNull(novel.readAtChapterIndex)?.name ?: ""
-            }
-            // 普通更新阅读进度，比起来少了阅读时间，无所谓了，
-            updateReadStatus(novel)
-            ++count
-        }
-        count
-    }
-
     fun cleanAllCache() {
         cache.cleanAll()
         api.cleanCache()
@@ -362,8 +293,58 @@ object DataManager {
         download.downloadAll(listBookshelf())
     }
 
-    fun exportNovelProgress(): List<Novel> {
-        return app.exportNovelProgress()
-    }
+    // ---- 备份/恢复用的底层入口 ----
+
+    /**
+     * 备份用，列出书架上的小说原始实体，
+     */
+    fun listBookshelfNovels(): List<Novel> = app.listBookshelf()
+
+    /**
+     * 备份用，列出最近阅读的小说原始实体，
+     * @param count 与历史页展示的数量一致，
+     */
+    fun listHistoryNovels(count: Int): List<Novel> = app.history(count)
+
+    /**
+     * 备份用，列出某书单中的小说原始实体，
+     */
+    fun listBookListNovels(bookListId: Long): List<Novel> = app.getNovelFromBookList(bookListId)
+
+    /**
+     * 备份用，读取小说已缓存的章节列表，没有就返回空，
+     */
+    fun loadCachedChapters(novel: Novel): List<NovelChapter>? = cache.loadChapters(novel)
+
+    /**
+     * 备份用，读取小说某章已缓存的正文，没有就返回空，
+     */
+    fun loadCachedContent(novel: Novel, extra: String): List<String>? = cache.loadContent(novel, extra)
+
+    /**
+     * 恢复用，查询或新建小说，返回带id的原始实体，
+     */
+    fun queryOrNewNovel(novelMinimal: NovelMinimal): Novel = app.queryOrNewNovel(novelMinimal)
+
+    /**
+     * 恢复用，网站是否仍在支持列表，
+     */
+    fun checkSiteSupport(novel: Novel): Boolean = app.checkSiteSupport(novel)
+
+    /**
+     * 恢复用，覆盖更新小说的所有字段，
+     */
+    fun updateNovelAll(novel: Novel) = app.updateAll(novel)
+
+    /**
+     * 恢复用，写入小说的章节列表缓存，
+     */
+    fun saveCachedChapters(novel: Novel, list: List<NovelChapter>) = cache.saveChapters(novel, list)
+
+    /**
+     * 恢复用，写入小说某章的正文缓存，
+     */
+    fun saveCachedContent(novel: Novel, extra: String, text: List<String>) =
+            cache.saveContent(novel, extra, text)
 
 }

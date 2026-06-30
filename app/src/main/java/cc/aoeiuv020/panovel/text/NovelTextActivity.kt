@@ -1,17 +1,14 @@
 package cc.aoeiuv020.panovel.text
 
-import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
@@ -36,7 +33,6 @@ import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import cc.aoeiuv020.panovel.databinding.DialogSelectColorSchemeBinding
 import java.io.File
-import java.io.FileNotFoundException
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import timber.log.Timber
@@ -74,15 +70,13 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     private val backgroundImageLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
             try {
-                // 配色区即时应用并保存，
-                reader.config.backgroundImage = it
+                // ReaderSettings.backgroundImage 是 UriDelegate, 赋值即把图片复制进应用私有目录，
+                // 之后持有的是私有 file:// uri, 重启后仍可读，无需存储权限，
                 ReaderSettings.backgroundImage = it
-            } catch (e: SecurityException) {
+                // 即时应用，用复制后的私有 uri, 避免阅读器持有用完即失效的 SAF uri,
+                reader.config.backgroundImage = ReaderSettings.backgroundImage
+            } catch (e: Exception) {
                 Timber.e(e, "读取背景图失败")
-                cacheUri = it
-                ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), 0)
-            } catch (e: FileNotFoundException) {
-                Timber.e(e, "神奇，图片找不到，")
             }
         }
     }
@@ -101,14 +95,12 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
             return@registerForActivityResult
         }
         try {
+            // ReaderSettings.font 是 UriDelegate, 赋值即把字体文件复制进应用私有目录，
+            // tfFont 用私有 file:// 路径生成 Typeface, 重启后仍可读，无需存储权限，
             ReaderSettings.font = uri
             setFont(ReaderSettings.tfFont)
-        } catch (e: SecurityException) {
+        } catch (e: Exception) {
             Timber.e(e, "读取字体失败")
-            cacheUri = uri
-            ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), 1)
-        } catch (e: FileNotFoundException) {
-            Timber.e(e, "神奇，字体找不到，")
         }
         onFontSelected?.invoke(true)
         onFontSelected = null
@@ -369,32 +361,6 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     fun resetFont() {
         ReaderSettings.font = null
         setFont(null)
-    }
-
-    private var cacheUri: Uri? = null
-
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        when (requestCode) {
-            0 -> cacheUri?.let { uri ->
-                try {
-                    // 不在这里做永久保存，
-                    reader.config.backgroundImage = uri
-                } catch (e: SecurityException) {
-                    Timber.e(e, "读取背景图还是失败")
-                    cacheUri = null
-                }
-            }
-            1 -> cacheUri?.let { uri ->
-                try {
-                    ReaderSettings.font = uri
-                    setFont(ReaderSettings.tfFont)
-                } catch (e: SecurityException) {
-                    Timber.e(e, "读取字体还是失败")
-                    cacheUri = null
-                }
-            }
-        }
     }
 
     private fun setFont(font: Typeface?) {

@@ -12,7 +12,11 @@ class BackupManager {
         const val NAME_TEMP = "PaNovel-Backup-00.zip"
         const val FOLDER_TEMP = "PaNovel-Backup-00"
         const val NAME_VERSION = "version"
-        const val CURRENT_VERSION = 4
+
+        // 备份格式版本，
+        // 5起改为新格式：小说连同章节列表和缓存正文一起备份，按内容(书架/书单/历史)选择，
+        // 不再兼容5以前的旧格式，
+        const val CURRENT_VERSION = 5
     }
 
     private val context: Context = PrefContext.appContext
@@ -27,7 +31,7 @@ class BackupManager {
             .apply { mkdirs() }
 
     @Synchronized
-    fun import(options: Set<BackupOption>, restore: (File) -> Unit): String {
+    fun import(restore: (File) -> Unit): String {
         val folder = getTempFolder()
         val tempFile = getTempFile()
         try {
@@ -42,7 +46,15 @@ class BackupManager {
         } catch (e: ZipException) {
             throw IllegalStateException("zip文件解压失败，" + e.message, e)
         }
-        val result = backup.import(folder, options)
+        val version = folder.resolve(NAME_VERSION).takeIf { it.exists() }
+            ?.readText()?.trim()?.toIntOrNull() ?: 0
+        if (version != CURRENT_VERSION) {
+            folder.deleteRecursively()
+            throw IllegalStateException(
+                "备份版本不兼容（备份版本$version，当前支持$CURRENT_VERSION），请用同版本应用导出的备份，"
+            )
+        }
+        val result = backup.import(folder)
         folder.deleteRecursively()
         return result
     }

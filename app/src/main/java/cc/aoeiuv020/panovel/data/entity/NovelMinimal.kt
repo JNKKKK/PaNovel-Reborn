@@ -33,10 +33,4 @@ data class NovelMinimal(
 
     constructor(novel: Novel)
             : this(novel.site, novel.author, novel.name, novel.detail)
-
-    constructor(novel: NovelWithProgress)
-            : this(novel.site, novel.author, novel.name, novel.detail)
-
-    constructor(novel: NovelWithProgressAndPinnedTime)
-            : this(novel.site, novel.author, novel.name, novel.detail)
 }

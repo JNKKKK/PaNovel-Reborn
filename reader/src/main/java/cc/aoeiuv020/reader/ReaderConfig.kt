@@ -32,7 +32,6 @@ class ReaderConfig(
          * 下面的不支持阅读中修改，省事，
          */
         var autoRefreshInterval: Int = 0,
-        var fullScreenClickNextPage: Boolean = false,
         // 行铺满，
         var fitWidth: Boolean = true,
         // 列铺满，

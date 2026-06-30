@@ -12,67 +12,22 @@
         android:key="fullScreen"
         android:title="@string/full_screen" />
 
-    <cc.aoeiuv020.panovel.settings.IntEditTextPreference
-        android:capitalize="words"
-        android:defaultValue="60"
-        android:inputType="number"
-        android:key="autoSaveReadStatus"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/auto_save_read_status_second" />
-
-    <cc.aoeiuv020.panovel.settings.IntEditTextPreference
-        android:capitalize="words"
-        android:defaultValue="300"
-        android:inputType="number"
-        android:key="fullScreenDelay"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/full_screen_delay" />
-
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="backPressOutOfFullScreen"
-        android:title="@string/back_press_out_of_fullScreen" />
-
     <SwitchPreference
         android:defaultValue="true"
         android:key="volumeKeyScroll"
         android:title="@string/volume_key_scroll" />
 
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="fullScreenClickNextPage"
-        android:title="@string/full_screen_click_next_page" />
-
-    <cc.aoeiuv020.panovel.settings.FloatEditTextPreference
-        android:capitalize="words"
+    <cc.aoeiuv020.panovel.settings.PercentSeekBarPreference
         android:defaultValue="0.5"
-        android:inputType="numberDecimal"
         android:key="centerPercent"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
         android:title="@string/center_percent" />
 
-    <cc.aoeiuv020.panovel.settings.EditTextPreference
-        android:defaultValue="HH:mm"
-        android:inputType="text"
-        android:key="dateFormat"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/date_format" />
-
-    <cc.aoeiuv020.panovel.settings.EditTextPreference
-        android:defaultValue="　　"
-        android:inputType="text"
-        android:key="segmentIndentation"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
+    <ListPreference
+        android:defaultValue="2"
+        android:entries="@array/segment_indentation_entries"
+        android:entryValues="@array/segment_indentation_values"
+        android:key="segmentIndentationCount"
+        android:summary="%s"
         android:title="@string/segment_indentation" />
 
     <cc.aoeiuv020.panovel.settings.IntEditTextPreference

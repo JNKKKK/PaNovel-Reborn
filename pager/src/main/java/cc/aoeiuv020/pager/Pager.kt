@@ -66,7 +66,6 @@ class Pager : View, PageAnimation.OnPageChangeListener {
             field = value
             mAnim?.setDurationMultiply(value)
         }
-    var fullScreenClickNextPage: Boolean = false
     /**
      * 单击不翻页的中心大小，单位百分比，
      */
@@ -194,13 +193,13 @@ class Pager : View, PageAnimation.OnPageChangeListener {
     }
 
     private fun click(x: Float, y: Float) {
-        Timber.d("<$fullScreenClickNextPage, $x, $y>")
+        Timber.d("<$x, $y>")
         when {
-            centerRect.contains(x.toInt(), y.toInt()) -> // 如果点击中心部分，回调退出全屏，
+            centerRect.contains(x.toInt(), y.toInt()) -> // 点击中心区域，回调切换菜单栏，
                 actionListener?.onCenterClick()
-            !fullScreenClickNextPage && x < ((1 - (y / height)) * width) -> // 如果点击对角线左上，翻上页，
+            x < width / 2 -> // 点击左半边，翻上页，
                 mAnim?.scrollPrev(x, y)
-            else -> // 否则翻下页，
+            else -> // 点击右半边，翻下页，
                 mAnim?.scrollNext(x, y)
         }
     }

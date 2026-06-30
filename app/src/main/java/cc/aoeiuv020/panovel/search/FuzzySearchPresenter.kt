@@ -3,7 +3,6 @@ package cc.aoeiuv020.panovel.search
 import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.settings.GeneralSettings
 import cc.aoeiuv020.panovel.util.ChineseNormalizer
 import timber.log.Timber
 import kotlinx.coroutines.*
@@ -38,7 +37,8 @@ class FuzzySearchPresenter : Presenter<FuzzySearchActivity>() {
                     } ?: run {
                         val sites = DataManager.listSites().filter { it.enabled }
                         val ite = sites.iterator()
-                        val jobs = List(GeneralSettings.searchThreadsLimit) {
+                        // 搜索线程数以前是可配置的，现在固定使用5个并发，
+                        val jobs = List(5) {
                             async(Dispatchers.IO) {
                                 while (view != null && synchronized(ite) { ite.hasNext() }) {
                                     val site = synchronized(ite) { ite.next() }

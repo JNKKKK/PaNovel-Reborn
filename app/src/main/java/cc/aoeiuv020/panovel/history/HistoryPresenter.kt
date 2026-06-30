@@ -3,7 +3,6 @@ package cc.aoeiuv020.panovel.history
 import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.settings.GeneralSettings
 import timber.log.Timber
 import kotlinx.coroutines.*
 
@@ -13,7 +12,8 @@ class HistoryPresenter : Presenter<HistoryFragment>() {
         scope.launch {
             try {
                 val list = withContext(Dispatchers.IO) {
-                    DataManager.history(GeneralSettings.historyCount)
+                    // 历史记录数以前是可配置的，现在固定展示最近30条，
+                    DataManager.history(30)
                 }
                 view?.showNovelList(list)
             } catch (e: Exception) {

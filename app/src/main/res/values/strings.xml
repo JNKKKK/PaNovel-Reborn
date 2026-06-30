@@ -42,13 +42,10 @@
     <string name="chapter_download_error_placeholder">下载失败: %d.%s, %s</string>
     <string name="read_at">阅读至</string>
     <string name="last_chapter">最新章</string>
-    <string name="history_count">历史记录数</string>
     <string name="title_activity_settings">设置</string>
 
-    <string name="pref_header_general">全局设置</string>
     <string name="pref_header_read">阅读设置</string>
     <string name="pref_backup">备份</string>
-    <string name="pref_others">杂项</string>
     <string name="pref_cache_clear">清除缓存</string>
     <string name="pref_clear">清除</string>
     <string name="pref_header_change_log">更新日志</string>
@@ -80,16 +77,11 @@
     <string name="book_list">书单</string>
     <string name="add_from">从何处添加</string>
     <string name="add">添加</string>
-    <string name="full_screen_delay">全屏延迟(ms)</string>
-    <string name="back_press_out_of_fullScreen">返回键退出全屏</string>
     <string name="donate">捐赠</string>
     <string name="jump_to_we_chat">跳到微信</string>
     <string name="cache">缓存</string>
     <string name="confirm_clear">确认清除</string>
     <string name="removing">正在清除…%s</string>
-    <string name="chapter_color_default">默认章节颜色</string>
-    <string name="chapter_color_cached">已缓存章节颜色</string>
-    <string name="chapter_color_read_at">当前章节颜色</string>
     <string name="scan">扫一扫</string>
 
     <string name="animation">动画</string>
@@ -105,16 +97,16 @@
     <string name="book_list_downloading">书单下载中…</string>
     <string name="open">打开</string>
     <string name="judging">判断中…</string>
-    <string name="full_screen_click_next_page">全屏点击翻下页</string>
     <string name="volume_key_scroll">音量键翻页</string>
-    <string name="center_percent">中心比例</string>
+    <string name="center_percent">点击翻页中心死区大小</string>
+    <string name="center_percent_summary_none">无死区，点击任意位置都会触发翻页</string>
+    <string name="center_percent_summary_full">禁用点击翻页，点击任意位置都会显示菜单栏</string>
     <string name="time">时间</string>
     <string name="battery">电池</string>
     <string name="pagination">页码</string>
     <string name="book_name">书名</string>
     <string name="chapter_name">章节名</string>
     <string name="display">显示</string>
-    <string name="date_format">时间格式</string>
     <string name="button_decrease">-</string>
     <string name="button_increase">+</string>
     <string name="day">一天</string>
@@ -132,7 +124,7 @@
     <string name="remove_bookshelf">移出书架</string>
     <string name="add_bookshelf">加入书架</string>
     <string name="refresh_chapters">刷新章节</string>
-    <string name="auto_refresh_interval">自动刷新间隔(s)</string>
+    <string name="auto_refresh_interval">时间/电量刷新间隔(s)</string>
     <string name="last_refresh_time">上次刷新</string>
     <string name="open_detail">打开详情页</string>
     <string name="more_action">更多操作</string>
@@ -156,15 +148,12 @@
     <string name="automatic">自动</string>
     <string name="keep_screen_on">保持屏幕长亮</string>
     <string name="notify_has_update_title_placeholder">《%s》有更新</string>
-    <string name="auto_save_read_status_second">自动保存阅读进度(s)</string>
     <string name="cache_chapters_count">缓存章节数</string>
     <string name="confirm">确认</string>
     <string name="all">全部</string>
     <string name="cookie">Cookie</string>
-    <string name="history_count_summary">只是展示的历史记录数限制，由于没有分页，一次展示太多可能影响性能，</string>
     <string name="no_file_explorer">没有文件管理器，</string>
     <string name="open_in_browser">在浏览器打开</string>
-    <string name="search_thread_count">搜索线程数</string>
     <string name="color_scheme">配色</string>
     <string name="palette">调色板</string>
     <string name="dot_notify_update">小红点提示有更新</string>
@@ -233,7 +222,6 @@
     <string name="backup_hint_other_path">其他路径</string>
     <string name="backup_button_select">选择</string>
     <string name="copy">复制</string>
-    <string name="refresh_on_search">搜索时刷新章节</string>
     <string name="site_charset">网站编码</string>
     <string name="channel_name_default">默认通知</string>
     <string name="channel_description_default">备用，</string>

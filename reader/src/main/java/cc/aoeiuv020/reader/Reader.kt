@@ -38,7 +38,6 @@ class Reader(override var context: Context, novel: String, private val parent: V
     init {
         pageView.centerPercent = config.centerPercent
         pageView.animDurationMultiply = config.animationSpeed
-        pageView.fullScreenClickNextPage = config.fullScreenClickNextPage
         pageView.bgColor = config.backgroundColor
         pageView.animMode = config.animationMode.toAnimMode()
         pageView.margins = config.contentMargins.toIMargins()

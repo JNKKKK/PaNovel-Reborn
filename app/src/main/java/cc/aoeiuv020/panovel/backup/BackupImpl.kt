@@ -98,10 +98,12 @@ class BackupImpl : Backup {
         return list.notNullOrReport().sumOf { file ->
             when (file.name) {
                 "Ad" -> 0
-                "General" -> importPref(GeneralSettings, file)
+                // 全局设置已移除，旧备份里的General忽略，
+                "General" -> 0
                 // 列表设置已移除，旧备份里的List忽略，
                 "List" -> 0
-                "Other" -> importPref(OtherSettings, file)
+                // 杂项设置已移除，旧备份里的Other忽略，
+                "Other" -> 0
                 "Reader" -> importPref(ReaderSettings, file)
                 "Download" -> importPref(DownloadSettings, file)
                 "Interface" -> 0
@@ -143,35 +145,34 @@ class BackupImpl : Backup {
                 "adEnabled" -> {}
                 "keepScreenOn" -> editor.putBoolean(key, prim.boolean)
                 "fullScreen" -> editor.putBoolean(key, prim.boolean)
-                "backPressOutOfFullScreen" -> editor.putBoolean(key, prim.boolean)
-                "fullScreenClickNextPage" -> editor.putBoolean(key, prim.boolean)
+                // 已固定不可配置，旧备份里的值忽略，
+                "backPressOutOfFullScreen" -> {}
+                // 已移除该设置，旧备份里的值忽略，
+                "fullScreenClickNextPage" -> {}
                 "fitWidth" -> editor.putBoolean(key, prim.boolean)
                 "fitHeight" -> editor.putBoolean(key, prim.boolean)
-                "refreshOnSearch" -> editor.putBoolean(key, prim.boolean)
                 "volumeKeyScroll" -> editor.putBoolean(key, prim.boolean)
                 "animationSpeed" -> editor.putFloat(key, prim.float)
                 "centerPercent" -> editor.putFloat(key, prim.float)
-                "autoSaveReadStatus" -> editor.putInt(key, prim.int)
+                // 已固定不可配置，旧备份里的值忽略，
+                "autoSaveReadStatus" -> {}
                 "brightness" -> editor.putInt(key, prim.int)
                 "autoRefreshInterval" -> editor.putInt(key, prim.int)
                 "backgroundColor" -> editor.putInt(key, prim.int)
                 "lastBackgroundColor" -> editor.putInt(key, prim.int)
-                "chapterColorCached" -> editor.putInt(key, prim.int)
-                "chapterColorDefault" -> editor.putInt(key, prim.int)
-                "chapterColorReadAt" -> editor.putInt(key, prim.int)
-                "searchThreadsLimit" -> editor.putInt(key, prim.int)
                 "downloadThreadsLimit" -> DownloadSettings.downloadThreadsLimit = prim.int
                 "autoDownloadCount" -> DownloadSettings.autoDownloadCount = prim.int
-                "fullScreenDelay" -> editor.putInt(key, prim.int)
-                "historyCount" -> editor.putInt(key, prim.int)
+                // 已固定不可配置，旧备份里的值忽略，
+                "fullScreenDelay" -> {}
                 "lineSpacing" -> editor.putInt(key, prim.int)
                 "messageSize" -> editor.putInt(key, prim.int)
                 "paragraphSpacing" -> editor.putInt(key, prim.int)
                 "textColor" -> editor.putInt(key, prim.int)
                 "lastTextColor" -> editor.putInt(key, prim.int)
                 "textSize" -> editor.putInt(key, prim.int)
-                "dateFormat" -> editor.putString(key, prim.content)
-                "segmentIndentation" -> editor.putString(key, prim.content)
+                // 已固定不可配置，旧备份里的值忽略，
+                "dateFormat" -> {}
+                "segmentIndentationCount" -> editor.putString(key, prim.content)
                 "enabled" -> editor.putBoolean(key, prim.boolean)
                 "dotNotifyUpdate" -> --count
                 "bottom" -> editor.putInt(key, prim.int)
@@ -247,7 +248,7 @@ class BackupImpl : Backup {
         folder.mkdirs()
         @Suppress("RemoveExplicitTypeArguments")
         var count = listOf<Pref>(
-            GeneralSettings, OtherSettings, ReaderSettings,
+            ReaderSettings,
             DownloadSettings,
             ReaderSettings.batteryMargins,
             ReaderSettings.bookNameMargins,

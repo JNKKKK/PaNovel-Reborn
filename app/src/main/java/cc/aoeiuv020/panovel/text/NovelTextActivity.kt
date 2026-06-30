@@ -197,11 +197,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                     ?.also { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(it.toString()))) }
                     ?: showError("本地小说不支持外部打开，")
         }
-        if (ReaderSettings.autoSaveReadStatus > 0) {
-            startAutoSave()
-        } else {
-            presenter.saveReadStatus(novel)
-        }
+        startAutoSave()
 
         cancelNotify(novel.nId.toInt())
 
@@ -298,11 +294,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     }
 
     override fun onBackPressed() {
-        if (ReaderSettings.backPressOutOfFullScreen && !mVisible) {
-            show()
-        } else {
-            super.onBackPressed()
-        }
+        super.onBackPressed()
     }
 
     override fun show() {

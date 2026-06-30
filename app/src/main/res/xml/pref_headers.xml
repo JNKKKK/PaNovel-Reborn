@@ -3,10 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
-        app:fragment="cc.aoeiuv020.panovel.settings.GeneralPreferenceFragment"
-        app:title="@string/pref_header_general" />
-
-    <Preference
         app:fragment="cc.aoeiuv020.panovel.settings.ReaderPreferenceFragment"
         app:title="@string/pref_header_read" />
 
@@ -17,10 +13,6 @@
     <Preference
         android:key="backup"
         app:title="@string/pref_backup" />
-
-    <Preference
-        app:fragment="cc.aoeiuv020.panovel.settings.OthersPreferenceFragment"
-        app:title="@string/pref_others" />
 
     <Preference
         app:fragment="cc.aoeiuv020.panovel.settings.CacheClearPreferenceFragment"

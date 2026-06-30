@@ -1,6 +1,7 @@
 package cc.aoeiuv020.panovel.text
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +12,6 @@ import android.widget.TextView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
-import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 import java.util.concurrent.TimeUnit
@@ -27,8 +27,22 @@ class NovelContentsAdapter(
         // 只用contains方法判断章节是否已经缓存，
         private var cachedList: Collection<String>
 ) : BaseAdapter() {
-    // 颜色列表，只读一次设置，
-    private val chapterColorList = OtherSettings.chapterColorList
+    // 章节列表颜色固定使用默认值，
+    private val chapterColorList = ColorStateList(
+        arrayOf(
+            // isChecked代表阅读到的章节，
+            intArrayOf(android.R.attr.state_checked),
+            // isSelected代表已经缓存的章节，
+            intArrayOf(-android.R.attr.state_checked, android.R.attr.state_selected),
+            intArrayOf()
+        ),
+        intArrayOf(
+            // 当前章节红色，已缓存章节深绿，默认黑色，
+            0xffff0000.toInt(),
+            0xff008000.toInt(),
+            0xff000000.toInt()
+        )
+    )
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = convertView

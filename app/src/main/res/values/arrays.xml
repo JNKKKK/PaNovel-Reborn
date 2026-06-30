@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 段首缩进选项，展示文案， -->
+    <string-array name="segment_indentation_entries">
+        <item>无</item>
+        <item>一个空格</item>
+        <item>两个空格</item>
+        <item>四个空格</item>
+    </string-array>
+
+    <!-- 段首缩进选项，对应的全角空格数量， -->
+    <string-array name="segment_indentation_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>4</item>
+    </string-array>
+
+</resources>

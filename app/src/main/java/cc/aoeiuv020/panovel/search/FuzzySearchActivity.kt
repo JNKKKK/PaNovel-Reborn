@@ -11,7 +11,6 @@ import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.databinding.ActivityFuzzySearchBinding
-import cc.aoeiuv020.panovel.settings.OtherSettings
 import cc.aoeiuv020.panovel.util.getStringExtra
 import com.google.android.material.snackbar.Snackbar
 import android.content.Intent
@@ -128,9 +127,7 @@ class FuzzySearchActivity : AppCompatActivity(), MvpView {
         this.name = name
         this.author = author
         novelListAdapter.clear()
-        if (OtherSettings.refreshOnSearch) {
-            novelListAdapter.refresh()
-        }
+        // 搜索时刷新章节以前是可配置的，现在固定关闭，搜索完成后下拉才刷新结果章节，
         presenter.search(name, author)
     }
 

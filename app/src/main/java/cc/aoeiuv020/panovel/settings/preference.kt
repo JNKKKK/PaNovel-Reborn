@@ -5,6 +5,9 @@ package cc.aoeiuv020.panovel.settings
 import android.content.Context
 import android.content.res.TypedArray
 import android.util.AttributeSet
+import androidx.preference.SeekBarPreference
+import cc.aoeiuv020.panovel.R
+import kotlin.math.roundToInt
 import androidx.preference.EditTextPreference as AndroidXEditTextPreference
 
 open class EditTextPreference @JvmOverloads constructor(
@@ -62,46 +65,39 @@ class FloatEditTextPreference @JvmOverloads constructor(
     }
 }
 
-class ColorPickerPreference @JvmOverloads constructor(
+/**
+ * 滑块设置项，界面上按 0-100 的百分比操作，
+ * 但底层仍按 0.0-1.0 的 Float 持久化，和 ReaderSettings.centerPercent 保持兼容，
+ * summary 显示当前百分比，如 “50%”，两端有特殊说明文案，
+ */
+class PercentSeekBarPreference @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
-) : androidx.preference.Preference(context, attrs) {
-    private var currentColor: Int = 0
-
+) : SeekBarPreference(context, attrs) {
     init {
-        widgetLayoutResource = android.R.layout.simple_list_item_1
+        // 百分比固定 0-100，
+        min = 0
+        max = 100
+        showSeekBarValue = false
     }
 
-    override fun onGetDefaultValue(a: TypedArray, index: Int): Any? {
-        val defaultString = a.getString(index) ?: return null
-        return defaultString.lowercase().let {
-            if (it.startsWith("0x")) {
-                it.removePrefix("0x").toLong(radix = 16)
-            } else {
-                it.toLong()
-            }
-        }.toInt()
+    override fun onGetDefaultValue(a: TypedArray, index: Int): Any {
+        // xml 里 defaultValue 写 0.0-1.0 的小数，转成 0-100，
+        return (a.getFloat(index, 0.5f) * 100).roundToInt()
     }
 
-    override fun onSetInitialValue(defaultValue: Any?) {
-        currentColor = getPersistedInt((defaultValue as? Int) ?: 0)
-    }
-
-    fun setValue(color: Int) {
-        currentColor = color
-        persistInt(color)
+    override fun persistInt(value: Int): Boolean = persistFloat(value / 100f).also {
+        // 框架变更值时只走 persistInt 不会 notifyChanged，这里主动刷新 summary，
         notifyChanged()
     }
 
-    override fun onClick() {
-        com.flask.colorpicker.builder.ColorPickerDialogBuilder.with(context)
-            .initialColor(currentColor)
-            .wheelType(com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.CIRCLE)
-            .setPositiveButton(android.R.string.ok) { _, color, _ ->
-                setValue(color)
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .build()
-            .show()
+    override fun getPersistedInt(defaultReturnValue: Int): Int =
+        (getPersistedFloat(defaultReturnValue / 100f) * 100).roundToInt()
+
+    // summary 跟随当前滑块值，两端给出行为说明，中间显示百分比，
+    override fun getSummary(): CharSequence = when (value) {
+        0 -> context.getString(R.string.center_percent_summary_none)
+        100 -> context.getString(R.string.center_percent_summary_full)
+        else -> "$value%"
     }
 }

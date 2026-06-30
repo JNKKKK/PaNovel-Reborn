@@ -30,14 +30,18 @@ object ReaderSettings : Pref {
     val DEFAULT_BACKGROUND_COLOR = 0xffffe3aa.toInt()
 
     /**
-     * 段首缩进，
+     * 段首缩进的全角空格数量，可选 0/1/2/4，ListPreference 存字符串，
      */
-    val segmentIndentation: String by Delegates.string("　　")
+    private val segmentIndentationCount: String by Delegates.string("2")
     /**
-     * 自动保存阅读进度的间隔，单位秒，
+     * 段首缩进，根据数量生成对应个数的全角空格，
      */
-    var autoSaveReadStatus: Int by Delegates.int(60)
-    var fullScreenClickNextPage: Boolean by Delegates.boolean(false)
+    val segmentIndentation: String
+        get() = "　".repeat(segmentIndentationCount.toIntOrNull() ?: 0)
+    /**
+     * 自动保存阅读进度的间隔，单位秒，固定不可配置，
+     */
+    const val autoSaveReadStatus = 60
     var fitWidth: Boolean by Delegates.boolean(true)
     var fitHeight: Boolean by Delegates.boolean(true)
     var volumeKeyScroll: Boolean by Delegates.boolean(true)
@@ -49,11 +53,10 @@ object ReaderSettings : Pref {
     // 启用全屏阅读，
     val fullScreen: Boolean by Delegates.boolean(true)
     /**
-     * 阅读界面点击退出全屏的延迟，
+     * 阅读界面点击退出全屏的延迟，固定不可配置，
      * 有点延迟看着顺眼点，
      */
-    var fullScreenDelay: Int by Delegates.int(300)
-    var backPressOutOfFullScreen: Boolean by Delegates.boolean(false)
+    const val fullScreenDelay = 300
     var textSize: Int by Delegates.int(DEFAULT_TEXT_SIZE)
     var lineSpacing: Int by Delegates.int(DEFAULT_LINE_SPACING)
     var paragraphSpacing: Int by Delegates.int(DEFAULT_PARAGRAPH_SPACING)
@@ -81,7 +84,8 @@ object ReaderSettings : Pref {
      */
     var messageSize: Int by Delegates.int(DEFAULT_MESSAGE_SIZE)
     var autoRefreshInterval: Int by Delegates.int(60)
-    var dateFormat: String by Delegates.string("HH:mm")
+    // 页眉页脚时间格式，固定不可配置，
+    const val dateFormat = "HH:mm"
     var font: Uri? by Delegates.uri()
     val tfFont: Typeface?
         get() = font?.let {
@@ -127,7 +131,6 @@ object ReaderSettings : Pref {
             tfFont,
             centerPercent,
             autoRefreshInterval,
-            fullScreenClickNextPage,
             fitWidth,
             fitHeight
     )

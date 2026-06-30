@@ -79,29 +79,6 @@ fun View.setHeight(height: Int) {
     layoutParams = layoutParams.also { it.height = height }
 }
 
-fun Context.changeColor(initial: Int, callback: (color: Int) -> Unit) {
-    val layout = View.inflate(this, R.layout.dialog_editor, null)
-    val etColor = layout.findViewById<EditText>(R.id.editText).apply {
-        setText(java.lang.Integer.toHexString(initial).uppercase())
-    }
-    AlertDialog.Builder(this)
-        .setTitle(R.string.colorARGB)
-        .setView(layout)
-        .setNeutralButton(R.string.picker) { _, _ ->
-            alertColorPicker(initial, callback)
-        }
-        .setPositiveButton(android.R.string.ok) { _, _ ->
-            try {
-                val iColor = etColor.text.toString().toLong(16).toInt()
-                callback(iColor)
-            } catch (e: NumberFormatException) {
-            }
-        }
-        .setNegativeButton(android.R.string.cancel, null)
-        .create().safelyShow()
-}
-
-
 fun Context.alertColorPicker(initial: Int, callback: (color: Int) -> Unit) =
     ColorPickerDialogBuilder.with(this)
         .initialColor(initial)

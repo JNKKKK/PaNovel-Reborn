@@ -16,44 +16,4 @@
         <include layout="@layout/novel_text_read_default" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/panelSettings"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <include layout="@layout/novel_text_read_settings" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/panelTypesetting"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <include layout="@layout/novel_text_read_typesetting" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/panelAnimation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <include layout="@layout/novel_text_read_animation" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/panelMargins"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <include layout="@layout/novel_text_read_margins" />
-    </LinearLayout>
-
 </LinearLayout>

@@ -24,12 +24,6 @@ object DownloadSettings : Pref {
      */
     var downloadThreadProgress: Boolean by Delegates.boolean(false)
     /**
-     * 点击下载时下载的章节数，
-     * 0表示下载剩余全部，
-     * -1表示每次询问，
-     */
-    var downloadCount: Int by Delegates.int(-1)
-    /**
      * 书架小说刷新章节列表后如果新增章节数小于等于该值就自动缓存新章节，
      */
     var autoDownloadCount: Int by Delegates.int(2)

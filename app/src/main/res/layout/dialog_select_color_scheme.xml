@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:paddingBottom="8dp">
 
     <TextView
         android:id="@+id/textView5"
@@ -18,13 +19,13 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tvInputBackgroundColor"
+        android:id="@+id/tvPaletteBackgroundColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"
-        android:text="@string/input"
+        android:text="@string/palette"
         android:textColor="@color/colorAccent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -37,8 +38,8 @@
         android:layout_marginRight="8dp"
         android:text="@string/background_image"
         android:textColor="@color/colorAccent"
-        app:layout_constraintBaseline_toBaselineOf="@+id/tvInputBackgroundColor"
-        app:layout_constraintEnd_toStartOf="@+id/tvInputBackgroundColor" />
+        app:layout_constraintBaseline_toBaselineOf="@+id/tvPaletteBackgroundColor"
+        app:layout_constraintEnd_toStartOf="@+id/tvPaletteBackgroundColor" />
 
     <LinearLayout
         android:id="@+id/llBackgroundColor"
@@ -118,13 +119,13 @@
         app:layout_constraintTop_toBottomOf="@+id/llBackgroundColor" />
 
     <TextView
-        android:id="@+id/tvInputTextColor"
+        android:id="@+id/tvPaletteTextColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="8dp"
-        android:text="@string/input"
+        android:text="@string/palette"
         android:textColor="@color/colorAccent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/llBackgroundColor" />

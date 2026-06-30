@@ -27,10 +27,6 @@
         app:title="@string/pref_clear" />
 
     <Preference
-        app:fragment="cc.aoeiuv020.panovel.settings.DisclaimerFragment"
-        app:title="@string/pref_header_disclaimer" />
-
-    <Preference
         app:fragment="cc.aoeiuv020.panovel.settings.AboutFragment"
         app:title="@string/pref_header_about" />
 

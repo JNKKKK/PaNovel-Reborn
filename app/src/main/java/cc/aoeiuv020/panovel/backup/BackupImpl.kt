@@ -161,7 +161,6 @@ class BackupImpl : Backup {
                 "chapterColorReadAt" -> editor.putInt(key, prim.int)
                 "searchThreadsLimit" -> editor.putInt(key, prim.int)
                 "downloadThreadsLimit" -> DownloadSettings.downloadThreadsLimit = prim.int
-                "downloadCount" -> DownloadSettings.downloadCount = prim.int
                 "autoDownloadCount" -> DownloadSettings.autoDownloadCount = prim.int
                 "fullScreenDelay" -> editor.putInt(key, prim.int)
                 "historyCount" -> editor.putInt(key, prim.int)

@@ -1,7 +1,6 @@
 package cc.aoeiuv020.panovel.text
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
@@ -20,7 +19,6 @@ import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.search.FuzzySearchActivity
-import cc.aoeiuv020.panovel.settings.DownloadSettings
 import cc.aoeiuv020.panovel.settings.Margins
 import cc.aoeiuv020.panovel.settings.ReaderSettings
 import cc.aoeiuv020.panovel.util.*
@@ -76,7 +74,9 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     private val backgroundImageLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
             try {
+                // 配色区即时应用并保存，
                 reader.config.backgroundImage = it
+                ReaderSettings.backgroundImage = it
             } catch (e: SecurityException) {
                 Timber.e(e, "读取背景图失败")
                 cacheUri = it
@@ -87,19 +87,31 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         }
     }
 
+    /**
+     * 字体选择结果回调，选择了文件传 true，取消选择传 false，
+     * 设置对话框用它来同步“自定义字体/默认字体”单选按钮的选中状态，
+     */
+    var onFontSelected: ((Boolean) -> Unit)? = null
+
     private val fontLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri?.let {
-            try {
-                ReaderSettings.font = it
-                setFont(ReaderSettings.tfFont)
-            } catch (e: SecurityException) {
-                Timber.e(e, "读取字体失败")
-                cacheUri = it
-                ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), 1)
-            } catch (e: FileNotFoundException) {
-                Timber.e(e, "神奇，图片找不到，")
-            }
+        if (uri == null) {
+            // 用户取消选择，
+            onFontSelected?.invoke(false)
+            onFontSelected = null
+            return@registerForActivityResult
         }
+        try {
+            ReaderSettings.font = uri
+            setFont(ReaderSettings.tfFont)
+        } catch (e: SecurityException) {
+            Timber.e(e, "读取字体失败")
+            cacheUri = uri
+            ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), 1)
+        } catch (e: FileNotFoundException) {
+            Timber.e(e, "神奇，字体找不到，")
+        }
+        onFontSelected?.invoke(true)
+        onFontSelected = null
     }
     lateinit var presenter: NovelTextPresenter
     private var chaptersAsc: List<NovelChapter> = listOf()
@@ -357,7 +369,8 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         backgroundImageLauncher.launch(arrayOf("image/*"))
     }
 
-    fun requestFont() {
+    fun requestFont(onResult: ((Boolean) -> Unit)? = null) {
+        onFontSelected = onResult
         fontLauncher.launch(arrayOf("*/*"))
     }
 
@@ -541,136 +554,175 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     }
 
     /**
-     * 上一对配色，文字色/背景（图|色），
+     * 给设置弹窗里嵌入的配色区绑定事件，文字色/背景（图|色），
+     * 选中后即时应用到 reader.config 预览并保存到 ReaderSettings，
+     * “调色板”按钮直接弹颜色选择器，不再走输入颜色代码的对话框，
      */
-    fun lastColorScheme() {
-        // 交换设置中的两套配色，
-        tempColorPref.textColor = ReaderSettings.lastTextColor
-        tempColorPref.backgroundColor = ReaderSettings.lastBackgroundColor
-        tempColorPref.backgroundImage = ReaderSettings.lastBackgroundImage
-        ReaderSettings.lastTextColor = ReaderSettings.textColor
-        ReaderSettings.lastBackgroundColor = ReaderSettings.backgroundColor
-        ReaderSettings.lastBackgroundImage = ReaderSettings.backgroundImage
-        ReaderSettings.textColor = tempColorPref.textColor
-        ReaderSettings.backgroundColor = tempColorPref.backgroundColor
-        ReaderSettings.backgroundImage = tempColorPref.backgroundImage
-        // 切换到上次的配色，已经是现在的配色了，
-        // 先设置图片，因为每次设置都会刷新全部，图片可能Uri存在但是文件已经被删除了，
-        reader.config.backgroundImage = ReaderSettings.backgroundImage
-        reader.config.textColor = ReaderSettings.textColor
-        reader.config.backgroundColor = ReaderSettings.backgroundColor
-    }
+    fun bindColorSchemeSection(dialogBinding: DialogSelectColorSchemeBinding) {
+        if (!::reader.isInitialized) {
+            return
+        }
 
-    private val tempColorPref = object : Pref {
-        override val name: String
-            get() = "TempColor"
+        fun applyBackgroundColor(color: Int) {
+            reader.config.backgroundImage = null
+            reader.config.backgroundColor = color
+            ReaderSettings.backgroundImage = null
+            ReaderSettings.backgroundColor = color
+        }
 
-        // 默认值没有用，
-        var textColor: Int by Delegates.int(0xff000000.toInt())
-        var backgroundColor: Int by Delegates.int(0xffffe3aa.toInt())
-        var backgroundImage: Uri? by Delegates.uri()
+        fun applyTextColor(color: Int) {
+            reader.config.textColor = color
+            ReaderSettings.textColor = color
+        }
+
+        dialogBinding.tvBackgroundImage.setOnClickListener {
+            requestBackgroundImage()
+        }
+        dialogBinding.tvPaletteBackgroundColor.setOnClickListener {
+            alertColorPicker(reader.config.backgroundColor) { color ->
+                applyBackgroundColor(color)
+            }
+        }
+        dialogBinding.llBackgroundColor.apply {
+            val listener = View.OnClickListener {
+                applyBackgroundColor(((it as ImageView).drawable as ColorDrawable).color)
+            }
+            (getChildAt(0) as ImageView).apply {
+                setImageDrawable(ColorDrawable(ReaderSettings.backgroundColor))
+                setOnClickListener(listener)
+            }
+            (getChildAt(1) as ImageView).apply {
+                setImageDrawable(ColorDrawable(ReaderSettings.lastBackgroundColor))
+                setOnClickListener(listener)
+            }
+            for (index in 2 until 7) {
+                getChildAt(index).setOnClickListener(listener)
+            }
+        }
+        dialogBinding.tvPaletteTextColor.setOnClickListener {
+            alertColorPicker(reader.config.textColor) { color ->
+                applyTextColor(color)
+            }
+        }
+        dialogBinding.llTextColor.apply {
+            val listener = View.OnClickListener {
+                applyTextColor(((it as ImageView).drawable as ColorDrawable).color)
+            }
+            (getChildAt(0) as ImageView).apply {
+                setImageDrawable(ColorDrawable(ReaderSettings.textColor))
+                setOnClickListener(listener)
+            }
+            (getChildAt(1) as ImageView).apply {
+                setImageDrawable(ColorDrawable(ReaderSettings.lastTextColor))
+                setOnClickListener(listener)
+            }
+            for (index in 2 until 7) {
+                getChildAt(index).setOnClickListener(listener)
+            }
+        }
     }
 
     /**
-     * 弹出对话框选择配色，文字色/背景（图|色），
+     * 设置弹窗打开时拍下的快照，点“取消”时恢复，
+     * 字体不在事务里（选字体即时拷贝文件生效，取消不回退），所以不快照字体，
      */
-    @SuppressLint("InflateParams")
-    fun selectColorScheme() {
-        if (!::reader.isInitialized) {
-            // 以防万一，
-            return
+    private class ReaderSettingsSnapshot {
+        val textSize = ReaderSettings.textSize
+        val messageSize = ReaderSettings.messageSize
+        val brightness = ReaderSettings.brightness
+        val lineSpacing = ReaderSettings.lineSpacing
+        val paragraphSpacing = ReaderSettings.paragraphSpacing
+        val animationMode = ReaderSettings.animationMode
+        val animationSpeed = ReaderSettings.animationSpeed
+        val textColor = ReaderSettings.textColor
+        val backgroundColor = ReaderSettings.backgroundColor
+        val backgroundImage = ReaderSettings.backgroundImage
+        // 各边距：左上右下 + 是否显示，
+        val margins = ReaderSettings.allMargins.map { m ->
+            intArrayOf(if (m.enabled) 1 else 0, m.left, m.top, m.right, m.bottom)
         }
-        // 备份当前的配色，
-        // 对话框中如果选择取消，就恢复临时配色，
-        // 如果确定，临时配色保存到last上次设置的配色，
-        tempColorPref.textColor = ReaderSettings.textColor
-        tempColorPref.backgroundColor = ReaderSettings.backgroundColor
-        tempColorPref.backgroundImage = ReaderSettings.backgroundImage
-        AlertDialog.Builder(this@NovelTextActivity).apply {
-            setTitle(R.string.select_color_scheme)
-            val dialogBinding = DialogSelectColorSchemeBinding.inflate(layoutInflater)
-            val view = dialogBinding.root
-            dialogBinding.tvBackgroundImage.setOnClickListener {
-                requestBackgroundImage()
+
+        fun restore() {
+            ReaderSettings.textSize = textSize
+            ReaderSettings.messageSize = messageSize
+            ReaderSettings.brightness = brightness
+            ReaderSettings.lineSpacing = lineSpacing
+            ReaderSettings.paragraphSpacing = paragraphSpacing
+            ReaderSettings.animationMode = animationMode
+            ReaderSettings.animationSpeed = animationSpeed
+            ReaderSettings.textColor = textColor
+            ReaderSettings.backgroundColor = backgroundColor
+            ReaderSettings.backgroundImage = backgroundImage
+            ReaderSettings.allMargins.forEachIndexed { i, m ->
+                val s = margins[i]
+                m.enabled = s[0] == 1
+                m.left = s[1]; m.top = s[2]; m.right = s[3]; m.bottom = s[4]
             }
-            dialogBinding.tvInputBackgroundColor.setOnClickListener {
-                changeColor(reader.config.backgroundColor) { color ->
-                    reader.config.backgroundImage = null
-                    reader.config.backgroundColor = color
-                }
-            }
-            dialogBinding.llBackgroundColor.apply {
-                val listener = View.OnClickListener {
-                    val color = ((it as ImageView).drawable as ColorDrawable).color
-                    reader.config.backgroundImage = null
-                    reader.config.backgroundColor = color
-                }
-                (getChildAt(0) as ImageView).apply {
-                    setImageDrawable(ColorDrawable(ReaderSettings.backgroundColor))
-                    setOnClickListener(listener)
-                }
-                (getChildAt(1) as ImageView).apply {
-                    setImageDrawable(ColorDrawable(ReaderSettings.lastBackgroundColor))
-                    setOnClickListener(listener)
-                }
-                for (index in 2 until 7) {
-                    val ivColor = getChildAt(index)
-                    ivColor.setOnClickListener(listener)
-                }
-            }
-            dialogBinding.tvInputTextColor.setOnClickListener {
-                changeColor(reader.config.textColor) { color ->
-                    reader.config.textColor = color
-                }
-            }
-            dialogBinding.llTextColor.apply {
-                val listener = View.OnClickListener {
-                    val color = ((it as ImageView).drawable as ColorDrawable).color
-                    reader.config.textColor = color
-                }
-                (getChildAt(0) as ImageView).apply {
-                    setImageDrawable(ColorDrawable(ReaderSettings.textColor))
-                    setOnClickListener(listener)
-                }
-                (getChildAt(1) as ImageView).apply {
-                    setImageDrawable(ColorDrawable(ReaderSettings.lastTextColor))
-                    setOnClickListener(listener)
-                }
-                for (index in 2 until 7) {
-                    val ivColor = getChildAt(index)
-                    ivColor.setOnClickListener(listener)
-                }
-            }
-            setView(view)
-            setPositiveButton(android.R.string.ok) { _, _ ->
-                // 确定，临时配色保存到last上次设置的配色，
-                ReaderSettings.lastTextColor = tempColorPref.textColor
-                ReaderSettings.lastBackgroundColor = tempColorPref.backgroundColor
-                ReaderSettings.lastBackgroundImage = tempColorPref.backgroundImage
-                // 当前配色保存，
-                ReaderSettings.textColor = reader.config.textColor
-                ReaderSettings.backgroundColor = reader.config.backgroundColor
-                ReaderSettings.backgroundImage = reader.config.backgroundImage
-            }
-            setNegativeButton(android.R.string.cancel) { _, _ ->
-                // 选择取消，就恢复临时配色，全程没有操作ReaderSettings永久保存的设置，
-                reader.config.textColor = tempColorPref.textColor
-                setBackground(tempColorPref.backgroundColor, tempColorPref.backgroundImage)
-            }
-        }.setCancelable(false).create().also {
-            // 去除对话框的灰背景，
-            it.window.notNullOrReport().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-        }.safelyShow()
-        // 弹对话框时退出全屏，
-        hide()
+        }
     }
 
-    private fun setBackground(color: Int, image: Uri?) {
-        reader.config.backgroundColor = color
-        if (image != null) {
-            // 避免重复设置覆盖背景色，
-            reader.config.backgroundImage = image
+    private var settingsSnapshot: ReaderSettingsSnapshot? = null
+
+    /**
+     * 打开设置弹窗时拍快照，
+     */
+    fun snapshotReaderSettings() {
+        settingsSnapshot = ReaderSettingsSnapshot()
+    }
+
+    /**
+     * 点“取消”时，把设置恢复到打开弹窗时的快照并刷新阅读器预览，
+     */
+    fun revertReaderSettings() {
+        settingsSnapshot?.restore()
+        settingsSnapshot = null
+        applyReaderSettingsToConfig()
+    }
+
+    /**
+     * 点“应用”时，设置已即时保存，丢掉快照即可，
+     */
+    fun commitReaderSettings() {
+        settingsSnapshot = null
+    }
+
+    /**
+     * 点“恢复默认”时，把设置写成默认值并刷新预览，不关闭弹窗，
+     * 默认值统一由 ReaderSettings.restoreDefaults() 维护，
+     */
+    fun restoreDefaultReaderSettings() {
+        ReaderSettings.restoreDefaults()
+        applyReaderSettingsToConfig()
+    }
+
+    /**
+     * 把当前 ReaderSettings 重新应用到 reader.config，刷新阅读器预览，
+     * 取消恢复快照、恢复默认后调用，
+     */
+    private fun applyReaderSettingsToConfig() {
+        if (!::reader.isInitialized) {
+            return
         }
+        reader.config.apply {
+            textSize = ReaderSettings.textSize
+            messageSize = ReaderSettings.messageSize
+            lineSpacing = ReaderSettings.lineSpacing
+            paragraphSpacing = ReaderSettings.paragraphSpacing
+            animationMode = ReaderSettings.animationMode
+            animationSpeed = ReaderSettings.animationSpeed
+            textColor = ReaderSettings.textColor
+            // 先设图片再设背景色，与配色逻辑一致，
+            backgroundImage = ReaderSettings.backgroundImage
+            backgroundColor = ReaderSettings.backgroundColor
+            font = ReaderSettings.tfFont
+            contentMargins = ReaderSettings.contentMargins
+            paginationMargins = ReaderSettings.paginationMargins
+            bookNameMargins = ReaderSettings.bookNameMargins
+            chapterNameMargins = ReaderSettings.chapterNameMargins
+            timeMargins = ReaderSettings.timeMargins
+            batteryMargins = ReaderSettings.batteryMargins
+        }
+        setBrightness(ReaderSettings.brightness)
     }
 
     private fun detail() {
@@ -688,16 +740,6 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                 }.safelyShow()
     }
 
-
-    fun download() {
-        val index = reader.currentChapter
-        val count = DownloadSettings.downloadCount
-        when {
-            count < 0 -> askDownload()
-            count == 0 -> presenter.download(index, Int.MAX_VALUE)
-            else -> presenter.download(index, count)
-        }
-    }
 
     fun askDownload(): Boolean {
         presenter.askDownload(this, reader.currentChapter)

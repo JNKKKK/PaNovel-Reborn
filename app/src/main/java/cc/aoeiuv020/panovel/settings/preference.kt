@@ -6,22 +6,6 @@ import android.content.Context
 import android.content.res.TypedArray
 import android.util.AttributeSet
 import androidx.preference.EditTextPreference as AndroidXEditTextPreference
-import androidx.preference.ListPreference as AndroidXListPreference
-
-class ListPreference @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null
-) : AndroidXListPreference(context, attrs) {
-    override fun onGetDefaultValue(a: TypedArray, index: Int): Any? {
-        return super.onGetDefaultValue(a, index)?.also {
-            value = it.toString()
-        }
-    }
-
-    override fun getSummary(): CharSequence? {
-        return entry ?: super.getSummary()
-    }
-}
 
 open class EditTextPreference @JvmOverloads constructor(
     context: Context,

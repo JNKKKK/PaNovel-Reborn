@@ -8,7 +8,6 @@ import cc.aoeiuv020.panovel.download.DownloadingNotificationManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.DownloadSettings
 import cc.aoeiuv020.panovel.util.safelyShow
-import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.RadioGroup
 import kotlinx.coroutines.*
@@ -134,11 +133,9 @@ class DownloadManager(
     // 不能用全局application的Context弹对话框，
     // WindowManager$BadTokenException: Unable to add window -- token null is not for an application
     fun askDownload(context: Context, novelManager: NovelManager, currentIndex: Int, fromFirst: Boolean): Boolean {
-        val defaultCount = DownloadSettings.downloadCount.takeIf { it >= 0 }
-                ?: 50
         val layout = View.inflate(context, R.layout.dialog_download_count, null)
         val countInput = layout.findViewById<EditText>(R.id.editText).apply {
-            setText(defaultCount.toString())
+            setText(DEFAULT_ASK_DOWNLOAD_COUNT.toString())
         }
         val fromRadioGroup = layout.findViewById<RadioGroup>(R.id.rgFrom)
         if (fromFirst) {
@@ -146,19 +143,10 @@ class DownloadManager(
         } else {
             fromRadioGroup.check(R.id.rbFromCurrent)
         }
-        val rememberCheckBox = layout.findViewById<CheckBox>(R.id.checkBox)
-        fun remember() {
-            if (rememberCheckBox.isChecked) {
-                countInput.text.toString().toIntOrNull()?.let {
-                    DownloadSettings.downloadCount = it
-                }
-            }
-        }
         androidx.appcompat.app.AlertDialog.Builder(context)
-            .setTitle(R.string.download_chapters_count)
+            .setTitle(R.string.cache_chapters_count)
             .setView(layout)
             .setNeutralButton(R.string.all) { _, _ ->
-                remember()
                 val fromIndex = if (fromRadioGroup.checkedRadioButtonId == R.id.rbFromFirst) {
                     0
                 } else {
@@ -166,8 +154,7 @@ class DownloadManager(
                 }
                 download(novelManager, fromIndex, Int.MAX_VALUE)
             }
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                remember()
+            .setPositiveButton(R.string.confirm) { _, _ ->
                 val count = countInput.text.toString().toIntOrNull() ?: 0
                 val realCount = if (count == 0) {
                     Int.MAX_VALUE
@@ -181,9 +168,16 @@ class DownloadManager(
                 }
                 download(novelManager, fromIndex, realCount)
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.cancel, null)
             .create().safelyShow()
         return true
+    }
+
+    companion object {
+        /**
+         * 缓存对话框默认预填的章节数，
+         */
+        private const val DEFAULT_ASK_DOWNLOAD_COUNT = 50
     }
 
 }

@@ -46,12 +46,6 @@ class NovelTextPresenter(
         return novelManager.requestContent(index, chapter, refresh)
     }
 
-    fun download(fromIndex: Int, count: Int) {
-        view?.let {
-            DataManager.download.download(novelManager, fromIndex, count)
-        }
-    }
-
     fun askDownload(context: Context, currentIndex: Int) {
         view?.also {
             DataManager.download.askDownload(context, novelManager, currentIndex, false)

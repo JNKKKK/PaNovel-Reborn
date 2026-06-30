@@ -25,17 +25,6 @@
 
     <cc.aoeiuv020.panovel.settings.IntEditTextPreference
         android:capitalize="words"
-        android:defaultValue="-1"
-        android:inputType="number|numberSigned"
-        android:key="downloadCount"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:summary="@string/download_chapters_count_summary"
-        android:title="@string/download_chapters_count" />
-
-    <cc.aoeiuv020.panovel.settings.IntEditTextPreference
-        android:capitalize="words"
         android:defaultValue="2"
         android:inputType="number|numberSigned"
         android:key="autoDownloadCount"

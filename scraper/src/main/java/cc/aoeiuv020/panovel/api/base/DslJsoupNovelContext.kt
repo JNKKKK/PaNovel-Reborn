@@ -1,9 +1,10 @@
 package cc.aoeiuv020.panovel.api.base
 
-import cc.aoeiuv020.base.jar.*
+import cc.aoeiuv020.shared.jsoup.*
+import cc.aoeiuv020.shared.util.*
 import cc.aoeiuv020.panovel.api.*
-import cc.aoeiuv020.regex.matches
-import cc.aoeiuv020.regex.pick
+import cc.aoeiuv020.shared.regex.matches
+import cc.aoeiuv020.shared.regex.pick
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.internal.http.HttpMethod

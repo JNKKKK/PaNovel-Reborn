@@ -3,7 +3,7 @@ package cc.aoeiuv020.panovel.data
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.download.DownloadingNotificationManager
-import cc.aoeiuv020.panovel.local.LocalNovelProvider
+import cc.aoeiuv020.panovel.localbook.LocalNovelProvider
 import cc.aoeiuv020.panovel.settings.DownloadSettings
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import timber.log.Timber

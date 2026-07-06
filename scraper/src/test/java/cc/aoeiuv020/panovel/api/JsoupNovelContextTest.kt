@@ -1,6 +1,6 @@
 package cc.aoeiuv020.panovel.api
 
-import cc.aoeiuv020.base.jar.textListSplitWhitespace
+import cc.aoeiuv020.shared.jsoup.textListSplitWhitespace
 import org.jsoup.Jsoup
 import org.jsoup.select.Elements
 import org.junit.Assert.assertEquals

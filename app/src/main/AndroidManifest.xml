@@ -26,7 +26,7 @@
         tools:targetApi="q">
         <activity android:name=".search.SiteSettingsActivity" />
         <activity
-            android:name=".local.CreateDocumentActivity"
+            android:name=".localbook.CreateDocumentActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!--suppress DeprecatedClassUsageInspection -->
         <meta-data

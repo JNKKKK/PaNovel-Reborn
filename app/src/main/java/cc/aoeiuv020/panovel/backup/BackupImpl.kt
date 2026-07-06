@@ -1,7 +1,7 @@
 package cc.aoeiuv020.panovel.backup
 
 import android.net.Uri
-import cc.aoeiuv020.json.AppJson
+import cc.aoeiuv020.shared.json.AppJson
 import cc.aoeiuv020.panovel.backup.BackupOption.*
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.Novel

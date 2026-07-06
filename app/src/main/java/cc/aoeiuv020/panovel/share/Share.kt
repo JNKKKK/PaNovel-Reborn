@@ -4,7 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Bitmap
-import cc.aoeiuv020.json.AppJson
+import cc.aoeiuv020.shared.json.AppJson
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.BookList
 import cc.aoeiuv020.panovel.data.entity.NovelMinimal

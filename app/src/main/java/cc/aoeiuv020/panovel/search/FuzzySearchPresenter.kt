@@ -3,7 +3,7 @@ package cc.aoeiuv020.panovel.search
 import cc.aoeiuv020.panovel.Presenter
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
-import cc.aoeiuv020.panovel.util.ChineseNormalizer
+import cc.aoeiuv020.shared.util.ChineseNormalizer
 import timber.log.Timber
 import kotlinx.coroutines.*
 /**

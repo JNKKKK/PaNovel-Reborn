@@ -1,8 +1,8 @@
 package cc.aoeiuv020.panovel.api.base
 
-import cc.aoeiuv020.base.jar.ownTextList
-import cc.aoeiuv020.base.jar.ownTextListSplitWhitespace
-import cc.aoeiuv020.regex.pick
+import cc.aoeiuv020.shared.jsoup.ownTextList
+import cc.aoeiuv020.shared.jsoup.ownTextListSplitWhitespace
+import cc.aoeiuv020.shared.regex.pick
 import okhttp3.Call
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document

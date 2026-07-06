@@ -5,7 +5,7 @@ import cc.aoeiuv020.panovel.api.NovelContext
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.notNullOrReport
-import cc.aoeiuv020.regex.compileRegex
+import cc.aoeiuv020.shared.regex.compileRegex
 import okhttp3.Cookie
 import okhttp3.Headers
 import okhttp3.HttpUrl

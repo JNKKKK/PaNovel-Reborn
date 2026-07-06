@@ -2,7 +2,7 @@
 
 package cc.aoeiuv020.panovel.api
 
-import cc.aoeiuv020.json.DateSerializer
+import cc.aoeiuv020.shared.json.DateSerializer
 import kotlinx.serialization.Serializable
 import java.util.*
 

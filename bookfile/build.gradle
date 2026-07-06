@@ -1,0 +1,24 @@
+apply plugin: 'jacoco'
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+dependencies {
+    implementation project(':shared')
+    implementation 'net.sourceforge.jchardet:jchardet:1.0'
+    implementation('io.documentnode:epub4j-core:4.2.1') {
+        exclude group: 'xmlpull'
+        exclude group: 'org.slf4j'
+        exclude group: 'net.sf.kxml'
+        exclude group: 'xpp3'
+    }
+    implementation 'org.jsoup:jsoup:' + jsoup_version
+    // epub4j排除了xmlpull/kxml2，因为安卓平台自带org.xmlpull.v1，
+    // 但纯JVM单元测试没有，需要在测试classpath补上一个实现，否则EpubReader会抛NoClassDefFoundError，
+    testImplementation 'net.sf.kxml:kxml2:2.3.0'
+}

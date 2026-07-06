@@ -3,7 +3,7 @@
 buildscript {
     ext {
         applicationModules = ['app']
-        javaModules = ["scraper", "local", "core", "IronDB", "rhino"]
+        javaModules = ["scraper", "bookfile", "shared", "IronDB", "rhino"]
         androidModules = ["pager", "reader"]
         def versionFile = rootProject.file('version.properties')
         if (versionFile.exists()) {
@@ -139,7 +139,7 @@ applicationModules.forEach { name ->
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
             runtimeOnly 'org.slf4j:slf4j-android:' + slf4j_version
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            implementation project(':core')
+            implementation project(':shared')
         }
     }
 }
@@ -157,8 +157,8 @@ javaModules.forEach { name ->
             implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            if (name != 'core') {
-                implementation project(':core')
+            if (name != 'shared') {
+                implementation project(':shared')
             }
         }
 
@@ -224,7 +224,7 @@ androidModules.forEach { name ->
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
             runtimeOnly 'org.slf4j:slf4j-android:' + slf4j_version
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
-            implementation project(':core')
+            implementation project(':shared')
         }
     }
 }

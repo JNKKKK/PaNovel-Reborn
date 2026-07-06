@@ -2,7 +2,7 @@ package cc.aoeiuv020.panovel.api.site
 
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.api.base.DslJsoupNovelContext
-import cc.aoeiuv020.regex.pick
+import cc.aoeiuv020.shared.regex.pick
 
 class Hongsheng : DslJsoupNovelContext() {
     override fun getNovelChapterUrl(extra: String): String {

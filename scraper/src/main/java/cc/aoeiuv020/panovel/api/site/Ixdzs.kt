@@ -1,7 +1,7 @@
 package cc.aoeiuv020.panovel.api.site
 
 import cc.aoeiuv020.panovel.api.base.DslJsoupNovelContext
-import cc.aoeiuv020.regex.pick
+import cc.aoeiuv020.shared.regex.pick
 
 class Ixdzs : DslJsoupNovelContext() { init {
     site {

@@ -1,7 +1,7 @@
 package cc.aoeiuv020.irondb.impl
 
 import cc.aoeiuv020.irondb.KeySerializer
-import cc.aoeiuv020.regex.compileRegex
+import cc.aoeiuv020.shared.regex.compileRegex
 
 /**
  * 简单替换路径分隔符，因此若是名字仅这一处不同，将产生冲突，

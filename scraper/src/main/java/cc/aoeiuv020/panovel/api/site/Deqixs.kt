@@ -1,8 +1,8 @@
 package cc.aoeiuv020.panovel.api.site
 
-import cc.aoeiuv020.json.AppJson
+import cc.aoeiuv020.shared.json.AppJson
 import cc.aoeiuv020.panovel.api.base.DslJsoupNovelContext
-import cc.aoeiuv020.regex.pick
+import cc.aoeiuv020.shared.regex.pick
 import kotlinx.serialization.json.*
 
 class Deqixs : DslJsoupNovelContext() { init {

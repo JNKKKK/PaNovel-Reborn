@@ -20,8 +20,8 @@ It supports local TXT/EPUB files, backup/restore to local files (via SAF; books 
 # Compile scraper module (scraper DSL)
 ./gradlew scraper:compileKotlin
 
-# Compile local module (TXT/EPUB)
-./gradlew local:compileKotlin
+# Compile bookfile module (TXT/EPUB)
+./gradlew bookfile:compileKotlin
 
 # Run scraper unit tests (no network required)
 ./gradlew scraper:test
@@ -59,10 +59,10 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 |--------|------|---------|
 | app | Android | Main application (activities, presenters, fragments) |
 | scraper | Java | Novel website scrapers (JSoup + Rhino JS parsing) |
-| core | Java | Shared utilities (JSON, regex, SSL, jsoup helpers) |
+| shared | Java | Shared utilities (`shared.jsoup` DOM helpers, `shared.json`, `shared.regex`, `shared.ssl`, `shared.util`) |
 | IronDB | Java | File-based NoSQL key-value store (kotlinx-serialization) |
 | rhino | Java | Rhino JavaScript engine wrapper |
-| local | Java | Local file support (TXT, EPUB via epub4j-core) |
+| bookfile | Java | Book file formats: TXT/EPUB parsing and export (epub4j-core) |
 | pager | Android | Pagination library |
 | reader | Android | Novel reader UI |
 

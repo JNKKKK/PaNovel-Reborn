@@ -1,6 +1,6 @@
 package cc.aoeiuv020.panovel.api.site
 
-import cc.aoeiuv020.base.jar.absHref
+import cc.aoeiuv020.shared.jsoup.absHref
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.api.base.DslJsoupNovelContext
 import java.util.Base64

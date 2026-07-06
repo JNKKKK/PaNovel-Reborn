@@ -2,18 +2,18 @@ package cc.aoeiuv020.panovel.data
 
 import android.content.Context
 import androidx.annotation.WorkerThread
-import cc.aoeiuv020.base.jar.interrupt
+import cc.aoeiuv020.shared.util.interrupt
 import cc.aoeiuv020.irondb.Iron
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
-import cc.aoeiuv020.panovel.local.ImportRequireValue
-import cc.aoeiuv020.panovel.local.LocalNovelProvider
-import cc.aoeiuv020.panovel.local.LocalNovelType
-import cc.aoeiuv020.panovel.local.Previewer
+import cc.aoeiuv020.panovel.localbook.ImportRequireValue
+import cc.aoeiuv020.panovel.localbook.LocalNovelProvider
+import cc.aoeiuv020.panovel.bookfile.LocalNovelType
+import cc.aoeiuv020.panovel.bookfile.Previewer
 import cc.aoeiuv020.panovel.util.noCover
 import cc.aoeiuv020.panovel.util.notNullOrReport
-import cc.aoeiuv020.regex.pick
+import cc.aoeiuv020.shared.regex.pick
 import timber.log.Timber
 import java.io.File
 import java.io.InputStream

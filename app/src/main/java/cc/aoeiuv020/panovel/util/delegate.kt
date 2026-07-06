@@ -260,14 +260,14 @@ sealed class PrefDelegate<T>(
         override fun getValue(sp: SharedPreferences, key: kotlin.String): T {
             val stored = sp.getString(key, null) ?: return default
             return try {
-                cc.aoeiuv020.json.AppJson.decodeFromString(serializer, stored)
+                cc.aoeiuv020.shared.json.AppJson.decodeFromString(serializer, stored)
             } catch (_: Exception) {
                 default
             }
         }
 
         override fun setValue(editor: SharedPreferences.Editor, key: kotlin.String, value: T) {
-            editor.putString(key, cc.aoeiuv020.json.AppJson.encodeToString(serializer, value))
+            editor.putString(key, cc.aoeiuv020.shared.json.AppJson.encodeToString(serializer, value))
         }
     }
 }

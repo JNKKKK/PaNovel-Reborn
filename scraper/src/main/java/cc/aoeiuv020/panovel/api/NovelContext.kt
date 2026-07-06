@@ -1,7 +1,7 @@
 package cc.aoeiuv020.panovel.api
 
-import cc.aoeiuv020.base.jar.toURL
-import cc.aoeiuv020.json.AppJson
+import cc.aoeiuv020.shared.util.toURL
+import cc.aoeiuv020.shared.json.AppJson
 import cc.aoeiuv020.panovel.api.site.*
 import kotlinx.serialization.encodeToString
 import okhttp3.Cookie

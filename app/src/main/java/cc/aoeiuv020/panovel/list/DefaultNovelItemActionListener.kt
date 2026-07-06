@@ -1,12 +1,12 @@
 package cc.aoeiuv020.panovel.list
 
-import cc.aoeiuv020.base.jar.interrupt
+import cc.aoeiuv020.shared.util.interrupt
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
-import cc.aoeiuv020.panovel.local.CreateDocumentActivity
-import cc.aoeiuv020.panovel.local.LocalNovelType
-import cc.aoeiuv020.panovel.local.NovelExporter
+import cc.aoeiuv020.panovel.localbook.CreateDocumentActivity
+import cc.aoeiuv020.panovel.bookfile.LocalNovelType
+import cc.aoeiuv020.panovel.localbook.NovelExporter
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.search.FuzzySearchActivity
 import cc.aoeiuv020.panovel.settings.ItemAction

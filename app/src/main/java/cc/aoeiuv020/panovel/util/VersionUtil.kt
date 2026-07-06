@@ -2,7 +2,7 @@ package cc.aoeiuv020.panovel.util
 
 import android.content.Context
 import android.content.pm.PackageManager
-import cc.aoeiuv020.regex.pick
+import cc.aoeiuv020.shared.regex.pick
 
 object VersionUtil {
     fun getAppVersionName(context: Context): String {

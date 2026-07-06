@@ -5,8 +5,8 @@ import android.os.Process
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import cc.aoeiuv020.panovel.data.DataManager
-import cc.aoeiuv020.ssl.TLSSocketFactory
-import cc.aoeiuv020.ssl.TrustManagerUtils
+import cc.aoeiuv020.shared.ssl.TLSSocketFactory
+import cc.aoeiuv020.shared.ssl.TrustManagerUtils
 import com.bumptech.glide.Glide
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
@@ -25,7 +25,7 @@ class App : MultiDexApplication() {
 
         var isMainProcess: Boolean by Delegates.notNull()
 
-        val json = cc.aoeiuv020.json.AppJson
+        val json = cc.aoeiuv020.shared.json.AppJson
     }
 
     override fun onCreate() {

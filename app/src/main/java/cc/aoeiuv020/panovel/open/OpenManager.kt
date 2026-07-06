@@ -5,8 +5,8 @@ import android.net.Uri
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.Novel
-import cc.aoeiuv020.panovel.local.ImportRequireValue
-import cc.aoeiuv020.panovel.local.LocalNovelType
+import cc.aoeiuv020.panovel.localbook.ImportRequireValue
+import cc.aoeiuv020.panovel.bookfile.LocalNovelType
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.uiInput
 import cc.aoeiuv020.panovel.util.uiSelect

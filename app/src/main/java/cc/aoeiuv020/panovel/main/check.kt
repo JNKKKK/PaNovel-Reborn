@@ -3,7 +3,7 @@ package cc.aoeiuv020.panovel.main
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import cc.aoeiuv020.json.AppJson
+import cc.aoeiuv020.shared.json.AppJson
 import cc.aoeiuv020.panovel.BuildConfig
 import kotlinx.serialization.json.*
 import okhttp3.OkHttpClient

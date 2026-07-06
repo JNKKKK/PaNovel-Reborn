@@ -8,7 +8,7 @@ import androidx.annotation.WorkerThread
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.api.NovelContext
 import cc.aoeiuv020.panovel.data.entity.*
-import cc.aoeiuv020.panovel.local.ImportRequireValue
+import cc.aoeiuv020.panovel.localbook.ImportRequireValue
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import okhttp3.Cookie
 import okhttp3.HttpUrl

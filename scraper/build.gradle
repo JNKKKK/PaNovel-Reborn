@@ -1,6 +1,6 @@
 dependencies {
     implementation 'org.jsoup:jsoup:' + jsoup_version
-    implementation project(':core')
+    implementation project(':shared')
     implementation project(':rhino')
 }
 

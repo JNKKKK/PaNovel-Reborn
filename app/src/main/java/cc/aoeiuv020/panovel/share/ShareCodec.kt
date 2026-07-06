@@ -1,6 +1,6 @@
 package cc.aoeiuv020.panovel.share
 
-import cc.aoeiuv020.json.AppJson
+import cc.aoeiuv020.shared.json.AppJson
 import kotlinx.serialization.encodeToString
 import java.io.ByteArrayOutputStream
 import java.util.Base64

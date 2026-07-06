@@ -11,9 +11,6 @@ import android.content.Intent
 import cc.aoeiuv020.panovel.util.NotificationChannelId
 import cc.aoeiuv020.panovel.util.NotifyLoopProxy
 
-/**
- * Created by AoEiuV020 on 2018.10.07-15:16:13.
- */
 class DownloadingNotificationManager(
         private val context: Context
 ) {

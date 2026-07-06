@@ -4,9 +4,6 @@ import androidx.room.TypeConverter
 import java.util.*
 
 
-/**
- * Created by AoEiuV020 on 2018.05.26-22:43:21.
- */
 class DateTypeConverter {
 
     @TypeConverter

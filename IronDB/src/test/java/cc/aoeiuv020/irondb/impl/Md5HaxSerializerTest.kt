@@ -3,9 +3,6 @@ package cc.aoeiuv020.irondb.impl
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * Created by AoEiuV020 on 2018.05.27-16:44:05.
- */
 class Md5HaxSerializerTest {
     private val serializer = Md5HaxSerializer()
 

@@ -9,8 +9,6 @@ import cc.aoeiuv020.pager.IMarginsImpl
  * 不继承IMargins主要是，
  * app依赖reader, reader依赖pager,
  * app使用reader中继承pager接口的接口也会编译出错，stub截断就过不去，
- *
- * Created by AoEiuV020 on 2018.06.17-16:07:30.
  */
 interface ItemMargins {
     /**

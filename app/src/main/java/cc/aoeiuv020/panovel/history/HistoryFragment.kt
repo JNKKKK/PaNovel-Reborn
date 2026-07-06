@@ -14,7 +14,6 @@ import cc.aoeiuv020.panovel.main.MainActivity
 
 /**
  * 绝大部分照搬书架，
- * Created by AoEiuV020 on 2017.10.15-18:07:39.
  */
 class HistoryFragment : androidx.fragment.app.Fragment(), MvpView {
     private var _binding: NovelItemListBinding? = null

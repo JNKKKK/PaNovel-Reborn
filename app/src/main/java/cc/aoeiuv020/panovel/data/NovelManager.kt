@@ -16,8 +16,6 @@ import java.util.concurrent.TimeUnit
  * 分担DataManager压力，
  *
  * 小说是已经加入数据库了的，有id的小说，
- *
- * Created by AoEiuV020 on 2018.06.12-21:49:11.
  */
 class NovelManager(
         val novel: Novel,

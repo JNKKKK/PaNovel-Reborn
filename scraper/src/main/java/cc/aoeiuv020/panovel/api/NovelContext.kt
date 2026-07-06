@@ -14,7 +14,6 @@ import java.net.URL
 
 /**
  * 小说网站的上下文，
- * Created by AoEiuV020 on 2017.10.02-15:25:48.
  */
 @Suppress("MemberVisibilityCanPrivate")
 abstract class NovelContext {

@@ -6,9 +6,6 @@ import org.junit.Test
 import java.io.File
 import java.net.URL
 
-/**
- * Created by AoEiuV020 on 2018.06.18-18:51:38.
- */
 class JsoupKtTest {
     @Test
     fun p() {

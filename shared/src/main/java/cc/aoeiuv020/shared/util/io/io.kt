@@ -2,10 +2,6 @@ package cc.aoeiuv020.shared.util.io
 
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.06.13-19:12:58.
- */
-
 fun BufferedRandomAccessFile.readLines(beginPos: Long, endPos: Long, charset: String): List<String> {
     seek(beginPos)
     val list = LinkedList<String>()

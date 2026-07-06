@@ -9,7 +9,6 @@ import android.view.ViewConfiguration;
 import cc.aoeiuv020.pager.IMargins;
 
 /**
- * Created by newbiechen on 17-7-24.
  * 横向动画的模板
  */
 

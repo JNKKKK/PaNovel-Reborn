@@ -6,9 +6,6 @@ import cc.aoeiuv020.panovel.util.noCover
 import java.net.URL
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.06.13-13:27:02.
- */
 class ApiNovelProvider(
         private val novel: Novel,
         private val context: NovelContext

@@ -30,9 +30,6 @@ import java.io.OutputStream
 import java.net.URL
 import java.nio.charset.Charset
 
-/**
- * Created by AoEiuV020 on 2018.05.28-18:53:01.
- */
 class NovelExporter(
         private val type: LocalNovelType,
         private val charset: Charset,

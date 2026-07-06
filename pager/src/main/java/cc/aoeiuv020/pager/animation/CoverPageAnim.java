@@ -7,10 +7,6 @@ import android.view.View;
 
 import cc.aoeiuv020.pager.IMargins;
 
-/**
- * Created by newbiechen on 17-7-24.
- */
-
 @SuppressWarnings("All")
 public class CoverPageAnim extends HorizonPageAnim {
 

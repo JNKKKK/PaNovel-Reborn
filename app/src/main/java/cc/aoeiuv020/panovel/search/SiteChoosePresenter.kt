@@ -7,9 +7,6 @@ import cc.aoeiuv020.panovel.report.Reporter
 import timber.log.Timber
 import kotlinx.coroutines.*
 
-/**
- * Created by AoEiuV020 on 2018.05.13-18:29:22.
- */
 class SiteChoosePresenter : Presenter<SiteChooseActivity>() {
     fun start() {
         scope.launch {

@@ -10,9 +10,6 @@ import android.webkit.CookieManager
 import android.webkit.CookieSyncManager
 import timber.log.Timber
 
-/**
- * Created by AoEiuV020 on 2018.05.23-20:25:48.
- */
 class CookieManager(@Suppress("UNUSED_PARAMETER") context: Context) {
     private val cookieManager = CookieManager.getInstance()
 

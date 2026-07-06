@@ -3,9 +3,6 @@ package cc.aoeiuv020.irondb.impl
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Semaphore
 
-/**
- * Created by AoEiuV020 on 2018.05.27-15:18:53.
- */
 @Suppress("MemberVisibilityCanBePrivate")
 class KeyLocker {
     // 没有删除不再被使用的entry, 可能浪费内存，

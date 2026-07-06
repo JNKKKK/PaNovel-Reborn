@@ -2,11 +2,6 @@ package cc.aoeiuv020.reader
 
 import java.io.File
 
-/**
- *
- * Created by AoEiuV020 on 2017.12.01-02:17:55.
- */
-
 interface TextRequester {
     fun requestChapter(index: Int, refresh: Boolean = false): List<String>
     // 小说章节正文由一个个段落构成，一个段落可能是一行文字，也可能是一张图片，

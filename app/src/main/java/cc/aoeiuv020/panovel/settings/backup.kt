@@ -3,9 +3,6 @@ package cc.aoeiuv020.panovel.settings
 import cc.aoeiuv020.panovel.util.Delegates
 import cc.aoeiuv020.panovel.util.Pref
 
-/**
- * Created by AoEiuV020 on 2021.04.25-13:42:29.
- */
 object BackupSettings : Pref {
     override val name: String
         get() = "Backup"

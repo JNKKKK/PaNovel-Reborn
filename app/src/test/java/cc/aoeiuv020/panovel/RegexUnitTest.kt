@@ -5,9 +5,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.regex.Pattern
 
-/**
- * Created by AoEiuV020 on 2018.05.16-19:57:13.
- */
 class RegexUnitTest {
     private val withoutEscapeRegex = Regex("]")
     private val withEscapeRegex = Regex("\\]")

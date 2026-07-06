@@ -7,10 +7,6 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * Created by AoEiuV020 on 2017.10.02-16:01:09.
- */
-
-/**
  * 结尾不要斜杆/，因为有的地址可能整数后面接文件后缀.html,
  * 开头要有斜杆/，因为有的网站可能host有整数，
  */

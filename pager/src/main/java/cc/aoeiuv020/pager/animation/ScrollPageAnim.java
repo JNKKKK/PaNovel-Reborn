@@ -14,7 +14,6 @@ import java.util.Iterator;
 import cc.aoeiuv020.pager.IMargins;
 
 /**
- * Created by newbiechen on 17-7-23.
  * 原理:仿照ListView源码实现的上下滑动效果
  * Alter by: zeroAngus
  * <p>

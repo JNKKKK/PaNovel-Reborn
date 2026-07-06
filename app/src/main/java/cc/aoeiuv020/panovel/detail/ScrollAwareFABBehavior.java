@@ -12,7 +12,6 @@ import androidx.core.view.ViewCompat;
 
 /**
  * fab消失显示的行为，
- * Created by AoEiuV020 on 2017.09.24-21:29:42.
  */
 @SuppressWarnings("ALL")
 public class ScrollAwareFABBehavior extends CoordinatorLayout.Behavior<FloatingActionButton> {

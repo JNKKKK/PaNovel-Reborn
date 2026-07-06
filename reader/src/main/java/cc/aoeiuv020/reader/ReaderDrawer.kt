@@ -17,10 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- *
- * Created by AoEiuV020 on 2017.12.03-04:09:17.
- */
 @SuppressWarnings("SimpleDateFormat")
 class ReaderDrawer(private val reader: Reader, private val novel: String, private val requester: TextRequester)
     : BasePagerDrawer() {

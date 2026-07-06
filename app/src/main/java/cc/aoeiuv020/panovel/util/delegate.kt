@@ -11,8 +11,6 @@ import kotlin.reflect.KProperty
 
 /**
  * SharedPreferences相关Delegate的封装，
- *
- * Created by AoEiuV020 on 2018.05.17-14:58:10.
  */
 
 /**

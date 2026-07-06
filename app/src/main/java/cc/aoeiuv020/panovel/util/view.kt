@@ -32,11 +32,6 @@ import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
 
-/**
- *
- * Created by AoEiuV020 on 2017.10.02-21:50:34.
- */
-
 fun Context.loading(dialog: ProgressDialogCompat, id: Int) =
     loading(dialog, getString(R.string.loading, getString(id)))
 

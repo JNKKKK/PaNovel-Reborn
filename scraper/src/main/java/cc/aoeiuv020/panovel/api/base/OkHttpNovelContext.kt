@@ -14,9 +14,6 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-/**
- * Created by AoEiuV020 on 2018.06.01-20:43:49.
- */
 abstract class OkHttpNovelContext : NovelContext() {
     companion object {
         val sharedClient: OkHttpClient = OkHttpClient()

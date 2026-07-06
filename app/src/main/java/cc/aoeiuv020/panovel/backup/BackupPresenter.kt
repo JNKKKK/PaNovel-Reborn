@@ -9,9 +9,6 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.File
 
-/**
- * Created by AoEiuV020 on 2018.05.11-12:39:10.
- */
 class BackupPresenter : Presenter<BackupActivity>() {
 
     private val context = PrefContext.appContext

@@ -12,9 +12,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.URLEncoder
 
-/**
- * Created by AoEiuV020 on 2018.05.10-18:08:08.
- */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 abstract class JsoupNovelContext : OkHttpNovelContext() {
     companion object {

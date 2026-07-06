@@ -1,9 +1,5 @@
 package cc.aoeiuv020.pager
 
-/**
- *
- * Created by AoEiuV020 on 2018.03.11-01:57:32.
- */
 interface IMargins {
     val left: Int
     val top: Int

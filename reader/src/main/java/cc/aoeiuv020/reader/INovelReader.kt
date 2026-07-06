@@ -5,10 +5,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 
-/**
- *
- * Created by AoEiuV020 on 2017.12.01-02:13:39.
- */
 interface INovelReader {
     val context: Context
 

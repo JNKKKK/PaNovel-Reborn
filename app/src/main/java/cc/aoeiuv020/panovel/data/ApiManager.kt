@@ -7,9 +7,6 @@ import cc.aoeiuv020.panovel.api.NovelItem
 import cc.aoeiuv020.panovel.data.entity.Novel
 import java.net.URL
 
-/**
- * Created by AoEiuV020 on 2018.05.23-15:55:11.
- */
 class ApiManager(context: Context) {
     init {
         NovelContext.cache(context.cacheDir.resolve("api"))

@@ -5,9 +5,6 @@ package cc.aoeiuv020.panovel.settings
 import cc.aoeiuv020.panovel.util.Delegates
 import cc.aoeiuv020.panovel.util.Pref
 
-/**
- * Created by AoEiuV020 on 2018.11.11-11:52:46.
- */
 object DownloadSettings : Pref {
     override val name: String
         get() = "Download"

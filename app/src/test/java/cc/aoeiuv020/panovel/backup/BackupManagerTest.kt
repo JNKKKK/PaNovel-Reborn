@@ -12,9 +12,6 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runners.MethodSorters
 
 
-/**
- * Created by AoEiuV020 on 2018.05.11-18:09:14.
- */
 @FixMethodOrder(value = MethodSorters.NAME_ASCENDING)
 class BackupManagerTest {
     @Rule

@@ -4,9 +4,6 @@ import androidx.room.*
 import cc.aoeiuv020.panovel.data.entity.Novel
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.05.22-11:51:43.
- */
 @Dao
 abstract class NovelDao {
     // 置顶优先，其余按阅读时间和更新时间综合排序，

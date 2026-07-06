@@ -13,9 +13,6 @@ import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 import cc.aoeiuv020.panovel.util.tip
 
-/**
- * Created by AoEiuV020 on 2018.05.13-16:50:53.
- */
 class SiteListAdapter(
         siteList: List<Site>,
         private val itemListener: ItemListener

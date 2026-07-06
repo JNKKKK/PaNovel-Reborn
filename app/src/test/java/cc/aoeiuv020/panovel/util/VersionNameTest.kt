@@ -3,9 +3,6 @@ package cc.aoeiuv020.panovel.util
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Created by AoEiuV020 on 2018.05.17-15:56:59.
- */
 class VersionNameTest {
 
     @Test

@@ -16,10 +16,6 @@ import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 import java.util.concurrent.TimeUnit
 
-/**
- *
- * Created by AoEiuV020 on 2017.10.22-17:26:00.
- */
 class NovelContentsAdapter(
         val context: Context,
         val novel: Novel,

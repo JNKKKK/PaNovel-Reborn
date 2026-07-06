@@ -8,9 +8,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.nio.charset.Charset
 
-/**
- * Created by AoEiuV020 on 2018.06.19-22:57:24.
- */
 class EpubExporterTest : ParserTest(EpubParser::class) {
     /**
      * 用打包进测试资源的epub跑一遍"解析→导出→再解析"的往返，不依赖作者本地文件，

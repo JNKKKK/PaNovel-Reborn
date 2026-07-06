@@ -10,8 +10,6 @@ import java.util.*
 
 /**
  * 解析纯文本小说，得到每一章节对应的位置，
- *
- * Created by AoEiuV020 on 2018.06.13-16:50:06.
  */
 class TextParser(
         file: File,

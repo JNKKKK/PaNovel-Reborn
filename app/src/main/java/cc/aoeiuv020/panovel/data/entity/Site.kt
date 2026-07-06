@@ -5,9 +5,6 @@ import androidx.room.PrimaryKey
 import java.util.*
 
 /**
- * Created by AoEiuV020 on 2018.05.24-14:16:53.
- */
-/**
  * 小说网站信息，
  */
 @Entity

@@ -4,9 +4,6 @@ import cc.aoeiuv020.shared.util.toURL
 import java.io.InputStream
 import java.net.URL
 
-/**
- * Created by AoEiuV020 on 2018.06.19-20:54:49.
- */
 interface ContentProvider {
     fun getNovelContent(chapter: LocalNovelChapter): List<String>
 

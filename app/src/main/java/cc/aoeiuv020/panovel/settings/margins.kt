@@ -4,10 +4,6 @@ import cc.aoeiuv020.panovel.util.Delegates
 import cc.aoeiuv020.panovel.util.SubPref
 import cc.aoeiuv020.reader.ItemMargins
 
-/**
- * Created by AoEiuV020 on 2018.05.26-20:36:04.
- */
-
 class Margins(subName: String,
               private val defaultEnabled: Boolean,
               private val defaultLeft: Int,

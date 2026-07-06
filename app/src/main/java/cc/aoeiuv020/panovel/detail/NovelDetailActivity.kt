@@ -25,10 +25,6 @@ import com.google.android.material.tabs.TabLayoutMediator
 import android.content.Intent
 import timber.log.Timber
 
-/**
- *
- * Created by AoEiuV020 on 2017.10.03-18:10:37.
- */
 class NovelDetailActivity : AppCompatActivity(), MvpView {
     companion object {
         fun start(context: Context, novel: Novel) {

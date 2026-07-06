@@ -8,8 +8,6 @@ import java.util.*
 
 /**
  * 封装一个数据库多个表多个DAO的联用，
- *
- * Created by AoEiuV020 on 2018.04.27-11:52:55.
  */
 class AppDatabaseManager(context: Context) {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)

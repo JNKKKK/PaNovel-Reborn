@@ -12,9 +12,6 @@ import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.setSize
 import cc.aoeiuv020.panovel.util.show
 
-/**
- * Created by AoEiuV020 on 2018.05.23-11:48:08.
- */
 class RefreshingDotView : FrameLayout {
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)

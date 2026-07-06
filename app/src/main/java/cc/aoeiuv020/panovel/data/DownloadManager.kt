@@ -17,9 +17,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import timber.log.Timber
 
-/**
- * Created by AoEiuV020 on 2018.10.06-19:05:33.
- */
 class DownloadManager(
         private val context: Context
 )  {

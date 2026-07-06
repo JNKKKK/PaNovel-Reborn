@@ -10,7 +10,6 @@ import java.util.*
  * 数据类基类，
  * 相关的数据类定义在这文件里，
  * 不纯粹是数据，
- * Created by AoEiuV020 on 2017.10.02-15:27:52.
  */
 abstract class Data
 

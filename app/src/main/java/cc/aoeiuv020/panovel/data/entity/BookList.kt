@@ -7,10 +7,6 @@ import cc.aoeiuv020.panovel.util.notNullOrReport
 import java.util.*
 
 /**
- * Created by AoEiuV020 on 2018.05.24-17:15:36.
- */
-
-/**
  * 书单，
  */
 @Entity(indices = [

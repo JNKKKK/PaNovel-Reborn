@@ -7,9 +7,6 @@ import java.io.File
 import java.io.InputStream
 import kotlin.reflect.KClass
 
-/**
- * Created by AoEiuV020 on 2018.06.16-16:28:11.
- */
 abstract class ParserTest(clazz: KClass<out LocalNovelParser>) {
     init {
         System.setProperty("org.slf4j.simpleLogger.log.${clazz.java.simpleName}", "trace")

@@ -17,10 +17,6 @@ import android.view.View;
 import cc.aoeiuv020.pager.IMargins;
 import timber.log.Timber;
 
-/**
- * Created by newbiechen on 17-7-24.
- */
-
 @SuppressWarnings("All")
 public class SimulationPageAnim extends HorizonPageAnim {
     private static final String TAG = "SimulationPageAnim";

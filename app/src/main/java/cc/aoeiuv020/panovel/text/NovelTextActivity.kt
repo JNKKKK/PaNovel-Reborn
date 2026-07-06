@@ -40,10 +40,6 @@ import kotlinx.coroutines.*
 import androidx.lifecycle.lifecycleScope
 
 
-/**
- *
- * Created by AoEiuV020 on 2017.10.03-19:06:44.
- */
 class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     companion object {
         fun start(context: Context, novel: Novel) {

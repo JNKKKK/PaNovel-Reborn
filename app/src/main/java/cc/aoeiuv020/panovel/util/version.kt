@@ -2,8 +2,6 @@ package cc.aoeiuv020.panovel.util
 
 /**
  * app版本名相关的封装，
- *
- * Created by AoEiuV020 on 2018.05.17-15:53:29.
  */
 
 class VersionName(

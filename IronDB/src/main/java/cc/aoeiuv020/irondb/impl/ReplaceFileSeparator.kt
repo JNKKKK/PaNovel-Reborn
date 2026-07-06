@@ -5,8 +5,6 @@ import cc.aoeiuv020.shared.regex.compileRegex
 
 /**
  * 简单替换路径分隔符，因此若是名字仅这一处不同，将产生冲突，
- *
- * Created by AoEiuV020 on 2018.05.27-16:03:39.
  */
 class ReplaceFileSeparator(
         private val replaceWith: String = "."

@@ -9,9 +9,6 @@ import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.05.23-22:08:14.
- */
 class CacheManager(context: Context) {
     private val contentDBMap = WeakHashMap<Long, Database>()
     // 所有缓存固定保存在应用私有目录 /data/data/cc.aoeiuv020.panovel/cache/novel

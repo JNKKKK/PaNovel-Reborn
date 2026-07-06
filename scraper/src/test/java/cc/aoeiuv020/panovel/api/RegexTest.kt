@@ -3,9 +3,6 @@ package cc.aoeiuv020.panovel.api
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * Created by AoEiuV020 on 2018.06.03-12:29:01.
- */
 class RegexTest {
     @Test
     fun group() {

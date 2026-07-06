@@ -12,8 +12,6 @@ import java.util.*
  * 一本小说由“网站名-作者名-小说名”共同唯一确定，
  * 通过网站名找到网站上下文类，
  * 要有extra额外的信息才能请求到小说详情页，
- *
- * Created by AoEiuV020 on 2018.05.22-09:14:02.
  */
 @Entity(
         indices = [

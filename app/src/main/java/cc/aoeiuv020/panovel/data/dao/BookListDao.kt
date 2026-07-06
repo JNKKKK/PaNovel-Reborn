@@ -6,9 +6,6 @@ import cc.aoeiuv020.panovel.data.entity.BookListItem
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.data.entity.NovelMinimal
 
-/**
- * Created by AoEiuV020 on 2018.05.24-16:27:43.
- */
 @Dao
 abstract class BookListDao {
 

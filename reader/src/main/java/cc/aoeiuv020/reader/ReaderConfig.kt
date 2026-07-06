@@ -5,10 +5,6 @@ import android.net.Uri
 import cc.aoeiuv020.reader.ReaderConfigName.*
 import kotlin.reflect.KProperty
 
-/**
- *
- * Created by AoEiuV020 on 2017.12.01-22:24:49.
- */
 class ReaderConfig(
         textSize: Int,
         lineSpacing: Int,

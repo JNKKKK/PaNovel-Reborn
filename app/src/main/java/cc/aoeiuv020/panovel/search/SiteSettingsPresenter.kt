@@ -14,9 +14,6 @@ import java.nio.charset.Charset
 import timber.log.Timber
 import kotlinx.coroutines.*
 
-/**
- * Created by AoEiuV020 on 2019.05.01-19:56:11.
- */
 class SiteSettingsPresenter(
         private val site: String
 ) : Presenter<SiteSettingsActivity>() {

@@ -7,10 +7,6 @@ import cc.aoeiuv020.panovel.report.Reporter
 import kotlinx.coroutines.*
 import timber.log.Timber
 
-/**
- *
- * Created by AoEiuV020 on 2017.11.22-15:47:37.
- */
 class BookListDetailPresenter(private val bookListId: Long) : Presenter<BookListActivity>() {
 
     fun start() {

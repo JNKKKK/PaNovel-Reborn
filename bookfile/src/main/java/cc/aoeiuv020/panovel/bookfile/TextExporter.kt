@@ -5,9 +5,6 @@ import java.io.OutputStream
 import java.net.URL
 import java.nio.charset.Charset
 
-/**
- * Created by AoEiuV020 on 2018.06.19-22:17:27.
- */
 class TextExporter(
         private val out: OutputStream,
         private val charset: Charset

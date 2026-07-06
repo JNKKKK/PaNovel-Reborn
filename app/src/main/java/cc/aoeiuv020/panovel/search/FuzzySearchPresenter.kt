@@ -6,10 +6,6 @@ import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.shared.util.ChineseNormalizer
 import timber.log.Timber
 import kotlinx.coroutines.*
-/**
- *
- * Created by AoEiuV020 on 2017.10.22-18:18:58.
- */
 class FuzzySearchPresenter : Presenter<FuzzySearchActivity>() {
     var name: String? = null
     private var author: String? = null

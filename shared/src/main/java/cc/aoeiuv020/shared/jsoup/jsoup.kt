@@ -21,10 +21,6 @@ import org.jsoup.select.NodeVisitor
 import java.net.URL
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.06.10-15:56:52.
- */
-
 private val jsoupClient: OkHttpClient = OkHttpClient()
 
 private fun Response.charset(): String? = body?.contentType()?.charset()?.name()

@@ -5,8 +5,6 @@ import java.net.URL
 
 /**
  * 负责提供小说相关数据，
- *
- * Created by AoEiuV020 on 2018.06.13-12:58:30.
  */
 interface NovelProvider {
     fun getContentUrl(chapter: NovelChapter): String

@@ -8,9 +8,6 @@ import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
 import timber.log.Timber
 import kotlinx.coroutines.*
-/**
- * Created by AoEiuV020 on 2018.05.13-21:59:40.
- */
 class SingleSearchPresenter(
         private val site: String
 ) : Presenter<SingleSearchActivity>() {

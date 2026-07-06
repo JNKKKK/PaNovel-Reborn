@@ -4,9 +4,6 @@ import androidx.room.*
 import cc.aoeiuv020.panovel.data.entity.Site
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.05.24-14:20:59.
- */
 @Dao
 abstract class SiteDao {
     @Query("select * from Site where hide = 0 order by pinnedTime desc, createTime desc, name asc")

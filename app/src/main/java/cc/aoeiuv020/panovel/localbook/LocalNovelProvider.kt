@@ -13,9 +13,6 @@ import java.io.File
 import java.net.URL
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.06.13-15:38:49.
- */
 class LocalNovelProvider(
         private val novel: Novel
 ) : NovelProvider {

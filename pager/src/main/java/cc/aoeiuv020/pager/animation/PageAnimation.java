@@ -12,7 +12,6 @@ import cc.aoeiuv020.pager.IMargins;
 import cc.aoeiuv020.pager.PagerAnimation;
 
 /**
- * Created by newbiechen on 17-7-24.
  * 翻页动画抽象类
  */
 

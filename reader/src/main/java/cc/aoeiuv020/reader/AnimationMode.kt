@@ -4,7 +4,6 @@ import cc.aoeiuv020.pager.AnimMode
 
 /**
  * 所有翻页动画，对应Pager的AnimMode,
- * Created by AoEiuV020 on 2017.12.09-01:01:49.
  */
 enum class AnimationMode {
     SIMULATION,

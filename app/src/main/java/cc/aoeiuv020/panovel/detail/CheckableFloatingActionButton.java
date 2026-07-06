@@ -16,7 +16,6 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 
 /**
  * @see CheckableImageButton
- * Created by AoEiuV020 on 2017.10.04-19:52:31.
  */
 
 @SuppressWarnings("ALL")

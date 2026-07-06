@@ -6,8 +6,6 @@ import java.io.File
 /**
  * 只用于判断元素是否存在集合中，
  * 不可用于读出元素，
- *
- * Created by AoEiuV020 on 2018.05.27-15:14:05.
  */
 class KeysContainer(
         base: File,

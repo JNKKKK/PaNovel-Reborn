@@ -20,9 +20,6 @@ import timber.log.Timber
 import kotlinx.coroutines.*
 import androidx.appcompat.app.AlertDialog
 
-/**
- * Created by AoEiuV020 on 2018.05.23-12:49:51.
- */
 class DefaultNovelItemActionListener(
         private val actionDoneListener: (ItemAction, NovelViewHolder) -> Unit = { _, _ -> },
         // 历史列表不参与置顶，隐藏置顶/取消置顶操作，

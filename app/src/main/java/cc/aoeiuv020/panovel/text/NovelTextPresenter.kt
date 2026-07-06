@@ -10,10 +10,6 @@ import cc.aoeiuv020.panovel.report.Reporter
 import timber.log.Timber
 import kotlinx.coroutines.*
 
-/**
- *
- * Created by AoEiuV020 on 2017.10.03-19:06:50.
- */
 class NovelTextPresenter(
         id: Long
 ) : Presenter<NovelTextActivity>() {

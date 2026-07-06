@@ -13,10 +13,6 @@ import javax.net.ssl.HttpsURLConnection
 import kotlin.properties.Delegates
 
 
-/**
- *
- * Created by AoEiuV020 on 2017.10.03-17:04:22.
- */
 @Suppress("MemberVisibilityCanPrivate")
 class App : MultiDexApplication() {
     companion object {

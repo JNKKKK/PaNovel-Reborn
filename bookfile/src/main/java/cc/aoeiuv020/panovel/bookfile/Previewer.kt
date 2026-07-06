@@ -7,8 +7,6 @@ import java.nio.charset.Charset
 /**
  * 预览，导入前判断文件信息，
  * 是.txt还是.epub,
- *
- * Created by AoEiuV020 on 2018.06.13-16:08:19.
  */
 class Previewer(
         val file: File,

@@ -23,8 +23,6 @@ import java.nio.charset.UnsupportedCharsetException
 
 /**
  * 统一管理本地文件，
- *
- * Created by AoEiuV020 on 2018.06.12-20:16:51.
  */
 class LocalManager(
         private val context: Context

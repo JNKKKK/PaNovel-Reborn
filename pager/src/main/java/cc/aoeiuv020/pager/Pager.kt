@@ -16,8 +16,6 @@ import timber.log.Timber
  * 自定义翻页动画视图，
  *
  * 分成背景和前景两个部分，
- *
- * Created by AoEiuV020 on 2017.12.02-17:58:54.
  */
 class Pager : View, PageAnimation.OnPageChangeListener {
     constructor(context: Context)

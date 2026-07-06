@@ -15,10 +15,6 @@ import cc.aoeiuv020.panovel.main.MainActivity
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
-/**
- * Created by AoEiuV020 on 2018.10.06-19:33:43.
- */
-
 object NotificationChannelId {
     const val default = BuildConfig.APPLICATION_ID + ".default"
     const val update = BuildConfig.APPLICATION_ID + ".update"

@@ -5,10 +5,6 @@ import android.view.ViewGroup
 import cc.aoeiuv020.pager.Pager
 import kotlinx.coroutines.*
 
-/**
- *
- * Created by AoEiuV020 on 2017.12.01-20:31:49.
- */
 class Reader(override var context: Context, novel: String, private val parent: ViewGroup, requester: TextRequester, override var config: ReaderConfig)
     : BaseNovelReader(novel, requester) {
     private val pageView: Pager = Pager(context)

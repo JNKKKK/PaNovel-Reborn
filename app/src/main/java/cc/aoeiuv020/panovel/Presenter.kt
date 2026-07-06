@@ -5,7 +5,6 @@ import timber.log.Timber
 
 /**
  * mvp的presenter,
- * Created by AoEiuV020 on 2017.10.11-15:32:17.
  */
 abstract class Presenter<T : MvpView> {
     protected var scope = CoroutineScope(Dispatchers.Main + SupervisorJob())

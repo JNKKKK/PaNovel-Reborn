@@ -12,10 +12,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.accessibility.AccessibilityEventCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 
-/**
- * Created by AoEiuV020 on 2017.11.20-22:51:47.
- */
-
 @SuppressWarnings("ALL")
 public class CheckableImageView extends AppCompatImageView implements Checkable {
 

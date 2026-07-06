@@ -15,9 +15,6 @@ import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
 
-/**
- * Created by AoEiuV020 on 2018.06.16-17:10:44.
- */
 class EpubParser(
         // epub文件一定是zip压缩包，
         file: File,

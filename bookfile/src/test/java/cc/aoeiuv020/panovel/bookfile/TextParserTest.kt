@@ -4,9 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.nio.charset.Charset
 
-/**
- * Created by AoEiuV020 on 2018.06.13-18:02:42.
- */
 class TextParserTest : ParserTest(TextParser::class) {
 
     /**

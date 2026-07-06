@@ -20,10 +20,6 @@ import androidx.appcompat.app.AlertDialog as AndroidXAlertDialog
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
 
-/**
- *
- * Created by AoEiuV020 on 2017.11.22-14:49:22.
- */
 class BookListActivity : AppCompatActivity(), MvpView {
     companion object {
         private const val EXTRA_BOOK_LIST_ID = "bookListId"

@@ -8,9 +8,6 @@ import cc.aoeiuv020.panovel.util.Pref
 import cc.aoeiuv020.reader.AnimationMode
 import cc.aoeiuv020.reader.ReaderConfig
 
-/**
- * Created by AoEiuV020 on 2018.05.26-17:10:57.
- */
 object ReaderSettings : Pref {
     override val name: String
         get() = "Reader"

@@ -14,8 +14,6 @@ import java.io.OutputStream
 
 /**
  * TODO: 其他阅读器无法识别，
- *
- * Created by AoEiuV020 on 2018.06.19-22:53:24.
  */
 class EpubExporter(
         private val out: OutputStream

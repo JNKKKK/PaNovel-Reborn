@@ -17,9 +17,6 @@ import java.io.InputStream
 import java.net.URL
 
 
-/**
- * Created by AoEiuV020 on 2018.06.18-17:20:10.
- */
 @Suppress("DEPRECATION")
 @Deprecated("glide说这种用法过时了，")
 class JarGlideModule : com.bumptech.glide.module.GlideModule {

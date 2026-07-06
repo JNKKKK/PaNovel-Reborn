@@ -4,9 +4,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 
-/**
- * Created by AoEiuV020 on 2018.05.24-16:18:20.
- */
 @Entity(
         // 主键可以当成bookListId的索引，
         primaryKeys = ["bookListId", "novelId"],

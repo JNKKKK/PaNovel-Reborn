@@ -2,14 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <Preference
-        android:key="cache"
-        android:title="@string/cache" />
-
-    <Preference
-        android:key="cookie"
-        android:title="@string/cookie" />
-
-    <Preference
         android:key="bookshelf"
         android:title="@string/bookshelf" />
 
@@ -20,4 +12,12 @@
     <Preference
         android:key="history"
         android:title="@string/history" />
+
+    <Preference
+        android:key="cache"
+        android:title="@string/novel_cache" />
+
+    <Preference
+        android:key="cookie"
+        android:title="@string/cookie" />
 </PreferenceScreen>

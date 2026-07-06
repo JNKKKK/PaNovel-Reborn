@@ -55,7 +55,7 @@
     <string name="contents">目录</string>
     <string name="search">搜索</string>
     <string name="title_activity_fuzzy_search">@string/fuzzy_search</string>
-    <string name="refine_search">精确搜索</string>
+    <string name="refine_search">搜索其他源</string>
     <string name="fuzzy_search">模糊搜索</string>
     <string name="action">操作</string>
     <string name="read_continue">继续阅读</string>
@@ -167,7 +167,7 @@
     <string name="main_open_hint">输入小说详情页地址或分享的书单地址，</string>
     <string name="local_novel_importing">正在导入本地小说…</string>
     <string name="clean_cache">清除缓存</string>
-    <string name="clean_this_novel">清除小说</string>
+    <string name="clean_this_novel">删除</string>
     <string name="file_type">文件类型</string>
     <string name="file_charset">文件编码</string>
     <string name="author">作者名</string>

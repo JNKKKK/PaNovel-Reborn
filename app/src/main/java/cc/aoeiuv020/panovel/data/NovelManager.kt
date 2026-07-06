@@ -27,6 +27,9 @@ class NovelManager(
         private val dnmLocal: ThreadLocal<DownloadingNotificationManager>
 ) {
 
+    // 不在内存中改pinnedTime：列表刷新会从数据库重新查出新对象，
+    // 若同时改了内存中的旧对象，DiffUtil比较新旧pinnedTime会相等，
+    // 导致只移动不重新绑定，置顶背景时有时无，
     fun pinned() = app.pinned(novel)
 
     fun cancelPinned() = app.cancelPinned(novel)

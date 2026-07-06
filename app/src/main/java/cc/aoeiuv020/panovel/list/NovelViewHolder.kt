@@ -26,6 +26,8 @@ class NovelViewHolder(itemView: View,
                       private val shouldRefreshSet: MutableSet<Long>,
                       initItem: (NovelViewHolder) -> Unit = {},
                       actionDoneListener: (ItemAction, NovelViewHolder) -> Unit = { _, _ -> },
+                      // 是否参与置顶：控制置顶/取消置顶菜单项和置顶高亮背景，历史列表不参与，
+                      private val supportPin: Boolean = true,
                       onError: (String, Throwable) -> Unit
 ) : NovelListAdapter.BaseViewHolder(itemView) {
     companion object {
@@ -35,7 +37,7 @@ class NovelViewHolder(itemView: View,
         private const val DOT_SIZE = 16f
     }
 
-    private val itemListener = DefaultNovelItemActionListener(actionDoneListener, onError)
+    private val itemListener = DefaultNovelItemActionListener(actionDoneListener, supportPin, onError)
 
     // 所有View可空，准备支持不同布局，小的布局可能大部分View都没有，
     val name: TextView? = itemView.findViewById(R.id.tvName)
@@ -120,7 +122,8 @@ class NovelViewHolder(itemView: View,
 
     private fun show(novelManager: NovelManager) {
         this.novelManager = novelManager
-        if (novel.pinnedTime.time > TimeUnit.DAYS.toMillis(1)) {
+        // 历史列表不参与置顶，也不显示置顶高亮背景，
+        if (supportPin && novel.pinnedTime.time > TimeUnit.DAYS.toMillis(1)) {
             itemView.setBackgroundColor(PINNED_BACKGROUND_COLOR)
         } else {
             itemView.background = null

@@ -9,6 +9,7 @@ import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.main.MainActivity
+import cc.aoeiuv020.panovel.settings.ItemAction.CancelPinned
 import cc.aoeiuv020.panovel.settings.ItemAction.Pinned
 import cc.aoeiuv020.panovel.settings.ItemAction.RemoveBookshelf
 import cc.aoeiuv020.panovel.util.hide
@@ -32,7 +33,8 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
         }, actionDoneListener = { action, vh ->
             when (action) {
                 RemoveBookshelf -> novelListAdapter.remove(vh.layoutPosition)
-                Pinned -> novelListAdapter.move(vh.layoutPosition, 0)
+                // 置顶/取消置顶后重新按pinnedTime排序，直接重查书架列表交给DiffUtil重排重绑，
+                Pinned, CancelPinned -> refresh()
                 else -> {
                 }
             }

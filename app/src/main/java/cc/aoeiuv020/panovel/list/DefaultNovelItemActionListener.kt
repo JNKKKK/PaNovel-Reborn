@@ -15,6 +15,7 @@ import cc.aoeiuv020.panovel.text.NovelTextActivity
 import cc.aoeiuv020.panovel.util.uiInput
 import cc.aoeiuv020.panovel.util.uiSelect
 import java.nio.charset.UnsupportedCharsetException
+import java.util.concurrent.TimeUnit
 import timber.log.Timber
 import kotlinx.coroutines.*
 import androidx.appcompat.app.AlertDialog
@@ -24,6 +25,8 @@ import androidx.appcompat.app.AlertDialog
  */
 class DefaultNovelItemActionListener(
         private val actionDoneListener: (ItemAction, NovelViewHolder) -> Unit = { _, _ -> },
+        // 历史列表不参与置顶，隐藏置顶/取消置顶操作，
+        private val supportPin: Boolean = true,
         private val onError: (String, Throwable) -> Unit
 ) : NovelItemActionListener {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -45,24 +48,26 @@ class DefaultNovelItemActionListener(
             CleanCache -> cleanCache(vh)
             CleanData -> cleanData(vh)
             MoreAction -> {
-                val list = listOf(
-                        R.string.read_continue to ReadContinue,
-                        R.string.read_last_chapter to ReadLastChapter,
+                val list = listOfNotNull(
                         R.string.refresh to Refresh,
-                        R.string.open_detail to OpenDetail,
 
                         R.string.refine_search to RefineSearch,
                         R.string.export to Export,
+                        R.string.cache to Cache,
+                        // 置顶/取消置顶互斥，只显示当前状态对应的操作，历史列表不显示，
+                        if (!supportPin) {
+                            null
+                        } else if (vh.novel.pinnedTime.time > TimeUnit.DAYS.toMillis(1)) {
+                            R.string.cancel_pinned to CancelPinned
+                        } else {
+                            R.string.pinned to Pinned
+                        },
+
                         if (vh.novel.bookshelf) {
                             R.string.remove_bookshelf to RemoveBookshelf
                         } else {
                             R.string.add_bookshelf to AddBookshelf
                         },
-                        R.string.cache to Cache,
-                        R.string.pinned to Pinned,
-                        R.string.cancel_pinned to CancelPinned,
-
-                        R.string.clean_cache to CleanCache,
                         R.string.clean_this_novel to CleanData
                 )
                 val items = list.unzip().first.map { vh.context.getString(it) }.toTypedArray()
@@ -77,7 +82,10 @@ class DefaultNovelItemActionListener(
             // 返回false不消费长按事件，
             None -> return false
         }
-        actionDoneListener(action, vh)
+        // 置顶/取消置顶是异步持久化，等写库完成后自行回调，避免列表在写库前就按旧数据刷新，
+        if (action != Pinned && action != CancelPinned) {
+            actionDoneListener(action, vh)
+        }
         return true
     }
 
@@ -163,6 +171,8 @@ class DefaultNovelItemActionListener(
                 withContext(Dispatchers.IO) {
                     vh.novelManager.pinned()
                 }
+                // 写库完成后再刷新列表，此时内存中的pinnedTime已更新，
+                actionDoneListener(Pinned, vh)
             } catch (e: Exception) {
                 val message = "置顶小说《${vh.novel.name}》失败，"
                 Reporter.post(message, e)
@@ -178,6 +188,7 @@ class DefaultNovelItemActionListener(
                 withContext(Dispatchers.IO) {
                     vh.novelManager.cancelPinned()
                 }
+                actionDoneListener(CancelPinned, vh)
             } catch (e: Exception) {
                 val message = "取消置顶小说《${vh.novel.name}》失败，"
                 Reporter.post(message, e)

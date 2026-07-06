@@ -17,6 +17,10 @@ open class NovelListAdapter(
          */
         private val initItem: (NovelViewHolder) -> Unit = {},
         actionDoneListener: (ItemAction, NovelViewHolder) -> Unit = { _, _ -> },
+        /**
+         * 是否参与置顶：控制置顶/取消置顶菜单项和置顶高亮背景，历史列表不需要置顶，
+         */
+        private val supportPin: Boolean = true,
         private val onError: (String, Throwable) -> Unit
 ) : androidx.recyclerview.widget.RecyclerView.Adapter<NovelListAdapter.BaseViewHolder>() {
     init {
@@ -48,6 +52,8 @@ open class NovelListAdapter(
                     val old = oldList[oldPos].novel
                     val new = newList[newPos].novel
                     return old.name == new.name && old.readAtChapterName == new.readAtChapterName
+                            // 置顶状态变化要重新绑定，否则置顶灰色背景不刷新，
+                            && old.pinnedTime == new.pinnedTime
                 }
             })
             _data = newList
@@ -78,7 +84,7 @@ open class NovelListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.novel_item_big, parent, false)
         return NovelViewHolder(itemView, refreshingNovelSet, shouldRefreshSet
-                , initItem, actualActionDoneListener, onError)
+                , initItem, actualActionDoneListener, supportPin, onError)
     }
 
     override fun getItemCount(): Int = data.size

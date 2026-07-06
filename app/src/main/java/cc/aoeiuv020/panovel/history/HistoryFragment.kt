@@ -21,7 +21,7 @@ class HistoryFragment : androidx.fragment.app.Fragment(), MvpView {
     private val binding get() = _binding!!
 
     private val novelListAdapter by lazy {
-        NovelListAdapter(onError = ::showError)
+        NovelListAdapter(supportPin = false, onError = ::showError)
     }
     private val presenter: HistoryPresenter = HistoryPresenter()
 

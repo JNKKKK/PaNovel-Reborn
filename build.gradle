@@ -3,7 +3,7 @@
 buildscript {
     ext {
         applicationModules = ['app']
-        javaModules = ["scraper", "bookfile", "shared", "IronDB", "rhino"]
+        javaModules = ["scraper", "bookfile", "shared", "IronDB"]
         androidModules = ["pager", "reader"]
         def versionFile = rootProject.file('version.properties')
         if (versionFile.exists()) {

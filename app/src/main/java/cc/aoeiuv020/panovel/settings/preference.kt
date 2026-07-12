@@ -45,26 +45,6 @@ class IntEditTextPreference @JvmOverloads constructor(
     }
 }
 
-class FloatEditTextPreference @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null
-) : EditTextPreference(context, attrs) {
-
-    override fun persistString(value: String?): Boolean {
-        val floatVal = try {
-            value?.toFloat() ?: return false
-        } catch (e: NumberFormatException) {
-            return false
-        }
-        return persistFloat(floatVal)
-    }
-
-    override fun getPersistedString(defaultReturnValue: String?): String {
-        val defaultFloat = defaultReturnValue?.takeIf(String::isNotEmpty)?.toFloatOrNull() ?: 0f
-        return getPersistedFloat(defaultFloat).toString()
-    }
-}
-
 /**
  * 滑块设置项，界面上按 0-100 的百分比操作，
  * 但底层仍按 0.0-1.0 的 Float 持久化，和 ReaderSettings.centerPercent 保持兼容，

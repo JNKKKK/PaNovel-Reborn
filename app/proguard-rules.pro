@@ -88,9 +88,6 @@
 -dontoptimize
 -dontpreverify
 
-# rhino, https://github.com/mozilla/rhino/issues/388
--keep class org.mozilla.** { *; }
-
 
 #未混淆的类和成员
 -printseeds build/seeds.txt

@@ -31,9 +31,8 @@ Kotlin 1.9 · Gradle 8.7 · AGP 8.3 · Room · Coroutines · kotlinx-serializati
 | 模块 | 用途 |
 |------|------|
 | app | 主应用（Activity、Presenter、Fragment） |
-| scraper | 小说网站爬虫（JSoup + Rhino） |
+| scraper | 小说网站爬虫（JSoup） |
 | core | 共享工具库（JSON、正则、SSL） |
-| rhino | JavaScript 引擎封装 |
 | local | 本地文件支持（TXT、EPUB） |
 | reader | 阅读器 UI |
 | pager | 翻页库 |

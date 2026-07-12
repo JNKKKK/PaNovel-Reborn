@@ -58,10 +58,9 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 | Module | Type | Purpose |
 |--------|------|---------|
 | app | Android | Main application (activities, presenters, fragments) |
-| scraper | Java | Novel website scrapers (JSoup + Rhino JS parsing) |
+| scraper | Java | Novel website scrapers (JSoup parsing) |
 | shared | Java | Shared utilities (`shared.jsoup` DOM helpers, `shared.json`, `shared.regex`, `shared.ssl`, `shared.util`) |
 | IronDB | Java | File-based NoSQL key-value store (kotlinx-serialization) |
-| rhino | Java | Rhino JavaScript engine wrapper |
 | bookfile | Java | Book file formats: TXT/EPUB parsing and export (epub4j-core) |
 | pager | Android | Pagination library |
 | reader | Android | Novel reader UI |
@@ -97,7 +96,7 @@ Sites use different content formats — **always check the raw HTML** of a chapt
 - `<p>` tags inside a container → use `items("#container > p")`
 - `<br/>` separated text → split on `<br/>`, strip HTML tags, filter empty
 - Multiple formats on same site → check for `<p>` first, fall back to `<br/>` splitting
-- JS-decoded content (Base64, encryption) → use Rhino module
+- JS-decoded content (Base64, encryption) → decode with regex/`pick`; no active scraper needs a JS engine (the Rhino module was removed)
 - Multi-page chapters (e.g., "第(1/3)页") → detect page indicator, fetch subsequent pages
 
 ### Scraper code conventions
@@ -155,7 +154,6 @@ If the site uses multiple content formats, add a separate test for each format.
 
 - Novel site scrapers extend `DslJsoupNovelContext` in `scraper/src/main/java/cc/aoeiuv020/panovel/api/site/`
 - Add new scrapers by copying an existing scraper with similar site structure as a starting point
-- The `rhino` module wraps Mozilla Rhino for scrapers that need to evaluate JS (e.g., sites with JS-based content decryption); use regex/`pick` first, Rhino when that's insufficient
 - Dependency versions are centralized in `version.properties`
 - App package structure is feature-based: `cc.aoeiuv020.panovel.{bookshelf,download,search,settings,...}`
 - Room database schemas are exported to `app/schemas/` for migration validation

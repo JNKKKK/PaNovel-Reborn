@@ -8,7 +8,6 @@ pluginManagement {
 
 rootProject.name = 'PaNovel'
 include ':app'
-include ':rhino'
 include ':scraper'
 include ':pager'
 include ':shared'

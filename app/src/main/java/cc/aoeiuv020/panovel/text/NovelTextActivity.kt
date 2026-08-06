@@ -278,10 +278,6 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         }
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-    }
-
     override fun show() {
         super.show()
         navigation?.reset(reader.maxTextProgress, reader.textProgress)

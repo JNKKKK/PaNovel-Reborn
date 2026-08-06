@@ -65,11 +65,9 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
     }
 
     /**
-     * 未知原因导致默认utf-8编码以外的编码的解码速度非常慢，不要用，
-     *
-     * @deprecated
+     * 按指定编码读一行。注意：默认utf-8以外的编码解码速度较慢，
+     * 但这是按编码读取的唯一途径，readLines依赖它，
      */
-    @Deprecated
     public String readLine(String charset) throws IOException {
         ByteArrayOutputStream o = new ByteArrayOutputStream();
         int c = -1;

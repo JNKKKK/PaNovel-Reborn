@@ -30,6 +30,7 @@ import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
 
 
 fun Context.loading(dialog: ProgressDialogCompat, id: Int) =
@@ -207,10 +208,10 @@ fun Context.uiSelect(
                     setTitle(this@uiSelect.getString(R.string.select_placeholder, name))
                     setSingleChoiceItems(items, default) { d, which ->
                         d.dismiss()
-                        if (cont.isActive) cont.resume(which, null)
+                        if (cont.isActive) cont.resume(which)
                     }
                     setOnCancelListener {
-                        if (cont.isActive) cont.resume(null, null)
+                        if (cont.isActive) cont.resume(null)
                     }
                 }.create().safelyShow()
                 cont.invokeOnCancellation {
@@ -243,10 +244,10 @@ fun Context.uiInput(
                     .setTitle(this@uiInput.getString(R.string.input_placeholder, name))
                     .setView(layout)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
-                        if (cont.isActive) cont.resume(etName.text.toString(), null)
+                        if (cont.isActive) cont.resume(etName.text.toString())
                     }
                     .setOnCancelListener {
-                        if (cont.isActive) cont.resume(null, null)
+                        if (cont.isActive) cont.resume(null)
                     }
                     .create().safelyShow()
                 cont.invokeOnCancellation {

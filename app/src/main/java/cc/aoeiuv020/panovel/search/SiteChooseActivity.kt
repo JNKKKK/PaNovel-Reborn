@@ -90,7 +90,7 @@ class SiteChooseActivity : AppCompatActivity(), MvpView {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 

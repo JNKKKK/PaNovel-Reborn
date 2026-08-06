@@ -88,7 +88,7 @@ class SiteSettingsActivity : AppCompatActivity(), MvpView {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> onBackPressed()
+            android.R.id.home -> onBackPressedDispatcher.onBackPressed()
             else -> return super.onOptionsItemSelected(item)
         }
         return true

@@ -190,7 +190,7 @@ class FuzzySearchActivity : AppCompatActivity(), MvpView {
                     showSearch()
                 }
             }
-            android.R.id.home -> onBackPressed()
+            android.R.id.home -> onBackPressedDispatcher.onBackPressed()
             else -> return super.onOptionsItemSelected(item)
         }
         return true

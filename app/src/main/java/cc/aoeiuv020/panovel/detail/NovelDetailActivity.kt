@@ -161,7 +161,7 @@ class NovelDetailActivity : AppCompatActivity(), MvpView {
             R.id.browse -> presenter.browse()
             R.id.refresh -> refresh()
             R.id.share -> share()
-            android.R.id.home -> onBackPressed()
+            android.R.id.home -> onBackPressedDispatcher.onBackPressed()
             else -> return super.onOptionsItemSelected(item)
         }
         return true

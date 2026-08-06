@@ -187,7 +187,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> onBackPressed()
+            android.R.id.home -> onBackPressedDispatcher.onBackPressed()
             R.id.add -> add()
             else -> return super.onOptionsItemSelected(item)
         }

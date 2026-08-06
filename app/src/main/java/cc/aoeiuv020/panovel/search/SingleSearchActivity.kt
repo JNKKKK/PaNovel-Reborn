@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.webkit.*
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
@@ -44,6 +45,15 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        // 返回时先让WebView回退历史，没有可回退的再关闭界面，
+        onBackPressedDispatcher.addCallback(this) {
+            if (binding.wvSite.canGoBack()) {
+                binding.wvSite.goBack()
+            } else {
+                finish()
+            }
+        }
+
         siteName = intent?.getStringExtra("site") ?: run {
             Reporter.unreachable()
             finish()
@@ -74,11 +84,6 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
             webChromeClient = WebChromeClient()
             settings.apply {
                 javaScriptEnabled = true
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-                    @Suppress("DEPRECATION")
-                    databasePath = this@SingleSearchActivity.cacheDir.resolve("webView").path
-                }
-                databaseEnabled = true
                 domStorageEnabled = true
                 cacheMode = WebSettings.LOAD_DEFAULT
             }
@@ -188,16 +193,8 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
-    }
-
-    override fun onBackPressed() {
-        if (binding.wvSite.canGoBack()) {
-            binding.wvSite.goBack()
-        } else {
-            finish()
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

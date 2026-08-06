@@ -15,6 +15,7 @@ import cc.aoeiuv020.panovel.data.entity.BookList
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.main.MainActivity
 import cc.aoeiuv020.panovel.share.Share
+import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
 import cc.aoeiuv020.panovel.util.showKeyboard
@@ -178,6 +179,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
         super.onViewCreated(view, savedInstanceState)
         binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
         binding.rvNovel.adapter = mAdapter
+        binding.rvNovel.applyBottomNavBarInsetPadding()
         binding.srlRefresh.setOnRefreshListener {
             refresh()
         }

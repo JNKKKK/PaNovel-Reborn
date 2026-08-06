@@ -30,6 +30,7 @@ class SiteSettingsActivity : AppCompatActivity(), MvpView {
         super.onCreate(savedInstanceState)
         binding = ActivitySiteSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 

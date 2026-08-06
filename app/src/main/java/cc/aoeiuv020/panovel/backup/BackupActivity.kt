@@ -55,7 +55,9 @@ class BackupActivity : AppCompatActivity(), MvpView {
         super.onCreate(savedInstanceState)
         binding = ActivityExportBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        title = getString(R.string.backup)
 
         progressDialog = ProgressDialogCompat(this)
         binding.btnImport.setOnClickListener { requestImportFile() }

@@ -10,6 +10,7 @@ import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.databinding.NovelItemListBinding
 import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.main.MainActivity
+import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 
 
 /**
@@ -35,6 +36,7 @@ class HistoryFragment : androidx.fragment.app.Fragment(), MvpView {
 
         binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
         binding.rvNovel.adapter = novelListAdapter
+        binding.rvNovel.applyBottomNavBarInsetPadding()
         binding.srlRefresh.setOnRefreshListener {
             forceRefresh()
         }

@@ -12,6 +12,7 @@ import cc.aoeiuv020.panovel.main.MainActivity
 import cc.aoeiuv020.panovel.settings.ItemAction.CancelPinned
 import cc.aoeiuv020.panovel.settings.ItemAction.Pinned
 import cc.aoeiuv020.panovel.settings.ItemAction.RemoveBookshelf
+import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 
@@ -50,6 +51,7 @@ class BookshelfFragment : androidx.fragment.app.Fragment(), MvpView {
 
         binding.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
         binding.rvNovel.adapter = novelListAdapter
+        binding.rvNovel.applyBottomNavBarInsetPadding()
         binding.srlRefresh.setOnRefreshListener {
             forceRefresh()
         }

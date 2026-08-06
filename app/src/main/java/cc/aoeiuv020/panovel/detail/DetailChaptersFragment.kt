@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.DataManager
+import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 import kotlinx.coroutines.*
 import timber.log.Timber
 
@@ -39,6 +40,7 @@ class DetailChaptersFragment : Fragment() {
         rv.layoutManager = LinearLayoutManager(requireContext())
         adapter = ChapterAdapter()
         rv.adapter = adapter
+        rv.applyBottomNavBarInsetPadding()
 
         val novelId = arguments?.getLong(ARG_NOVEL_ID) ?: return
         progressBar.visibility = View.VISIBLE

@@ -26,7 +26,9 @@
         android:usesCleartextTraffic="true"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
         tools:targetApi="q">
-        <activity android:name=".search.SiteSettingsActivity" />
+        <activity
+            android:name=".search.SiteSettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".localbook.CreateDocumentActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
@@ -51,19 +53,24 @@
         </activity>
         <activity
             android:name=".settings.SettingsActivity"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/title_activity_settings"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".search.FuzzySearchActivity"
             android:label="@string/title_activity_fuzzy_search"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".booklist.BookListActivity" />
+        <activity
+            android:name=".booklist.BookListActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".backup.BackupActivity"
             android:label="@string/backup"
+            android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
         <activity
             android:name=".search.SiteChooseActivity"
-            android:label="@string/site_list" />
+            android:label="@string/site_list"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".search.SingleSearchActivity"
             android:exported="true"
@@ -84,7 +91,8 @@
         <activity
             android:name=".download.DownloadActivity"
             android:exported="true"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name=".download.DownloadService"

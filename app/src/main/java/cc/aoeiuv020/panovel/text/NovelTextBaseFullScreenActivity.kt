@@ -6,12 +6,15 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
+import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.databinding.ActivityNovelTextBinding
 import cc.aoeiuv020.panovel.settings.ReaderSettings
+import cc.aoeiuv020.panovel.util.addSystemBarScrims
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
 import kotlinx.coroutines.Job
@@ -27,7 +30,27 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity() {
     private var delayedHideJob: Job? = null
 
     private fun getInsetsController(): WindowInsetsControllerCompat {
-        return WindowInsetsControllerCompat(window, binding.flContent)
+        // Build from the decor view: some OEMs only honor the navigation-bar appearance
+        // bit when the controller is anchored to the decor view, not a content view.
+        return WindowInsetsControllerCompat(window, window.decorView)
+    }
+
+    // The reader's system bars are dark (via the scrims), so the system must draw light
+    // (white) icons. The modern WindowInsetsController appearance flags below are the
+    // spec-correct way, but some devices (e.g. Motorola 3-button nav) ignore them for the
+    // nav bar and tint nav icons purely from Window.navigationBarColor's luminance. A dark
+    // navigationBarColor is the only lever that yields white icons there, so keep it
+    // (deprecated) alongside the modern flags so the result is correct everywhere.
+    @Suppress("DEPRECATION")
+    private fun applyDarkSystemBars() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.colorPrimary)
+        getInsetsController().apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
     }
 
     private fun applyFullScreenFlags() {
@@ -61,15 +84,19 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // Reader-only: paint the (forced-transparent) status and nav bars a solid dark
+        // color. Scrims track the live insets, so in fullscreen/immersive mode they
+        // collapse to 0 and the reading canvas stays truly edge-to-edge.
+        // Put the window in edge-to-edge mode unconditionally; the nav-bar appearance API
+        // is only reliable there (the non-fullscreen branch previously left the window in
+        // legacy decor-fits mode, where OEMs handle the appearance bit inconsistently).
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        addSystemBarScrims()
+        applyDarkSystemBars()
         if (ReaderSettings.fullScreen) {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 window.attributes.layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-            }
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                window.statusBarColor = 0xff000000.toInt()
             }
         }
         mVisible = true
@@ -77,7 +104,19 @@ abstract class NovelTextBaseFullScreenActivity : AppCompatActivity() {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
+        // Re-assert after the window is laid out; appearance flags set in onCreate can be
+        // reset during the first layout pass.
+        applyDarkSystemBars()
         hide()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // System-bar appearance is commonly reset on focus changes (and the reader hides/
+        // shows the bars), so assert the dark-bar / white-icon appearance again here.
+        if (hasFocus) {
+            applyDarkSystemBars()
+        }
     }
 
     override fun onRestart() {

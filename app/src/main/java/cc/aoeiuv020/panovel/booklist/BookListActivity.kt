@@ -17,6 +17,7 @@ import cc.aoeiuv020.panovel.databinding.ActivityBookListBinding
 import android.content.Intent
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog as AndroidXAlertDialog
+import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
 
@@ -65,6 +66,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
         super.onCreate(savedInstanceState)
         binding = ActivityBookListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -79,6 +81,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
         }
 
         binding.includeNovelList.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.includeNovelList.rvNovel.applyBottomNavBarInsetPadding()
         presenter = BookListDetailPresenter(bookListId)
         binding.includeNovelList.rvNovel.adapter = novelListAdapter
         binding.includeNovelList.srlRefresh.setOnRefreshListener {

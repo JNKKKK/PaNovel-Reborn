@@ -10,6 +10,7 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import cc.aoeiuv020.panovel.databinding.ActivitySiteChooseBinding
+import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 import java.util.*
 
 class SiteChooseActivity : AppCompatActivity(), MvpView {
@@ -69,10 +70,13 @@ class SiteChooseActivity : AppCompatActivity(), MvpView {
         super.onCreate(savedInstanceState)
         binding = ActivitySiteChooseBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        title = getString(R.string.source)
 
         // Note: 这里不是小说列表，固定用LinearLayoutManager，
         binding.rvSiteList.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.rvSiteList.applyBottomNavBarInsetPadding()
 
         presenter = SiteChoosePresenter()
         presenter.attach(this)

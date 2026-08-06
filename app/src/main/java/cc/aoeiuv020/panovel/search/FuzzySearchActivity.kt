@@ -11,6 +11,7 @@ import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.list.NovelListAdapter
 import cc.aoeiuv020.panovel.databinding.ActivityFuzzySearchBinding
+import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 import cc.aoeiuv020.panovel.util.getStringExtra
 import com.google.android.material.snackbar.Snackbar
 import android.content.Intent
@@ -76,6 +77,7 @@ class FuzzySearchActivity : AppCompatActivity(), MvpView {
         }
 
         binding.novelItemList.rvNovel.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.novelItemList.rvNovel.applyBottomNavBarInsetPadding()
         presenter = FuzzySearchPresenter()
         presenter.attach(this)
         binding.novelItemList.rvNovel.adapter = novelListAdapter

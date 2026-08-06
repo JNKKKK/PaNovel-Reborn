@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.download.DownloadNotificationManager
+import cc.aoeiuv020.panovel.download.DownloadService
 import cc.aoeiuv020.panovel.download.DownloadingNotificationManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.DownloadSettings
@@ -23,6 +24,10 @@ class DownloadManager(
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+    // 正在进行的下载任务数，用来控制前台服务的启停，
+    // 第一个任务开始时启动前台服务，全部完成后停止，
+    private val activeDownloads = AtomicInteger(0)
+
     val dnmLocal = object : ThreadLocal<DownloadingNotificationManager>() {
         override fun initialValue(): DownloadingNotificationManager {
             return DownloadingNotificationManager(context)
@@ -32,16 +37,39 @@ class DownloadManager(
     fun downloadAll(list: List<NovelManager>) {
         // 一本一本顺序下载，避免多本并发把站点请求量翻倍、绕过下载限速间隔，
         scope.launch {
-            for (novelManager in list) {
-                Timber.d("downloadAll ${novelManager.novel.name}")
-                downloadSuspending(novelManager, 0, Int.MAX_VALUE)
+            withForegroundService {
+                for (novelManager in list) {
+                    Timber.d("downloadAll ${novelManager.novel.name}")
+                    downloadSuspending(novelManager, 0, Int.MAX_VALUE)
+                }
             }
         }
     }
 
     fun download(novelManager: NovelManager, fromIndex: Int, count: Int) {
         scope.launch {
-            downloadSuspending(novelManager, fromIndex, count)
+            withForegroundService {
+                downloadSuspending(novelManager, fromIndex, count)
+            }
+        }
+    }
+
+    /**
+     * 在下载期间保持前台服务运行，避免锁屏/切后台被系统限制而暂停下载，
+     * 支持并发的多个下载任务，最后一个结束时才停止服务，
+     * 只在 scope 的 Dispatchers.Main 上调用，计数与启停都是单线程串行的，
+     */
+    private inline fun withForegroundService(block: () -> Unit) {
+        // 先进 try 再自增，保证自增和 finally 里的自减一一对应，不会因异常泄漏计数，
+        try {
+            if (activeDownloads.getAndIncrement() == 0) {
+                DownloadService.start(context)
+            }
+            block()
+        } finally {
+            if (activeDownloads.decrementAndGet() == 0) {
+                DownloadService.stop(context)
+            }
         }
     }
 

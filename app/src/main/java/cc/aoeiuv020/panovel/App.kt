@@ -5,6 +5,7 @@ import android.os.Process
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import cc.aoeiuv020.panovel.data.DataManager
+import cc.aoeiuv020.panovel.util.initNotificationChannel
 import cc.aoeiuv020.shared.ssl.TLSSocketFactory
 import cc.aoeiuv020.shared.ssl.TrustManagerUtils
 import com.bumptech.glide.Glide
@@ -31,6 +32,9 @@ class App : MultiDexApplication() {
         isMainProcess = isMainProcess()
 
         timber.log.Timber.plant(timber.log.Timber.DebugTree())
+
+        // 通知渠道要尽早创建：下载前台服务可能在 MainActivity 之前就因后台自动缓存而启动，
+        initNotificationChannel()
 
         initJson()
 

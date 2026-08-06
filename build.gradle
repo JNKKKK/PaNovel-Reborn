@@ -132,7 +132,6 @@ applicationModules.forEach { name ->
         }
 
         dependencies {
-            implementation 'androidx.legacy:legacy-support-v4:' + androidx_version
             implementation 'androidx.appcompat:appcompat:' + appcompat_version
             testImplementation 'junit:junit:' + junit_version
             androidTestImplementation 'androidx.test.ext:junit:' + test_runner_version

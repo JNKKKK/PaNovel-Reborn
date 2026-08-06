@@ -60,6 +60,10 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     private lateinit var alertDialog: AlertDialog
     private lateinit var progressDialog: ProgressDialogCompat
 
+    // 当前页面地址，用作图片请求的Referer，
+    // 原本借用标题栏的urlTextView显示兼存储，UI移除后改用这个字段，
+    private var currentUrl: String = ""
+
     // 刷新当前章节专用的加载框，不能复用progressDialog，那个取消时会finish整个阅读界面，
     private val refreshDialog: ProgressDialogCompat by lazy { ProgressDialogCompat(this) }
 
@@ -169,7 +173,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         initReader(novel)
         navigation = NovelTextNavigation(this, novel, binding.navView.root)
         try {
-            binding.urlTextView.text = presenter.getDetailUrl()
+            currentUrl = presenter.getDetailUrl()
         } catch (e: Exception) {
             val message = "获取小说《${novel.name}》<${novel.site}, ${novel.detail}>详情页地址失败，"
             // 按理说每个网站的extra都是设计好的，可以得到完整地址的，
@@ -177,13 +181,6 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
             Reporter.post(message, e)
             Timber.e(e, message)
             showError(message, e)
-        }
-        binding.urlBar.setOnClickListener {
-            // urlTextView只显示完整地址，以便点击打开，
-            // 只支持打开网络地址，本地小说不支持调用其他app打开，
-            binding.urlTextView.text?.takeIf { it.startsWith("http") }
-                    ?.also { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(it.toString()))) }
-                    ?: showError("本地小说不支持外部打开，")
         }
         startAutoSave()
 
@@ -216,7 +213,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         ) {
             val glideUrl = object : GlideUrl(image.url) {
                 override fun getHeaders(): MutableMap<String, String> {
-                    return mutableMapOf("Referer" to binding.urlTextView.text.toString())
+                    return mutableMapOf("Referer" to currentUrl)
                 }
             }
             Glide.with(this@NovelTextActivity.applicationContext)
@@ -413,7 +410,7 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
         if (index in chaptersAsc.indices) {
             val chapter = chaptersAsc[index]
             title = "${novel.name} - ${chapter.name}"
-            binding.urlTextView.text = presenter.getContentUrl(chapter)
+            currentUrl = presenter.getContentUrl(chapter)
         }
     }
 

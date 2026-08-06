@@ -23,12 +23,12 @@ import java.util.*
 
 private val jsoupClient: OkHttpClient = OkHttpClient()
 
-private fun Response.charset(): String? = body?.contentType()?.charset()?.name()
+private fun Response.charset(): String? = body.contentType()?.charset()?.name()
 private fun Response.url(): String = request.url.toString()
 
 fun jsoupParse(call: Call): Document {
     val response = call.execute()
-    return response.body!!.use {
+    return response.body.use {
         it.byteStream().use { input ->
             Jsoup.parse(input, response.charset(), response.url())
         }

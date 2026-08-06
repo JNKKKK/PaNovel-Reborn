@@ -1,6 +1,6 @@
 package cc.aoeiuv020.panovel.backup
 
-import net.lingala.zip4j.core.ZipFile
+import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.FileHeader
 import net.lingala.zip4j.model.ZipParameters
 import org.junit.Assert.assertEquals
@@ -31,10 +31,9 @@ class BackupManagerTest {
         }
         val p = ZipParameters()
         zipFile.addStream("1".byteInputStream(), p.apply {
-            isSourceExternalStream = true
             fileNameInZip = "version"
         })
-        val headers: List<FileHeader> = zipFile.fileHeaders.map { it as FileHeader }
+        val headers: List<FileHeader> = zipFile.fileHeaders
         val header = headers[0]
         assertEquals("version", header.fileName)
         zipFile.getInputStream(header).reader().readText().let {

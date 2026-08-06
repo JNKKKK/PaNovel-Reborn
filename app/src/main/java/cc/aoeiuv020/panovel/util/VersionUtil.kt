@@ -7,7 +7,7 @@ import cc.aoeiuv020.shared.regex.pick
 object VersionUtil {
     fun getAppVersionName(context: Context): String {
         try {
-            return context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            return context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "0"
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         }

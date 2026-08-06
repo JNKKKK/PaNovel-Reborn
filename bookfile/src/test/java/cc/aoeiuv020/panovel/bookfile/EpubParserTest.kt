@@ -76,14 +76,14 @@ class EpubParserTest : ParserTest(EpubParser::class) {
                 <image width="100%" height="100%" xlink:href="cover.jpeg"/>
             </svg>
             """, baseUri)
-                .select("image").first()
+                .select("image").first()!!
         // Jsoup可以正确处理jar协议地址，
         assertEquals("jar:file:/some/book.epub!/a/s/cover.jpeg", image.absXlinkHref())
 
         val imageParent = Jsoup.parse("""
                 <img src="../Image/Cover.jpg"/>
             """, baseUri)
-                .select("img").first()
+                .select("img").first()!!
         // 自己封装的absSrc能正确解析上级目录相对路径，
         assertEquals("jar:file:/some/book.epub!/a/Image/Cover.jpg", imageParent.absSrc())
     }

@@ -7,7 +7,6 @@ import cc.aoeiuv020.shared.regex.matches
 import cc.aoeiuv020.shared.regex.pick
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.internal.http.HttpMethod
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.io.InputStream
@@ -18,6 +17,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+
+// 是否允许请求体，等价于旧版 okhttp3.internal.http.HttpMethod.permitsRequestBody，
+// okhttp5起internal不再是公开API，自己实现，只有GET/HEAD不允许请求体，
+private fun permitsRequestBody(method: String): Boolean =
+        method != "GET" && method != "HEAD"
 
 // MemberVisibilityCanBePrivate, 有不少预先准备的成员，可能暂时没有被使用，但是不能private,
 // ClassName, LocalVariableName, 内部使用的类和变量通通下划线_开头，可能不符合规范，
@@ -777,7 +781,7 @@ abstract class DslJsoupNovelContext : JsoupNovelContext() {
             val httpUrlBuilder = (httpUrl
                     ?: absUrl(url!!).toHttpUrl()).newBuilder()
             val requestBuilder = request?.newBuilder() ?: Request.Builder()
-            if (HttpMethod.permitsRequestBody(method!!)) {
+            if (permitsRequestBody(method!!)) {
                 // post,
                 // 编码可以空，会是默认UTF-8,
                 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")

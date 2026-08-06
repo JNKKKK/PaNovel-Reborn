@@ -111,12 +111,12 @@ abstract class OkHttpNovelContext : NovelContext() {
     protected fun <T> Response.inputStream(
             listener: ((Long, Long) -> Unit)? = null,
             block: (InputStream) -> T
-    ): T = body!!.use {
+    ): T = body.use {
         val maxSize = it.contentLength()
         LoggerInputStream(it.byteStream(), maxSize, listener).use(block)
     }
 
-    protected fun Response.charset(): String? = body?.contentType()?.charset()?.name()
+    protected fun Response.charset(): String? = body.contentType()?.charset()?.name()
 
     protected fun Response.url(): String = this.request.url.toString()
 
@@ -149,8 +149,8 @@ abstract class OkHttpNovelContext : NovelContext() {
     }
 
     protected fun responseBody(call: Call): ResponseBody {
-        // 不可能为空，execute得到的response一定有body,
-        return response(call).body!!
+        // okhttp5起Response.body非空，
+        return response(call).body
     }
 
     private inner class LogInterceptor : Interceptor {

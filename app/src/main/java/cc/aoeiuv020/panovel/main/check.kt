@@ -28,7 +28,7 @@ object Check : Pref {
         val client = OkHttpClient()
         val request = Request.Builder().url(RELEASES_GITHUB_API).build()
         return client.newCall(request).execute().use { response ->
-            val json = response.body?.string() ?: "[]"
+            val json = response.body.string().ifEmpty { "[]" }
             val array = AppJson.parseToJsonElement(json).jsonArray
             array.mapNotNull { element ->
                 val obj = element.jsonObject

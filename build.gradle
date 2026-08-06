@@ -1,4 +1,5 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
     ext {
@@ -43,8 +44,6 @@ allprojects {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
-        //noinspection JcenterRepositoryObsolete
-        jcenter()
     }
 
     tasks.withType(JavaCompile) {
@@ -57,7 +56,6 @@ applicationModules.forEach { name ->
     project(name) {
         apply plugin: 'com.android.application'
         apply plugin: 'kotlin-android'
-        apply plugin: 'kotlin-kapt'
         apply plugin: 'com.google.devtools.ksp'
         apply plugin: 'kotlinx-serialization'
         apply from: rootProject.file('gradle/signing.gradle')
@@ -73,7 +71,6 @@ applicationModules.forEach { name ->
                 versionName version
                 multiDexEnabled true
                 testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-                setProperty("archivesBaseName", "$rootProject.name-$versionName")
                 vectorDrawables.useSupportLibrary = true
             }
             buildTypes {
@@ -90,9 +87,6 @@ applicationModules.forEach { name ->
                 sourceCompatibility JavaVersion.VERSION_17
                 targetCompatibility JavaVersion.VERSION_17
             }
-            kotlinOptions {
-                jvmTarget = '17'
-            }
 
             afterEvaluate {
                 if (tasks.findByName('installRelease')) {
@@ -105,12 +99,18 @@ applicationModules.forEach { name ->
                         copy {
                             from variant.packageApplicationProvider.get().outputs.files
                             into "${rootDir}/release"
+                            // Gradle 9 fails on duplicate copy entries by default; the APK
+                            // output dir also contains output-metadata.json. Keep the APK,
+                            // ignore the metadata sidecar's duplicate.
+                            include '*.apk'
+                            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                         }
                         def mappingFileProvider = variant.mappingFileProvider.get()
                         if (mappingFileProvider != null && !mappingFileProvider.files.isEmpty()) {
                             copy {
                                 from mappingFileProvider
                                 into "${rootDir}/release"
+                                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                                 rename { String fileName ->
                                     "$rootProject.name-mapping-$versionName-${variant.name}.txt"
                                 }
@@ -121,24 +121,30 @@ applicationModules.forEach { name ->
             }
         }
 
-        configurations.findAll { it.name.startsWith('test') }.each { conf ->
-            conf.exclude group: "org.slf4j", module: "slf4j-android"
+        base {
+            archivesName = "$rootProject.name-$version"
+        }
+
+        kotlin {
+            compilerOptions {
+                jvmTarget = JvmTarget.JVM_17
+            }
         }
 
         dependencies {
             implementation 'androidx.legacy:legacy-support-v4:' + androidx_version
-            implementation 'androidx.appcompat:appcompat:' + androidx_version
+            implementation 'androidx.appcompat:appcompat:' + appcompat_version
             testImplementation 'junit:junit:' + junit_version
-            testImplementation 'org.mockito:mockito-core:' + mockito_version
             androidTestImplementation 'androidx.test.ext:junit:' + test_runner_version
             androidTestImplementation 'androidx.test.espresso:espresso-core:' + test_espresso_version
             implementation 'androidx.multidex:multidex:' + multidex_version
             implementation 'org.jetbrains.kotlin:kotlin-stdlib:' + kotlin_version
-            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'
             implementation 'com.jakewharton.timber:timber:5.0.1'
+            // slf4j-api is used by the app's SLF4JServiceProvider (routes to Timber),
+            // which is the on-device binding for the pure-Java modules' slf4j calls.
+            // Replaces the abandoned slf4j-android (never released for slf4j 2.x).
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
-            runtimeOnly 'org.slf4j:slf4j-android:' + slf4j_version
-            testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
             implementation project(':shared')
         }
     }
@@ -154,7 +160,7 @@ javaModules.forEach { name ->
         dependencies {
             testImplementation 'junit:junit:' + junit_version
             implementation 'org.jetbrains.kotlin:kotlin-stdlib:' + kotlin_version
-            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
             if (name != 'shared') {
@@ -162,12 +168,14 @@ javaModules.forEach { name ->
             }
         }
 
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        java {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
 
-        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
-            kotlinOptions {
-                jvmTarget = '17'
+        kotlin {
+            compilerOptions {
+                jvmTarget = JvmTarget.JVM_17
             }
         }
     }
@@ -205,13 +213,12 @@ androidModules.forEach { name ->
                 sourceCompatibility JavaVersion.VERSION_17
                 targetCompatibility JavaVersion.VERSION_17
             }
-            kotlinOptions {
-                jvmTarget = '17'
-            }
         }
 
-        configurations.findAll { it.name.startsWith('test') }.each { conf ->
-            conf.exclude group: "org.slf4j", module: "slf4j-android"
+        kotlin {
+            compilerOptions {
+                jvmTarget = JvmTarget.JVM_17
+            }
         }
 
         dependencies {
@@ -219,10 +226,9 @@ androidModules.forEach { name ->
             androidTestImplementation 'androidx.test.ext:junit:' + test_runner_version
             androidTestImplementation 'androidx.test.espresso:espresso-core:' + test_espresso_version
             implementation 'org.jetbrains.kotlin:kotlin-stdlib:' + kotlin_version
-            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+            implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'
             implementation 'com.jakewharton.timber:timber:5.0.1'
             implementation 'org.slf4j:slf4j-api:' + slf4j_version
-            runtimeOnly 'org.slf4j:slf4j-android:' + slf4j_version
             testImplementation 'org.slf4j:slf4j-simple:' + slf4j_version
             implementation project(':shared')
         }
@@ -230,5 +236,5 @@ androidModules.forEach { name ->
 }
 
 task clean(type: Delete) {
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }

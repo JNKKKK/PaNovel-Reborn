@@ -33,12 +33,12 @@ It supports local TXT/EPUB files, backup/restore to local files (via SAF; books 
 ./gradlew scraper:test -Dtest.integration=true
 ```
 
-Requires JDK 21. Uses Gradle 8.7, AGP 8.3.2, Kotlin 1.9.22.
+Requires JDK 17+. Uses Gradle 9.6.1, AGP 9.3.0, Kotlin 2.4.10, KSP 2.3.11, compileSdk/targetSdk 36. AGP 9's "built-in Kotlin" and "new DSL" are opted out in `gradle.properties` (`android.builtInKotlin=false`, `android.newDsl=false`) so the `kotlin-android` plugin and existing DSL keep working; migrate off these before AGP 10.
 
 ## Architecture
 
 **MVP pattern** with `DataManager` singleton coordinating:
-- `AppDatabaseManager` – Room database (2.6.1, uses KSP)
+- `AppDatabaseManager` – Room database (2.8.4, uses KSP)
 - `ApiManager` – Novel website context/scraping
 - `CookieManager` – Cookie persistence
 - `CacheManager` – Content caching (IronDB + kotlinx-serialization)

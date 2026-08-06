@@ -27,6 +27,9 @@
 
 #slf4j https://github.com/getsentry/sentry-java/issues/373
 -dontwarn org.slf4j.**
+# Keep our SLF4J->Timber provider; it's only referenced via ServiceLoader
+# (META-INF/services), so R8 can't see the reference and would otherwise strip it.
+-keep class cc.aoeiuv020.panovel.log.TimberSlf4jServiceProvider { *; }
 
 # OkHttp https://github.com/krschultz/android-proguard-snippets/blob/master/libraries/proguard-square-okhttp3.pro
 -keepattributes Signature

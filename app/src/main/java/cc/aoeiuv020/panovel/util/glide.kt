@@ -2,9 +2,9 @@ package cc.aoeiuv020.panovel.util
 
 import android.content.Context
 import com.bumptech.glide.Glide
-import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.Priority
 import com.bumptech.glide.Registry
+import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.Options
 import com.bumptech.glide.load.data.DataFetcher
@@ -12,22 +12,23 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
+import com.bumptech.glide.module.AppGlideModule
 import timber.log.Timber
 import java.io.InputStream
 import java.net.URL
 
 
-@Suppress("DEPRECATION")
-@Deprecated("glide说这种用法过时了，")
-class JarGlideModule : com.bumptech.glide.module.GlideModule {
-    override fun applyOptions(context: Context, builder: GlideBuilder) {
-        // Do nothing.
-    }
-
+// Glide 5 removed manifest-based GlideModule parsing; registration is now via the
+// @GlideModule annotation on an AppGlideModule, processed by glide's KSP compiler.
+@GlideModule
+class JarGlideModule : AppGlideModule() {
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
         Timber.i("Glide registerComponents: JarGlideModule")
         registry.prepend(GlideUrl::class.java, InputStream::class.java, JarFactory())
     }
+
+    // Manifest parsing is disabled since we use the annotation-based API.
+    override fun isManifestParsingEnabled(): Boolean = false
 }
 
 

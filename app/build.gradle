@@ -9,6 +9,12 @@ android {
         androidTest.assets.srcDirs +=
                 files("$projectDir/schemas".toString())
     }
+    lint {
+        // lifecycle 2.11.0's NonNullableMutableLiveDataDetector throws an NPE during
+        // lintVitalRelease (a bug in the detector itself, not our code). Disable just
+        // that check; all other lint checks stay active.
+        disable += 'NullSafeMutableLiveData'
+    }
 }
 
 ksp {
@@ -17,25 +23,26 @@ ksp {
 
 dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:' + constraint_layout_version
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.cardview:cardview:' + androidx_version
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:' + recyclerview_version
-    implementation 'androidx.vectordrawable:vectordrawable:' + androidx_version
+    implementation 'androidx.vectordrawable:vectordrawable:' + vectordrawable_version
     implementation 'com.github.bumptech.glide:glide:' + glide_version
-    kapt 'com.github.bumptech.glide:compiler:' + glide_version
+    implementation 'com.github.bumptech.glide:annotations:' + glide_version
+    ksp 'com.github.bumptech.glide:ksp:' + glide_version
     implementation 'com.github.QuadFlask:colorpicker:0.0.15'
-    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
     implementation project(':scraper')
     implementation project(':reader')
     implementation project(':shared')
-    implementation 'net.lingala.zip4j:zip4j:1.3.2'
+    implementation 'net.lingala.zip4j:zip4j:2.11.6'
     implementation 'androidx.room:room-runtime:' + room_version
     ksp 'androidx.room:room-compiler:' + room_version
     debugImplementation 'androidx.room:room-testing:' + room_version
     implementation project(':IronDB')
-    implementation 'com.github.santalu:aspect-ratio-imageview:1.0.4'
+    implementation 'com.github.santalu:aspect-ratio-imageview:1.0.9'
     implementation project(':bookfile')
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.11.0'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
 }

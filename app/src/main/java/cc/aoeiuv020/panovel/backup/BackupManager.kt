@@ -2,7 +2,7 @@ package cc.aoeiuv020.panovel.backup
 
 import android.content.Context
 import cc.aoeiuv020.panovel.util.PrefContext
-import net.lingala.zip4j.core.ZipFile
+import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.model.ZipParameters
 import java.io.File

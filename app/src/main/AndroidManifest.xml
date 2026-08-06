@@ -30,10 +30,6 @@
         <activity
             android:name=".localbook.CreateDocumentActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <!--suppress DeprecatedClassUsageInspection -->
-        <meta-data
-            android:name="cc.aoeiuv020.panovel.util.JarGlideModule"
-            android:value="GlideModule" />
 
         <activity
             android:name=".detail.NovelDetailActivity"

@@ -103,7 +103,7 @@ class JsoupNovelContextTest {
             <p>asdf</p>
             """
         val root = Jsoup.parse(html)
-        val p = root.select("p").first()
+        val p = root.select("p").first()!!
         p.select("p").forEach {
             assertEquals("asdf", it.text())
         }

@@ -8,6 +8,8 @@ PaNovel is an Android novel reader app being revived. Goals: **run again, easy t
 
 It supports local TXT/EPUB files, backup/restore to local files (via SAF; books in the chosen 书架/书单/历史 collections are backed up together with their chapter lists and cached chapter content), reading progress sync, and a pluggable site scraper system with 24 active scrapers (the original 68 were removed because the sites died; all current scrapers are new implementations).
 
+Deferred work and future improvements (with rationale) are tracked in [ROADMAP.md](ROADMAP.md).
+
 ## Build Commands
 
 ```bash

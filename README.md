@@ -16,7 +16,7 @@
 
 ## 构建
 
-需要 JDK 21。
+需要 JDK 17+。
 
 ```bash
 ./gradlew assembleDebug
@@ -24,7 +24,7 @@
 
 ## 技术栈
 
-Kotlin 1.9 · Gradle 8.7 · AGP 8.3 · Room · Coroutines · kotlinx-serialization · JSoup · OkHttp 4 · Glide · Timber · AndroidX Preference
+Kotlin 2.4 · Gradle 9.6 · AGP 9.3 · compileSdk 36 · Room · Coroutines · kotlinx-serialization · JSoup · OkHttp 5 · Glide · Timber · SLF4J · AndroidX Preference
 
 ## 项目结构
 
@@ -32,8 +32,8 @@ Kotlin 1.9 · Gradle 8.7 · AGP 8.3 · Room · Coroutines · kotlinx-serializati
 |------|------|
 | app | 主应用（Activity、Presenter、Fragment） |
 | scraper | 小说网站爬虫（JSoup） |
-| core | 共享工具库（JSON、正则、SSL） |
-| local | 本地文件支持（TXT、EPUB） |
+| shared | 共享工具库（JSoup 辅助、JSON、正则、SSL） |
+| bookfile | 本地文件格式（TXT、EPUB 解析与导出） |
 | reader | 阅读器 UI |
 | pager | 翻页库 |
 | IronDB | 文件型键值存储（kotlinx-serialization） |

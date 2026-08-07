@@ -1,7 +1,11 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Base application theme. Uses the MaterialComponents *.Bridge parent: it adds the
+         Material theme attributes that Material widgets require (e.g. MaterialCardView,
+         which crashes under a plain AppCompat theme) while keeping AppCompat widget
+         styling, so no widgets are visually restyled yet. Full Material Components / M3
+         migration is a later phase — see ROADMAP.md. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar.Bridge">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>

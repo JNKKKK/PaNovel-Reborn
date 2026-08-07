@@ -63,13 +63,21 @@ fun AppCompatActivity.addSystemBarScrims(
 }
 
 /**
- * Pads [this] view's bottom by the navigation-bar inset (and the IME inset when the
- * keyboard is open) so its last item comes to rest above the system nav bar. Sets
- * `clipToPadding = false` so items still scroll through the padded region.
+ * Pads [this] view's bottom so its last item comes to rest just above the system nav bar
+ * (or the IME when the keyboard is open), then can still scroll through the padded region
+ * (`clipToPadding = false`). Any bottom padding already set in XML is preserved.
  *
  * Apply to the scrolling view itself (e.g. the RecyclerView), not a wrapping
- * SwipeRefreshLayout, so the refresh spinner isn't pushed down. Any bottom padding
- * already set in XML is preserved and the inset is added on top of it.
+ * SwipeRefreshLayout, so the refresh spinner isn't pushed down.
+ *
+ * The pad is the amount this view's frame actually *overlaps* the nav-bar/IME region, not
+ * the raw inset. On edge-to-edge screens the view extends to the window bottom, so the
+ * overlap is the full inset and the last item lands right above the bar. On screens where
+ * an ancestor already ends the content above the nav bar (e.g. the main screen, whose
+ * solid nav bar means content isn't drawn behind it), the overlap is 0 and nothing is
+ * added — otherwise the raw inset would stack on top of the ancestor's, leaving a gap a
+ * full nav-bar-height tall. Measured post-layout because it needs the view's laid-out
+ * frame; the inset object alone always reports the full inset regardless of ancestors.
  */
 fun ViewGroup.applyBottomNavBarInsetPadding() {
     clipToPadding = false
@@ -77,7 +85,15 @@ fun ViewGroup.applyBottomNavBarInsetPadding() {
     ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
         val navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
         val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-        v.updatePadding(bottom = initialBottom + maxOf(navBottom, imeBottom))
+        val systemBarBottom = maxOf(navBottom, imeBottom)
+        v.post {
+            val loc = IntArray(2)
+            v.getLocationInWindow(loc)
+            val viewBottom = loc[1] + v.height
+            val barTop = v.rootView.height - systemBarBottom
+            val overlap = (viewBottom - barTop).coerceIn(0, systemBarBottom)
+            v.updatePadding(bottom = initialBottom + overlap)
+        }
         insets
     }
     ViewCompat.requestApplyInsets(this)

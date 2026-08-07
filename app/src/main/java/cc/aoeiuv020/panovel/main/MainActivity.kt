@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -107,6 +108,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // Draw content behind the system bars so the (forced-transparent) nav bar shows its
+        // translucent scrim over scrolling content instead of an opaque strip. The AppBar
+        // (fitsSystemWindows) claims the top inset; the list's own bottom padding
+        // (applyBottomNavBarInsetPadding) keeps the last item above the nav bar.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setSupportActionBar(binding.toolbar)
 
         initNotificationChannel()

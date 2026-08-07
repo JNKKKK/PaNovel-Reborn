@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark-mode overrides (follow-system DayNight). Only colors that must flip for dark
+     mode live here; everything else inherits the base values/colors.xml.
+
+     colorPrimary is intentionally NOT overridden: the top/nav bars and the programmatic
+     system-bar scrims (insets.kt / the reader) read R.color.colorPrimary and should stay
+     dark grey in both modes. The reader's reading canvas is config-driven (ReaderConfig)
+     and does not participate in DayNight. -->
+<resources>
+    <!-- Content text: near-white primary and a dimmed secondary on dark surfaces. -->
+    <color name="textDefault">#b3ffffff</color>
+    <color name="textBlack">#deffffff</color>
+
+    <!-- Reader window background: dark so opening the reader doesn't flash white. -->
+    <color name="readerWindowBackground">@color/md_grey_900</color>
+</resources>

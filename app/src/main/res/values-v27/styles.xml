@@ -8,7 +8,8 @@
     <style name="FullscreenTheme" parent="AppTheme.NoActionBar">
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
         <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@android:color/white</item>
+        <!-- DayNight-aware; see values/styles.xml FullscreenTheme for rationale. -->
+        <item name="android:windowBackground">@color/readerWindowBackground</item>
         <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
         <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
         <item name="android:windowLightStatusBar">false</item>

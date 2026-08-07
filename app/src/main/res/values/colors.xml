@@ -6,8 +6,15 @@
     <color name="black_overlay">#66000000</color>
     <color name="colorFavorite">@color/md_red_700</color>
 
+    <!-- textDefault / textBlack follow DayNight (see values-night/colors.xml). Most content
+         text routes through these two (via the Text* styles and direct references), so
+         overriding them at night covers content text app-wide. -->
     <color name="textDefault">#8a000000</color>
     <color name="textBlack">#de000000</color>
+
+    <!-- Reader window background; DayNight-aware to avoid a white flash in dark mode. The
+         reading canvas itself is config-driven and independent of this (see ReaderConfig). -->
+    <color name="readerWindowBackground">@android:color/white</color>
 
     <color name="defaultBackgroundColor1">#D6D2D6</color>
     <color name="defaultBackgroundColor2">#191B19</color>

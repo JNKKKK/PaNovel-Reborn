@@ -30,7 +30,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:fitsSystemWindows="true"
-                    app:contentScrim="?attr/colorPrimary"
+                    app:contentScrim="@color/colorPrimary"
                     app:layout_scrollFlags="scroll|exitUntilCollapsed"
                     app:toolbarId="@+id/toolbar">
 
@@ -127,6 +127,7 @@
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fabRead"
+                style="@style/AppTheme.Fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
@@ -137,6 +138,7 @@
 
             <cc.aoeiuv020.panovel.detail.CheckableFloatingActionButton
                 android:id="@+id/fabStar"
+                style="@style/AppTheme.Fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/fab_margin"

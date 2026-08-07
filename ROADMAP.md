@@ -3,44 +3,44 @@
 Deferred work and future improvements for PaNovel. These are intentionally
 not-done-yet decisions with their rationale, so the reasoning isn't lost.
 
-## Material Components theme migration (deferred)
+## Material 3 theme migration + DayNight (completed)
 
-**Status:** deferred — not worth it for maintenance alone.
+**Status:** done. The app now uses `Theme.Material3.DayNight` (see
+`app/src/main/res/values/styles.xml`) with follow-system dark mode.
 
-The app uses `Theme.AppCompat.Light.DarkActionBar` (see `app/src/main/res/values/styles.xml`).
-Migrating to `Theme.MaterialComponents` (and eventually Material 3) would unlock
-the Material widget set and a modern semantic theming system.
+Migrated in three phases, each verified on-device before the next:
+1. **Bridge** — parent → `Theme.MaterialComponents.*.Bridge`; migrated the sole
+   `CardView` → `MaterialCardView` and dropped the `androidx.cardview` dep. The
+   bridge added the Material theme attributes widgets require (`MaterialCardView`
+   crashes under a plain AppCompat theme) with no visual restyle.
+2. **Full Material Components** — parent → `Theme.MaterialComponents.Light.DarkActionBar`;
+   mapped the palette onto the semantic color model.
+3. **Material 3 + DayNight** — parent → `Theme.Material3.DayNight`; added
+   follow-system dark mode (`AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM` in
+   `App.kt`) and `values-night/` overrides.
 
-**Trigger to revisit:** when we actually want Material widgets (`MaterialCardView`,
-`MaterialButton`, `MaterialAlertDialogBuilder`, `TextInputLayout`, `Chip`, …), a
-visual refresh, or dark-mode/dynamic-color support — *not* as part of routine
-dependency maintenance.
+**Key decisions (read before touching theming):**
+- **`colorPrimary` = the pink accent, not the dark grey.** M3 merges the
+  primary/accent roles, so buttons, dialog text-buttons, and control tints
+  (switch/checkbox/seekbar/radio) all follow `colorPrimary`. Mapping it to the
+  accent keeps controls legible in both light and dark (dark grey would vanish on
+  a dark surface at night).
+- **The dark top/nav bars are driven by the `@color/colorPrimary` *resource*,
+  not `?attr/colorPrimary`.** Bar backgrounds (`activity_main`, `activity_novel_detail`)
+  and the programmatic system-bar scrims (`insets.kt`, `NovelTextBaseFullScreenActivity`)
+  reference the resource so they stay dark grey in both modes regardless of the
+  now-pink `colorPrimary` attribute.
+- **The reader canvas does not participate in DayNight.** Reading colors come
+  from `ReaderConfig` (user-chosen), and the reader module has no theme/color
+  refs; system dark mode must never invert the reading area. The reader's
+  always-dark bottom control chrome intentionally has no night variant.
+- **FABs** pin `backgroundTint` to the accent via `@style/AppTheme.Fab` (M3
+  defaults FAB background to the off-brand `colorPrimaryContainer` lavender).
+- **Dark-mode content text** works because nearly all text routes through
+  `@color/textBlack` / `@color/textDefault`, overridden in `values-night/colors.xml`.
 
-**Benefits**
-- Access to Material Components widgets (currently unusable — `MaterialCardView`
-  crashes under an AppCompat theme with "requires Theme.MaterialComponents").
-- Modern semantic color attributes (`colorSurface`, `colorOnSurface`, …) and a
-  cleaner theming model; foundation for DayNight/dark mode.
-- Foundation for Material 3 / dynamic color if a visual refresh is ever wanted.
-- Aligns with where the AndroidX ecosystem is heading.
-
-**Costs / risks**
-- `Theme.MaterialComponents` restyles every widget (buttons, the many
-  `AlertDialog.Builder` dialogs, text fields, switches, action bar). Not a
-  one-line parent swap — Google recommends going via a `*.Bridge` theme first.
-- App-wide visual-regression surface: every screen needs re-verification.
-- The dark-grey `colorPrimary` and the reader's custom color-scheme logic would
-  need re-mapping onto the new attribute model.
-
-**Recommended approach when undertaken**
-1. Switch to a `Theme.MaterialComponents.*.Bridge` parent first; verify no
-   regressions.
-2. Then move to the full Material (or Material 3) theme.
-3. Verify every screen on-device (theme changes pass compile but can crash or
-   regress at runtime — e.g. the `MaterialCardView` crash that surfaced this).
-4. Only then migrate `androidx.cardview` → `MaterialCardView` and adopt other
-   Material widgets.
-
-**Related:** this was surfaced while cleaning up abandoned dependencies.
-`androidx.cardview` (frozen at 1.0.0) is kept as-is for now — abandoned but
-stable, like `jchardet` and `kxml2`.
+**Future (not done):** dynamic color (Material You / `DynamicColors`), a
+user-facing Light/Dark/System toggle (currently follow-system only), and
+optionally migrating the many `AlertDialog.Builder` sites to
+`MaterialAlertDialogBuilder` (they already pick up Material dialog styling from
+the theme, so this is cosmetic).

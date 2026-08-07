@@ -1,29 +1,40 @@
 <resources>
 
-    <!-- Base application theme. Full (non-bridge) Material Components theme: Material
-         widgets are now styled by the Material design system. The color attributes below
-         map the app's existing palette onto Material's semantic model (primary = dark
-         grey, secondary = the pink accent) so the visual identity is preserved. M3 /
-         DayNight migration is a later phase — see ROADMAP.md.
+    <!-- Base application theme. Material 3 with DayNight (follow-system dark mode): light
+         and dark surfaces/window backgrounds are supplied automatically by the theme and
+         the values-night overrides.
 
-         colorPrimaryDark / colorAccent are kept for continuity with any AppCompat widget
-         and because R.color.colorPrimary is also referenced directly in code (system-bar
-         scrims in insets.kt / the reader). -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+         Color-role mapping (important): M3 merged the "primary" and "accent" roles, so
+         interactive elements — buttons, dialog text-buttons, and control tints (switch,
+         checkbox, seekbar, radio) — all follow colorPrimary. We therefore map colorPrimary
+         to the PINK ACCENT, which is legible on both light and dark surfaces (dark grey
+         would vanish on a dark surface in night mode). colorSecondary keeps the accent too.
+
+         The dark top/nav BARS are intentionally NOT driven by colorPrimary — they use the
+         @color/colorPrimary *resource* (dark grey) directly (see activity_main / detail
+         layouts and the programmatic scrims in insets.kt / the reader), so the bars stay
+         dark in both modes regardless of this attribute. The reader's reading canvas is
+         config-driven and does not participate in DayNight (see ReaderConfig / ROADMAP.md). -->
+    <style name="AppTheme" parent="Theme.Material3.DayNight">
+        <item name="colorPrimary">@color/colorAccent</item>
         <item name="colorOnPrimary">@android:color/white</item>
         <item name="colorSecondary">@color/colorAccent</item>
-        <item name="colorSecondaryVariant">@color/colorAccent</item>
-        <item name="colorAccent">@color/colorAccent</item>
         <item name="colorOnSecondary">@android:color/white</item>
+        <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textViewStyle">@style/AppTextViewStyle</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- M3 FABs default their background to colorPrimaryContainer (an off-brand lavender);
+         pin it to the pink accent so the read/star FABs keep the identity verified in the
+         earlier phases. The icon tint stays white (also set per-FAB in the layouts). -->
+    <style name="AppTheme.Fab" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/colorAccent</item>
+        <item name="tint">@android:color/white</item>
     </style>
 
     <style name="AppTheme.NoActionBar.TranslateStatusBar" />
@@ -35,7 +46,10 @@
     <style name="FullscreenTheme" parent="AppTheme.NoActionBar">
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
         <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@android:color/white</item>
+        <!-- DayNight-aware so the reader window doesn't flash white before the first page
+             renders in dark mode. The reading canvas itself is config-driven (ReaderConfig)
+             and independent of this. -->
+        <item name="android:windowBackground">@color/readerWindowBackground</item>
         <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
         <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
     </style>

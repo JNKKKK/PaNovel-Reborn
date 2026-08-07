@@ -44,6 +44,8 @@ class App : MultiDexApplication() {
 
         initVector()
 
+        initNightMode()
+
         initGlide()
 
         initJar()
@@ -67,6 +69,16 @@ class App : MultiDexApplication() {
      */
     private fun initVector() {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
+    }
+
+    /**
+     * Follow the system light/dark setting. The Material3.DayNight theme + values-night
+     * resources supply the dark palette; this makes the follow-system behavior explicit
+     * (the default) rather than pinning light or dark. The reader's reading canvas is
+     * config-driven and unaffected (see ReaderConfig).
+     */
+    private fun initNightMode() {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
     }
 
     /**

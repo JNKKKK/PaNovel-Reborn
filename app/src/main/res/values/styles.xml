@@ -1,15 +1,23 @@
 <resources>
 
-    <!-- Base application theme. Uses the MaterialComponents *.Bridge parent: it adds the
-         Material theme attributes that Material widgets require (e.g. MaterialCardView,
-         which crashes under a plain AppCompat theme) while keeping AppCompat widget
-         styling, so no widgets are visually restyled yet. Full Material Components / M3
-         migration is a later phase — see ROADMAP.md. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar.Bridge">
-        <!-- Customize your theme here. -->
+    <!-- Base application theme. Full (non-bridge) Material Components theme: Material
+         widgets are now styled by the Material design system. The color attributes below
+         map the app's existing palette onto Material's semantic model (primary = dark
+         grey, secondary = the pink accent) so the visual identity is preserved. M3 /
+         DayNight migration is a later phase — see ROADMAP.md.
+
+         colorPrimaryDark / colorAccent are kept for continuity with any AppCompat widget
+         and because R.color.colorPrimary is also referenced directly in code (system-bar
+         scrims in insets.kt / the reader). -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="colorSecondaryVariant">@color/colorAccent</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorOnSecondary">@android:color/white</item>
         <item name="android:textViewStyle">@style/AppTextViewStyle</item>
     </style>
 

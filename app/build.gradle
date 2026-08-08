@@ -5,6 +5,10 @@ android {
     buildFeatures {
         buildConfig true
     }
+    androidResources {
+        // 词典 .mdx 保持不压缩，便于按需随机读取，也避免作为压缩asset无法openFd,
+        noCompress += "mdx"
+    }
     sourceSets {
         androidTest.assets.srcDirs +=
                 files("$projectDir/schemas".toString())
@@ -42,6 +46,7 @@ dependencies {
     debugImplementation 'androidx.room:room-testing:' + room_version
     implementation project(':IronDB')
     implementation project(':bookfile')
+    implementation project(':mdict')
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.11.0'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
 }

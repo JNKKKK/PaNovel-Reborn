@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.PointF
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
@@ -164,27 +165,61 @@ class Pager : View, PageAnimation.OnPageChangeListener {
     private val startPoint = PointF()
     private val sold = ViewConfiguration.get(context).scaledTouchSlop
     private var isClick = false
+
+    // 长按取词：交给系统GestureDetector判定长按（自带超时和slop处理，比手搓定时器可靠），
+    // 一旦触发就吃掉本次手势，不再走单击（切换菜单/翻页）逻辑，两种手势互斥，
+    private var longPressFired = false
+    private val gestureDetector = GestureDetector(context,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onLongPress(e: MotionEvent) {
+                    if (actionListener?.hasLongPress() != true) return
+                    longPressFired = true
+                    // 长按已生效，取消单击判定，后续ACTION_UP不再翻页/切菜单，
+                    isClick = false
+                    actionListener?.onLongPress(e.x, e.y)
+                }
+            }).apply {
+        // 我们自己处理点击/翻页，不需要detector额外的长按后继续上报，
+        setIsLongpressEnabled(true)
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        // 先喂给手势识别器，长按会在这里异步回调，
+        gestureDetector.onTouchEvent(event)
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isClick = true
+                longPressFired = false
                 startPoint.set(event.x, event.y)
             }
             MotionEvent.ACTION_MOVE -> {
                 if (isClick && (Math.abs(event.x - startPoint.x) > sold || Math.abs(event.y - startPoint.y) > sold)) {
                     isClick = false
                 }
+                if (longPressFired) {
+                    // 长按已触发，吞掉后续移动，不翻页，
+                    return true
+                }
                 if (isClick) {
                     return true
                 }
             }
             MotionEvent.ACTION_UP -> {
+                if (longPressFired) {
+                    // 长按已处理，吃掉抬起事件，不翻页不切菜单，
+                    longPressFired = false
+                    return true
+                }
                 if (isClick) {
                     click(event.x, event.y)
                     isClick = false
                     return true
                 }
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                isClick = false
+                longPressFired = false
             }
         }
         return mAnim?.onTouchEvent(event) ?: false
@@ -213,5 +248,15 @@ class Pager : View, PageAnimation.OnPageChangeListener {
         fun onPagePrev()
 
         fun onPageNext()
+
+        /**
+         * 是否需要长按回调，返回false时不启动长按定时器，行为与原来完全一致，
+         */
+        fun hasLongPress(): Boolean = false
+
+        /**
+         * 长按视图时回调，坐标为视图（含留白）坐标系，
+         */
+        fun onLongPress(x: Float, y: Float) {}
     }
 }

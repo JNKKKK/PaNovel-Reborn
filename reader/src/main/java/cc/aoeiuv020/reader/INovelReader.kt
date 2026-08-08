@@ -12,6 +12,7 @@ interface INovelReader {
 
     var readingListener: ReadingListener?
     var menuListener: MenuListener?
+    var characterLongPressListener: CharacterLongPressListener?
 
     var requester: TextRequester
     var chapterList: List<String>
@@ -38,6 +39,7 @@ interface INovelReader {
 abstract class BaseNovelReader(override var novel: String, override var requester: TextRequester) : INovelReader {
     override var readingListener: ReadingListener? = null
     override var menuListener: MenuListener? = null
+    override var characterLongPressListener: CharacterLongPressListener? = null
     override var chapterList: List<String> = emptyList()
     val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 

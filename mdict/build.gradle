@@ -1,0 +1,7 @@
+// mdict: pure-JVM reader for MDX (MDict) dictionary files.
+// Plugins, kotlin/java toolchain, :shared, coroutines and slf4j come from the
+// javaModules block in the root build.gradle.
+dependencies {
+    // Pure-Java LZO1X decompressor; MDX key/record blocks are LZO-compressed.
+    implementation 'org.anarres.lzo:lzo-core:' + lzo_version
+}

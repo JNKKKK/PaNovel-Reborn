@@ -51,6 +51,15 @@ class Reader(override var context: Context, novel: String, private val parent: V
                 menuListener?.hide()
             }
 
+            override fun hasLongPress(): Boolean = characterLongPressListener != null
+
+            override fun onLongPress(x: Float, y: Float) {
+                val listener = characterLongPressListener ?: return
+                val lookahead = drawer.hitTest(x, y)
+                if (!lookahead.isNullOrEmpty()) {
+                    listener.onCharacterLongPress(lookahead)
+                }
+            }
         }
         parent.addView(pageView)
 

@@ -320,6 +320,130 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
     }
 
     /**
+     * 长按取词命中测试：把视图坐标映射到某个字符，返回从该字符起、同段落内的一小段文字
+     * （供上层做贪婪匹配查词），点到非汉字（含段首缩进空格、标点、空白行等）时返回null。
+     *
+     * 完全复刻 [drawContent] 的排版几何（行高、行间距、段间距、铺满高度的补白、铺满宽度的
+     * 字间距），否则会选错字。滚动模式下正文有额外的滚动偏移，暂不支持，直接返回null。
+     *
+     * @param viewX,viewY Pager视图（含留白）坐标系下的触摸点，
+     */
+    fun hitTest(viewX: Float, viewY: Float): String? {
+        if (reader.config.animationMode == AnimationMode.SCROLL) return null
+        val pages = pagesCache[chapterIndex] ?: return null
+        val page = pages.getOrNull(pageIndex) ?: return null
+
+        // 视图坐标 -> 内容坐标：减去内容区左上留白（与PageAnimation里的mMargin算法一致），
+        val marginLeft = reader.config.contentMargins.left * backgroundSize.width / 100
+        val marginTop = reader.config.contentMargins.top * backgroundSize.height / 100
+        val contentX = viewX - marginLeft
+        val contentY = viewY - marginTop
+        if (contentX < 0 || contentY < 0
+                || contentX > contentSize.width || contentY > contentSize.height) {
+            return null
+        }
+
+        val textHeight = textPaint.getFontMetricsInt(null)
+        val lineSpacing = (reader.config.lineSpacing * reader.context.resources.displayMetrics.density).toInt()
+        val paragraphSpacing = (reader.config.paragraphSpacing * reader.context.resources.displayMetrics.density).toInt()
+        val width = contentSize.width.toFloat()
+
+        // 找到被点中的那一行（下标）及其纵向band,
+        var y = 0
+        var hitLineIndex = -1
+        for (i in page.lines.indices) {
+            val line = page.lines[i]
+            when (line) {
+                is Title -> {
+                    val top = y
+                    y += textHeight
+                    if (contentY >= top && contentY < y) { hitLineIndex = i }
+                    y += lineSpacing
+                }
+                is String -> {
+                    val top = y
+                    y += textHeight
+                    if (contentY >= top && contentY < y) { hitLineIndex = i }
+                    y += lineSpacing
+                }
+                is ParagraphSpacing -> y += paragraphSpacing
+            }
+            if (reader.config.fitHeight) {
+                y += page.fitLineSpacing
+            }
+            if (hitLineIndex >= 0) break
+        }
+        if (hitLineIndex < 0) return null
+        // 标题不查词，
+        val hitLine = page.lines[hitLineIndex] as? String ?: return null
+
+        val charIndex = charIndexAt(hitLine, contentX, width, textHeight)
+                ?: return null
+        if (!hitLine[charIndex].isHanChar()) return null
+
+        // 拼接从该字符起、同段落内的后续文字，遇到段落结束(ParagraphSpacing)或标题即止，
+        // 段落可能跨页，续到下一页开头的正文行，
+        val sb = StringBuilder()
+        sb.append(hitLine, charIndex, hitLine.length)
+        var i = hitLineIndex + 1
+        var reachedParagraphEnd = false
+        while (i < page.lines.size && sb.length < MAX_LOOKAHEAD) {
+            when (val l = page.lines[i]) {
+                is String -> sb.append(l)
+                is ParagraphSpacing -> { reachedParagraphEnd = true; break }
+                is Title -> break
+            }
+            i++
+        }
+        if (!reachedParagraphEnd && sb.length < MAX_LOOKAHEAD) {
+            // 段落延续到下一页，补上下一页开头的正文行（该页开头不会是ParagraphSpacing）,
+            pages.getOrNull(pageIndex + 1)?.let { next ->
+                for (l in next.lines) {
+                    if (sb.length >= MAX_LOOKAHEAD) break
+                    when (l) {
+                        is String -> sb.append(l)
+                        else -> break
+                    }
+                }
+            }
+        }
+        val result = if (sb.length > MAX_LOOKAHEAD) sb.substring(0, MAX_LOOKAHEAD) else sb.toString()
+        return result
+    }
+
+    /**
+     * 复刻 [drawContent] 里fitWidth的字间距逻辑，返回内容x处对应的字符下标，超出行尾返回null,
+     */
+    private fun charIndexAt(line: String, contentX: Float, width: Float, textHeight: Int): Int? {
+        if (line.isEmpty() || contentX < 0) return null
+        // 用零字间距测量每个字符的基础宽度，字间距(letterSpacing)另行按像素补加，
+        // 避免不同安卓版本getTextWidths对letterSpacing处理不一致，
+        val paint = TextPaint(textPaint)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            paint.letterSpacing = 0f
+        }
+        val widths = FloatArray(line.length)
+        paint.getTextWidths(line, widths)
+        // 复刻fitWidth：当整行几乎铺满时，均摊补白到字间，
+        var spacingPx = 0f
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && reader.config.fitWidth && line.length > 1) {
+            val textWidth = paint.measureText(line)
+            if ((width - textWidth) < textHeight) {
+                spacingPx = ((width - textWidth) / (line.length - 1)).toInt().toFloat()
+            }
+        }
+        var x = 0f
+        for (idx in line.indices) {
+            // drawText在每个字形advance后追加letterSpacing，最后一个字后不加，
+            val advance = widths[idx] + if (idx < line.length - 1) spacingPx else 0f
+            if (contentX < x + advance) return idx
+            x += advance
+        }
+        return null
+    }
+
+    /**
      * @param y 文字矩形左下角的y值，不是基线的，
      */
     private fun drawTextBottom(canvas: Canvas, text: String, x: Float, y: Float, p: TextPaint) {
@@ -489,5 +613,13 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
     fun refreshCurrentChapter(onComplete: (success: Boolean) -> Unit = {}): Job? {
         // 不提前清空缓存，刷新失败时request会保留原有内容，成功时会被覆盖，
         return request(chapterIndex, true, onComplete)
+    }
+
+    private fun Char.isHanChar(): Boolean =
+            Character.UnicodeScript.of(this.code) == Character.UnicodeScript.HAN
+
+    companion object {
+        // 长按取词向后取的最大字符数，覆盖词典里最长的词（实测最长20字），
+        private const val MAX_LOOKAHEAD = 20
     }
 }

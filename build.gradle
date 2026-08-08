@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 buildscript {
     ext {
         applicationModules = ['app']
-        javaModules = ["scraper", "bookfile", "shared", "IronDB"]
+        javaModules = ["scraper", "bookfile", "shared", "IronDB", "mdict"]
         androidModules = ["pager", "reader"]
         def versionFile = rootProject.file('version.properties')
         if (versionFile.exists()) {

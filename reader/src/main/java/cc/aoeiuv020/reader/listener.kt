@@ -33,3 +33,11 @@ interface MenuListener {
     fun toggle()
 }
 
+/**
+ * 长按正文取词监听器，
+ * @param lookahead 长按位置起、同段落内的一小段文字，供上层做贪婪匹配查词，
+ */
+interface CharacterLongPressListener {
+    fun onCharacterLongPress(lookahead: String)
+}
+

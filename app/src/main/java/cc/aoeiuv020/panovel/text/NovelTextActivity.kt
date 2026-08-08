@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
+import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.data.entity.Novel
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.report.Reporter
@@ -279,6 +280,35 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                     }
                 }
             }
+            characterLongPressListener = object : CharacterLongPressListener {
+                override fun onCharacterLongPress(lookahead: String) {
+                    showDictionary(lookahead)
+                }
+            }
+        }
+    }
+
+    /**
+     * 长按正文取词：从长按位置起的一小段文字做贪婪匹配查词，命中就弹出底部词典面板，
+     */
+    private fun showDictionary(lookahead: String) {
+        lifecycleScope.launch {
+            val result = try {
+                DataManager.dictionary.lookupGreedy(lookahead)
+            } catch (e: Exception) {
+                Timber.e(e, "词典查询失败")
+                return@launch
+            }
+            if (result.isEmpty) {
+                tip(getString(R.string.dict_not_found, lookahead.take(1)))
+                return@launch
+            }
+            DictionaryBottomSheet(
+                    this@NovelTextActivity,
+                    result,
+                    reader.config.textColor,
+                    reader.config.backgroundColor
+            ).show()
         }
     }
 

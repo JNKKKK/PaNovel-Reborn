@@ -35,6 +35,9 @@ object DataManager {
     @SuppressLint("StaticFieldLeak")
     lateinit var download: DownloadManager
         private set
+    @SuppressLint("StaticFieldLeak")
+    lateinit var dictionary: DictionaryManager
+        private set
     private lateinit var appContext: Context
 
     @Synchronized
@@ -47,6 +50,7 @@ object DataManager {
         cache = CacheManager(context)
         local = LocalManager(context)
         download = DownloadManager(context)
+        dictionary = DictionaryManager(context)
     }
 
     fun listBookshelf(): List<NovelManager> = app.listBookshelf().map { it.toManager() }

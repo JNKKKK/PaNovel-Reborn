@@ -13,4 +13,21 @@
 
     <!-- Reader window background: dark so opening the reader doesn't flash white. -->
     <color name="readerWindowBackground">@color/md_grey_900</color>
+
+    <!-- App bar at night: a darker grey than the surface, with light content. -->
+    <color name="colorAppBar">@color/md_grey_900</color>
+    <color name="colorOnAppBar">@android:color/white</color>
+    <color name="colorOnAppBarHint">#99FFFFFF</color>
+
+    <!-- Main-screen tabs at night: white selected text, dimmed unselected. -->
+    <color name="tabTextColorSelected">@android:color/white</color>
+    <color name="tabTextColorUnselected">@android:color/darker_gray</color>
+
+    <!-- Neutral grey-scale surface/background at night. Clearly darker than the app bar
+         (#212121) so the list reads as recessed below the lighter title bar. -->
+    <color name="colorSurface">#121212</color>
+    <color name="colorOnSurface">#deffffff</color>
+
+    <!-- Downloaded-chapter green: a lighter shade for legibility on the dark list. -->
+    <color name="chapterDownloaded">@color/md_green_300</color>
 </resources>

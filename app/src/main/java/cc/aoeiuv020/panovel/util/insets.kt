@@ -21,20 +21,21 @@ import cc.aoeiuv020.panovel.R
  */
 
 /**
- * Paints solid strips behind the status bar and navigation bar, each sized to the live
- * system-bar inset, so the transparent system bars show a solid color instead of the
- * content behind them.
+ * Paints a solid strip behind the status bar (and optionally the navigation bar), each
+ * sized to the live system-bar inset, so the transparent status bar shows a solid color
+ * instead of the content behind it.
  *
  * Added to the window decor as top/bottom overlays. When the bars are hidden (e.g. the
  * reader's immersive mode) the insets go to 0 and the strips collapse automatically.
  *
  * Intended for the fullscreen reader, which sets its own `statusBarColor` (ignored under
- * forced edge-to-edge) and would otherwise show a transparent status bar and a
- * translucent nav bar over the page content.
+ * forced edge-to-edge) and would otherwise show a transparent status bar over the page
+ * content. The nav bar is left to the system default (translucent contrast scrim) unless
+ * [navColorRes] is given.
  */
 fun AppCompatActivity.addSystemBarScrims(
-    statusColorRes: Int = R.color.colorPrimary,
-    navColorRes: Int = R.color.colorPrimary,
+    statusColorRes: Int = R.color.colorAppBar,
+    navColorRes: Int? = null,
 ) {
     val decor = window.decorView as ViewGroup
     val content = findViewById<View>(android.R.id.content)
@@ -42,11 +43,15 @@ fun AppCompatActivity.addSystemBarScrims(
     val statusScrim = View(this).apply {
         setBackgroundColor(ContextCompat.getColor(this@addSystemBarScrims, statusColorRes))
     }
-    val navScrim = View(this).apply {
-        setBackgroundColor(ContextCompat.getColor(this@addSystemBarScrims, navColorRes))
-    }
     decor.addView(statusScrim, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.TOP))
-    decor.addView(navScrim, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.BOTTOM))
+
+    val navScrim = navColorRes?.let { colorRes ->
+        View(this).apply {
+            setBackgroundColor(ContextCompat.getColor(this@addSystemBarScrims, colorRes))
+        }.also {
+            decor.addView(it, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.BOTTOM))
+        }
+    }
 
     ViewCompat.setOnApplyWindowInsetsListener(content) { v, insets ->
         val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
@@ -54,7 +59,7 @@ fun AppCompatActivity.addSystemBarScrims(
         if (statusScrim.layoutParams.height != top) {
             statusScrim.layoutParams = statusScrim.layoutParams.also { it.height = top }
         }
-        if (navScrim.layoutParams.height != bottom) {
+        if (navScrim != null && navScrim.layoutParams.height != bottom) {
             navScrim.layoutParams = navScrim.layoutParams.also { it.height = bottom }
         }
         insets
@@ -94,6 +99,26 @@ fun ViewGroup.applyBottomNavBarInsetPadding() {
             val overlap = (viewBottom - barTop).coerceIn(0, systemBarBottom)
             v.updatePadding(bottom = initialBottom + overlap)
         }
+        insets
+    }
+    ViewCompat.requestApplyInsets(this)
+}
+
+/**
+ * Pads [this] view's bottom by the raw navigation-bar inset (or the IME inset when the
+ * keyboard is open). Unlike [applyBottomNavBarInsetPadding], this uses the inset value
+ * directly (no post-layout geometry), so it's correct on the very first inset pass even
+ * before the view is measured — use it for a bottom-anchored bar that always sits at the
+ * window bottom and paints its own background into the padded region (so the padding
+ * becomes a solid colored strip behind the translucent nav bar). Any XML bottom padding is
+ * preserved and the inset is added on top.
+ */
+fun View.applyBottomNavBarInsetPaddingDirect() {
+    val initialBottom = paddingBottom
+    ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
+        val navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+        val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+        v.updatePadding(bottom = initialBottom + maxOf(navBottom, imeBottom))
         insets
     }
     ViewCompat.requestApplyInsets(this)

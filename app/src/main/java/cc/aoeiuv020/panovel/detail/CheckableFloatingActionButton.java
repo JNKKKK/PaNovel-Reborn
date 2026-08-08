@@ -30,7 +30,10 @@ public class CheckableFloatingActionButton extends FloatingActionButton implemen
     }
 
     public CheckableFloatingActionButton(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+        // Pass the FAB's default style attr (not 0) so the Material FAB internals resolve the
+        // circular shapeAppearance/background; with 0 the background falls back to a plain
+        // rectangle instead of the FAB circle.
+        this(context, attrs, com.google.android.material.R.attr.floatingActionButtonStyle);
     }
 
     public CheckableFloatingActionButton(Context context, AttributeSet attrs, int defStyleAttr) {

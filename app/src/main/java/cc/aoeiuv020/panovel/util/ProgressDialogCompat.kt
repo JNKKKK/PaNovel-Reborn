@@ -9,7 +9,7 @@ import cc.aoeiuv020.panovel.R
 class ProgressDialogCompat(context: Context) {
     private val view: View = View.inflate(context, R.layout.dialog_progress, null)
     private val tvMessage: TextView = view.findViewById(R.id.tvMessage)
-    private val dialog: AlertDialog = AlertDialog.Builder(context)
+    private val dialog: AlertDialog = AlertDialog.Builder(context, R.style.AppTheme_Dialog)
         .setView(view)
         .setCancelable(true)
         .create()

@@ -2,9 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/readerBottomBar"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:background="@color/gray_color"
+              android:background="@color/colorAppBar"
               android:orientation="vertical">
 
 
@@ -22,7 +23,7 @@
             android:gravity="center"
             android:singleLine="true"
             android:text="@string/previous_chapter"
-            android:textColor="@android:color/primary_text_dark"
+            android:textColor="@color/colorOnAppBar"
             android:textSize="@dimen/reader_settings_text_size"/>
 
         <SeekBar
@@ -39,7 +40,7 @@
             android:gravity="center"
             android:singleLine="true"
             android:text="@string/next_chapter"
-            android:textColor="@android:color/primary_text_dark"
+            android:textColor="@color/colorOnAppBar"
             android:textSize="@dimen/reader_settings_text_size"/>
 
     </LinearLayout>
@@ -57,7 +58,7 @@
             android:layout_weight="1"
             android:padding="@dimen/reader_setting_padding"
             android:scaleType="centerInside"
-            android:tint="@android:color/white"
+            android:tint="@color/colorOnAppBar"
             app:srcCompat="@drawable/ic_list"
             tools:ignore="ContentDescription"/>
 
@@ -68,7 +69,7 @@
             android:layout_weight="1"
             android:padding="@dimen/reader_setting_padding"
             android:scaleType="centerInside"
-            android:tint="@android:color/white"
+            android:tint="@color/colorOnAppBar"
             app:srcCompat="@drawable/ic_favorite_selector"/>
 
         <ImageView
@@ -78,7 +79,7 @@
             android:layout_weight="1"
             android:padding="@dimen/reader_setting_padding"
             android:scaleType="centerInside"
-            android:tint="@android:color/white"
+            android:tint="@color/colorOnAppBar"
             app:srcCompat="@drawable/ic_refresh"
             tools:ignore="ContentDescription"/>
 
@@ -89,7 +90,7 @@
             android:layout_weight="1"
             android:padding="@dimen/reader_setting_padding"
             android:scaleType="centerInside"
-            android:tint="@android:color/white"
+            android:tint="@color/colorOnAppBar"
             app:srcCompat="@android:drawable/stat_sys_download_done"
             tools:ignore="ContentDescription"/>
 
@@ -100,7 +101,7 @@
             android:layout_weight="1"
             android:padding="@dimen/reader_setting_padding"
             android:scaleType="centerInside"
-            android:tint="@android:color/white"
+            android:tint="@color/colorOnAppBar"
             app:srcCompat="@drawable/ic_settings"
             tools:ignore="ContentDescription"/>
 

@@ -33,7 +33,6 @@ class NovelViewHolder(itemView: View,
     companion object {
         // 列表外观固定使用默认值，不再可配置，
         private const val PINNED_BACKGROUND_COLOR = 0xffefefef.toInt()
-        private const val DOT_COLOR = 0xffff0000.toInt()
         private const val DOT_SIZE = 16f
     }
 
@@ -99,7 +98,7 @@ class NovelViewHolder(itemView: View,
             itemListener.onStarChanged(this, it.isChecked)
         }
         star?.setOnLongClickListener { itemListener.onItemLongClick(this) }
-        refreshingDot?.setDotColor(DOT_COLOR)
+        refreshingDot?.setDotColor(androidx.core.content.ContextCompat.getColor(context, R.color.colorAccent))
         refreshingDot?.setDotSize((DOT_SIZE * context.resources.displayMetrics.density).toInt())
 
         initItem(this)

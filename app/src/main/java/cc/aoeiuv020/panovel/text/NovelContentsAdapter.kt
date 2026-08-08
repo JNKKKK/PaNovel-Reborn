@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.CheckedTextView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
@@ -23,7 +24,8 @@ class NovelContentsAdapter(
         // 只用contains方法判断章节是否已经缓存，
         private var cachedList: Collection<String>
 ) : BaseAdapter() {
-    // 章节列表颜色固定使用默认值，
+    // Chapter-name colors by state (DayNight via resources): current chapter = pink accent,
+    // downloaded chapter = green, default = colorOnSurface (readable on the list surface).
     private val chapterColorList = ColorStateList(
         arrayOf(
             // isChecked代表阅读到的章节，
@@ -33,10 +35,9 @@ class NovelContentsAdapter(
             intArrayOf()
         ),
         intArrayOf(
-            // 当前章节红色，已缓存章节深绿，默认黑色，
-            0xffff0000.toInt(),
-            0xff008000.toInt(),
-            0xff000000.toInt()
+            ContextCompat.getColor(context, R.color.colorAccent),
+            ContextCompat.getColor(context, R.color.chapterDownloaded),
+            ContextCompat.getColor(context, R.color.colorOnSurface)
         )
     )
 

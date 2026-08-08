@@ -2,6 +2,8 @@
 
     <style name="AppTheme.NoActionBar.TranslateStatusBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <!-- Dark image header in both modes → always light status-bar icons. -->
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
 </resources>

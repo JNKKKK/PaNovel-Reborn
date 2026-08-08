@@ -4,7 +4,8 @@
     <color name="colorPrimaryDark">@color/md_grey_900</color>
     <color name="colorAccent">#FF4081</color>
     <color name="black_overlay">#66000000</color>
-    <color name="colorFavorite">@color/md_red_700</color>
+    <!-- Favorite star uses the app's single accent (pink), unified app-wide. -->
+    <color name="colorFavorite">@color/colorAccent</color>
 
     <!-- textDefault / textBlack follow DayNight (see values-night/colors.xml). Most content
          text routes through these two (via the Text* styles and direct references), so
@@ -15,6 +16,28 @@
     <!-- Reader window background; DayNight-aware to avoid a white flash in dark mode. The
          reading canvas itself is config-driven and independent of this (see ReaderConfig). -->
     <color name="readerWindowBackground">@android:color/white</color>
+
+    <!-- App-bar (title bar) colors, DayNight-aware (see values-night/colors.xml). Light bar
+         with dark content in day, dark-grey bar with light content at night. These drive
+         the general activities' bars; the reader and detail bars stay dark in BOTH modes
+         (they use @color/colorPrimary + AppTheme.DarkAppBarOverlay directly). -->
+    <color name="colorAppBar">@color/md_grey_200</color>
+    <color name="colorOnAppBar">#de000000</color>
+    <color name="colorOnAppBarHint">#99000000</color>
+
+    <!-- Main-screen tab colors, DayNight-aware. -->
+    <color name="tabIndicatorColor">@color/colorAccent</color>
+    <color name="tabTextColorSelected">#de000000</color>
+    <color name="tabTextColorUnselected">#8a000000</color>
+
+    <!-- Neutral grey-scale surface/background, DayNight-aware (see values-night). Used to
+         override M3's pink-tinted surfaces so list/screen backgrounds are plain grey. -->
+    <color name="colorSurface">@android:color/white</color>
+    <color name="colorOnSurface">#de000000</color>
+
+    <!-- Reader chapter-list states: current chapter = the pink accent; downloaded chapter =
+         a clear Material green (DayNight, see values-night); default name = colorOnSurface. -->
+    <color name="chapterDownloaded">@color/md_green_600</color>
 
     <color name="defaultBackgroundColor1">#D6D2D6</color>
     <color name="defaultBackgroundColor2">#191B19</color>

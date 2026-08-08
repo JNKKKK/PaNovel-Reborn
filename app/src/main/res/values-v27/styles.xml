@@ -1,19 +1,18 @@
 <resources>
 
-    <!-- API 27+ adds windowLightNavigationBar. The reader's system bars are dark (see
-         NovelTextBaseFullScreenActivity), so force light-bar appearance off here too;
-         some OEMs honor this theme attribute but not the runtime WindowInsetsController
-         call. A same-named style in values-v27 replaces (does not merge) the base
-         FullscreenTheme, so its items are re-declared here. -->
+    <!-- API 27+ adds windowLightNavigationBar. A same-named style in values-v27 replaces
+         (does not merge) the base FullscreenTheme, so its items are re-declared here. The
+         reader's status/nav bars are now DayNight (light in day, dark at night), so both
+         light-bar appearance flags follow the same bool as the rest of the app; the reader
+         also asserts the status-bar appearance at runtime. -->
     <style name="FullscreenTheme" parent="AppTheme.NoActionBar">
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
         <item name="android:windowActionBarOverlay">true</item>
-        <!-- DayNight-aware; see values/styles.xml FullscreenTheme for rationale. -->
         <item name="android:windowBackground">@color/readerWindowBackground</item>
         <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
         <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightStatusBar">@bool/appBarLightStatusBar</item>
+        <item name="android:windowLightNavigationBar">@bool/appBarLightStatusBar</item>
     </style>
 
 </resources>

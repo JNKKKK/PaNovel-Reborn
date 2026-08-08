@@ -20,6 +20,12 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
     private val mPanelDefault: View = navigation.findViewById(R.id.panelDefault)
 
     init {
+        // Pad the bottom control bar (the view that paints the colorAppBar background) by the
+        // nav-bar inset, so its background extends into the nav-bar strip as a solid color
+        // (no reader text leaking through the translucent nav bar) while its buttons sit just
+        // above the nav bar. Direct-inset variant so it's correct on the first show, before
+        // the panel is measured.
+        mPanelDefault.findViewById<View>(R.id.readerBottomBar).applyBottomNavBarInsetPaddingDirect()
         mPanelDefault.findViewById<View>(R.id.ivContents).setOnClickListener {
             view.presenter.loadContents()
         }

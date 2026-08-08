@@ -7,8 +7,10 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import cc.aoeiuv020.panovel.MvpView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.api.NovelChapter
@@ -684,6 +686,17 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                     dialog.dismiss()
                 }.create().apply {
                     listView.isFastScrollEnabled = true
+                    // Match the app-wide content surface instead of the default dialog surface,
+                    // including the "目录" title panel. Color the list and the title panel (not
+                    // the window background — replacing that drops the dialog's inset/shape and
+                    // widens it); tint the title text with colorOnSurface.
+                    val surface = ContextCompat.getColor(context, R.color.colorSurface)
+                    val onSurface = ContextCompat.getColor(context, R.color.colorOnSurface)
+                    listView.setBackgroundColor(surface)
+                    setOnShowListener {
+                        findViewById<View>(androidx.appcompat.R.id.topPanel)?.setBackgroundColor(surface)
+                        findViewById<TextView>(androidx.appcompat.R.id.alertTitle)?.setTextColor(onSurface)
+                    }
                 }.safelyShow()
     }
 

@@ -7,30 +7,30 @@
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/detailRoot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/colorAppBar"
         android:orientation="vertical">
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:fitsSystemWindows="true"
             tools:context="cc.aoeiuv020.panovel.detail.NovelDetailActivity">
 
             <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/app_bar"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:fitsSystemWindows="true"
-                android:theme="@style/AppTheme.AppBarOverlay">
+                android:layout_height="300dp">
 
                 <com.google.android.material.appbar.CollapsingToolbarLayout
                     android:id="@+id/toolbar_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:fitsSystemWindows="true"
-                    app:contentScrim="@color/colorPrimary"
+                    app:collapsedTitleTextColor="@color/colorOnAppBar"
+                    app:contentScrim="@color/colorAppBar"
+                    app:expandedTitleTextColor="@android:color/white"
                     app:layout_scrollFlags="scroll|exitUntilCollapsed"
                     app:toolbarId="@+id/toolbar">
 
@@ -38,7 +38,6 @@
                         android:id="@+id/image"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:fitsSystemWindows="true"
                         android:scaleType="centerCrop"
                         tools:ignore="ContentDescription"
                         tools:src="@mipmap/ic_launcher" />
@@ -60,8 +59,10 @@
             </com.google.android.material.appbar.AppBarLayout>
 
             <LinearLayout
+                android:id="@+id/contentContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@color/colorSurface"
                 android:orientation="vertical"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -143,9 +144,10 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/fab_margin"
                 android:tint="@android:color/white"
-                app:fabSize="mini"
+                app:fabCustomSize="36dp"
                 app:layout_anchor="@id/app_bar"
                 app:layout_anchorGravity="bottom|end"
+                app:maxImageSize="20dp"
                 app:srcCompat="@drawable/ic_favorite_selector" />
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>

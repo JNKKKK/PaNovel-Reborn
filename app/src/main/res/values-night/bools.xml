@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Night: the general title bar is dark, so the status bar needs light icons. -->
+<resources>
+    <bool name="appBarLightStatusBar">false</bool>
+</resources>

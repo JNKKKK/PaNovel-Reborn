@@ -22,6 +22,18 @@
         <item name="colorOnSecondary">@android:color/white</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textViewStyle">@style/AppTextViewStyle</item>
+        <!-- Light title bar in day → dark status-bar icons; dark bar at night → light icons.
+             Screens with an always-dark bar (detail image header, reader) override this. -->
+        <item name="android:windowLightStatusBar">@bool/appBarLightStatusBar</item>
+        <!-- Neutral grey-scale surfaces. MaterialComponents tints elevated surfaces by
+             overlaying an "elevation overlay" color (defaults toward colorPrimary/on-surface)
+             which can warm greys; pin surface/background to plain greys and disable the
+             elevation overlay so the list/screen backgrounds stay neutral (DayNight via
+             values-night). -->
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <item name="android:colorBackground">@color/colorSurface</item>
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -37,11 +49,58 @@
         <item name="tint">@android:color/white</item>
     </style>
 
-    <style name="AppTheme.NoActionBar.TranslateStatusBar" />
+    <!-- Detail screen: dark image header behind the status bar in both modes, so always use
+         light status-bar icons (override the DayNight bool inherited from AppTheme). -->
+    <style name="AppTheme.NoActionBar.TranslateStatusBar">
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <!-- On-bar content colors for the general activities' (DayNight) title bar. colorOnAppBar
+         is itself DayNight (dark in day, white at night), so this one definition covers both
+         modes: it tints the toolbar title, navigation/overflow icons, and menu-item text. -->
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.Material3">
+        <item name="android:textColorPrimary">@color/colorOnAppBar</item>
+        <item name="android:textColorSecondary">@color/colorOnAppBar</item>
+        <item name="colorControlNormal">@color/colorOnAppBar</item>
+        <item name="colorOnSurface">@color/colorOnAppBar</item>
+    </style>
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <!-- Always-dark bar (reader + detail image header): white content in both modes. These
+         bars keep a dark @color/colorPrimary background and never go light. -->
+    <style name="AppTheme.DarkAppBarOverlay" parent="ThemeOverlay.Material3.Dark">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="colorControlNormal">@android:color/white</item>
+    </style>
+
+    <!-- Overflow/popup menu: match the app's content surface (colorSurface/colorOnSurface
+         are DayNight, so this one definition covers both modes) instead of the default
+         light/dark popup. Rounded Material3 popup shape. -->
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.Material3">
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <item name="android:textColorPrimary">@color/colorOnSurface</item>
+        <item name="android:colorBackground">@color/colorSurface</item>
+        <!-- Popups sit at elevation; M3 tints elevated surfaces with colorPrimary (pink),
+             which tints the menu background pinkish. Neutralize the elevation overlay (as the
+             base theme does) so the popup stays plain grey-scale. colorSurfaceContainer is the
+             role M3 menus actually use for their background, so pin it too. -->
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="elevationOverlayColor">@color/colorOnSurface</item>
+        <item name="colorSurfaceContainer">@color/colorSurface</item>
+    </style>
+
+    <!-- AlertDialog theme matching the app's content surface (DayNight via colorSurface/
+         colorOnSurface), with M3's pink elevation overlay neutralized so dialog backgrounds
+         stay plain grey-scale. Buttons stay the pink accent. -->
+    <style name="AppTheme.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <item name="colorPrimary">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/colorOnSurface</item>
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="elevationOverlayColor">@color/colorOnSurface</item>
+        <item name="colorSurfaceContainerHigh">@color/colorSurface</item>
+    </style>
 
     <style name="FullscreenTheme" parent="AppTheme.NoActionBar">
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
@@ -50,6 +109,10 @@
              renders in dark mode. The reading canvas itself is config-driven (ReaderConfig)
              and independent of this. -->
         <item name="android:windowBackground">@color/readerWindowBackground</item>
+        <!-- Reader status bar is DayNight (light day / dark night, via colorAppBar), so its
+             icons follow the same bool as the rest of the app. The reader also asserts this
+             at runtime (applyStatusBarAppearance). -->
+        <item name="android:windowLightStatusBar">@bool/appBarLightStatusBar</item>
         <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
         <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
     </style>

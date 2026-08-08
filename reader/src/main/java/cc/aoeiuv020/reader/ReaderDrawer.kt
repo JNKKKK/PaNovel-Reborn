@@ -320,24 +320,28 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
     }
 
     /**
-     * 长按取词命中测试：把视图坐标映射到某个字符，返回从该字符起、同段落内的一小段文字
-     * （供上层做贪婪匹配查词），点到非汉字（含段首缩进空格、标点、空白行等）时返回null。
-     *
-     * 完全复刻 [drawContent] 的排版几何（行高、行间距、段间距、铺满高度的补白、铺满宽度的
-     * 字间距），否则会选错字。滚动模式下正文有额外的滚动偏移，暂不支持，直接返回null。
-     *
-     * @param viewX,viewY Pager视图（含留白）坐标系下的触摸点，
+     * 当前正在绘制的页标识：高32位章节下标，低32位页码。命中测试回传后据此定位到具体页，
+     * 分页模式即当前页；滚动模式下每个 bitmap 各记各的，故同屏两页也能区分。
      */
-    fun hitTest(viewX: Float, viewY: Float): String? {
-        if (reader.config.animationMode == AnimationMode.SCROLL) return null
-        val pages = pagesCache[chapterIndex] ?: return null
-        val page = pages.getOrNull(pageIndex) ?: return null
+    override fun currentPageTag(): Long =
+            (chapterIndex.toLong() shl 32) or (pageIndex.toLong() and 0xffffffffL)
 
-        // 视图坐标 -> 内容坐标：减去内容区左上留白（与PageAnimation里的mMargin算法一致），
-        val marginLeft = reader.config.contentMargins.left * backgroundSize.width / 100
-        val marginTop = reader.config.contentMargins.top * backgroundSize.height / 100
-        val contentX = viewX - marginLeft
-        val contentY = viewY - marginTop
+    /**
+     * 长按取词命中测试：把 pager 解析出的命中（页标识 + 页内内容坐标）映射到某个字符，
+     * 返回从该字符起、同段落内的一小段文字（供上层做贪婪匹配查词），
+     * 点到非汉字（含段首缩进空格、标点、空白行等）时返回 null。
+     *
+     * 内容坐标已由各动画换算好（分页/滚动通用），这里只需复刻 [drawContent] 的排版几何
+     * （行高、行间距、段间距、铺满高度的补白、铺满宽度的字间距），否则会选错字。
+     */
+    override fun hitTest(hit: cc.aoeiuv020.pager.PageHit): String? {
+        val chapter = (hit.pageTag shr 32).toInt()
+        val pageIdx = (hit.pageTag and 0xffffffffL).toInt()
+        val pages = pagesCache[chapter] ?: return null
+        val page = pages.getOrNull(pageIdx) ?: return null
+
+        val contentX = hit.contentX
+        val contentY = hit.contentY
         if (contentX < 0 || contentY < 0
                 || contentX > contentSize.width || contentY > contentSize.height) {
             return null
@@ -397,7 +401,7 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
         }
         if (!reachedParagraphEnd && sb.length < MAX_LOOKAHEAD) {
             // 段落延续到下一页，补上下一页开头的正文行（该页开头不会是ParagraphSpacing）,
-            pages.getOrNull(pageIndex + 1)?.let { next ->
+            pages.getOrNull(pageIdx + 1)?.let { next ->
                 for (l in next.lines) {
                     if (sb.length >= MAX_LOOKAHEAD) break
                     when (l) {

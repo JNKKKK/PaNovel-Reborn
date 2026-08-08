@@ -22,4 +22,12 @@ interface PagerAnimation {
     fun scrollPrev(): Boolean
     fun scrollPrev(x: Float, y: Float): Boolean
     fun setDurationMultiply(multiply: Float)
+
+    /**
+     * 把视图坐标（含留白）的一个点解析成命中的页与页内内容坐标，
+     * 分页模式恒为当前页；滚动模式据 bitmap 的纵向偏移判断落在哪一页。
+     * 无法命中（点在留白外等）时返回 null,
+     * @param x,y 视图坐标系（含留白）下的触摸点，
+     */
+    fun hitTest(x: Float, y: Float): PageHit? = null
 }

@@ -94,6 +94,8 @@ class Pager : View, PageAnimation.OnPageChangeListener {
         drawer.drawCurrentPage(backgroundCanvas, nextCanvas)
     }
 
+    override fun currentPageTag(): Long = drawer.currentPageTag()
+
     override fun hasPrev(): Boolean {
         Timber.d("prev")
         direction = PagerDirection.PREV
@@ -176,7 +178,11 @@ class Pager : View, PageAnimation.OnPageChangeListener {
                     longPressFired = true
                     // 长按已生效，取消单击判定，后续ACTION_UP不再翻页/切菜单，
                     isClick = false
-                    actionListener?.onLongPress(e.x, e.y)
+                    // 由动画把触点解析成「哪一页 + 页内内容坐标」，再交给drawer解码成文字，
+                    // 这样滚动模式（同屏两页）也能定位到正确的页，
+                    val hit = mAnim?.hitTest(e.x, e.y)
+                    val lookahead = hit?.let { drawer.hitTest(it) }
+                    actionListener?.onLongPress(e.x, e.y, lookahead)
                 }
             }).apply {
         // 我们自己处理点击/翻页，不需要detector额外的长按后继续上报，
@@ -250,13 +256,15 @@ class Pager : View, PageAnimation.OnPageChangeListener {
         fun onPageNext()
 
         /**
-         * 是否需要长按回调，返回false时不启动长按定时器，行为与原来完全一致，
+         * 是否需要长按回调，返回false时不启动长按检测，行为与原来完全一致，
          */
         fun hasLongPress(): Boolean = false
 
         /**
-         * 长按视图时回调，坐标为视图（含留白）坐标系，
+         * 长按视图时回调。
+         * @param x,y 视图（含留白）坐标系下的长按点，
+         * @param lookahead 已由 drawer 解析出的、从命中字符起的一小段文字；未命中文字时为 null,
          */
-        fun onLongPress(x: Float, y: Float) {}
+        fun onLongPress(x: Float, y: Float, lookahead: String?) {}
     }
 }

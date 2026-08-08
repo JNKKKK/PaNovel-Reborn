@@ -9,6 +9,7 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Scroller;
 
 import cc.aoeiuv020.pager.IMargins;
+import cc.aoeiuv020.pager.PageHit;
 import cc.aoeiuv020.pager.PagerAnimation;
 
 /**
@@ -183,15 +184,40 @@ public abstract class PageAnimation implements PagerAnimation {
      */
     public abstract Canvas getConentCanvas();
 
+    // 最近一次 drawCurrent 绘制的页标识，分页模式即当前页；滚动模式由子类记到每个 bitmap 上，
+    protected long mCurrentPageTag = 0L;
+
     protected void drawCurrent() {
         Canvas bgCanvas = getBgCanvas();
         Canvas contentCanvas = getConentCanvas();
         contentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         mListener.drawCurrent(bgCanvas, contentCanvas);
+        mCurrentPageTag = mListener.currentPageTag();
+        onCurrentPageDrawn();
         if (this instanceof HorizonPageAnim) {
             ((HorizonPageAnim) this).copyContent(bgCanvas);
         }
         mView.postInvalidate();
+    }
+
+    /**
+     * drawCurrent 刚把「当前页」画进内容 bitmap 后回调（此时 mCurrentPageTag 已更新）。
+     * 滚动模式借此把标识记到承载该 bitmap 的 view 上（覆盖初始页/刷新等不走 drawNext 的路径）。
+     */
+    protected void onCurrentPageDrawn() {
+    }
+
+    /**
+     * 默认（分页模式）命中测试：只有一页，减去留白得到内容坐标，落在内容区外返回 null,
+     */
+    @Override
+    public PageHit hitTest(float x, float y) {
+        float contentX = x - mMarginWidth;
+        float contentY = y - mMarginHeight;
+        if (contentX < 0 || contentY < 0 || contentX > mViewWidth || contentY > mViewHeight) {
+            return null;
+        }
+        return new PageHit(mCurrentPageTag, contentX, contentY);
     }
 
     protected boolean drawPrev() {
@@ -246,6 +272,13 @@ public abstract class PageAnimation implements PagerAnimation {
         boolean hasNext();
 
         void pageCancel();
+
+        /**
+         * 刚由 drawCurrent 画好的那一页的不透明标识，供命中测试定位，
+         */
+        default long currentPageTag() {
+            return 0L;
+        }
     }
 
 }

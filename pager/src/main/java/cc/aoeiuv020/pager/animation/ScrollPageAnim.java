@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import cc.aoeiuv020.pager.IMargins;
+import cc.aoeiuv020.pager.PageHit;
 
 /**
  * 原理:仿照ListView源码实现的上下滑动效果
@@ -181,6 +182,8 @@ public class ScrollPageAnim extends PageAnimation {
             mScrapViews.removeFirst();
             //添加到存活的Bitmap中
             mActiveViews.add(view);
+            //记录该bitmap承载的页标识（刚由drawNext绘制，此时view还没进active，故显式赋值），
+            view.pageTag = mCurrentPageTag;
             //设置Bitmap的范围
             view.top = realEdge;
             view.bottom = realEdge + view.bitmap.getHeight();
@@ -260,6 +263,8 @@ public class ScrollPageAnim extends PageAnimation {
             mScrapViews.removeFirst();
             //加入到存活的对象中
             mActiveViews.add(0, view);
+            //记录该bitmap承载的页标识（刚由drawPrev绘制，此时view还没进active，故显式赋值），
+            view.pageTag = mCurrentPageTag;
             //设置Bitmap的范围
             view.top = realEdge - view.bitmap.getHeight();
             view.bottom = realEdge;
@@ -352,6 +357,33 @@ public class ScrollPageAnim extends PageAnimation {
     }
 
     @Override
+    protected void onCurrentPageDrawn() {
+        // 初始页/刷新等不走 fillDown/fillUp 的路径：drawCurrent 画进 mNextBitmap，
+        // 把标识记到当前持有该 bitmap 的 active view 上（fill 路径已在各自处显式赋值）。
+        for (BitmapView v : mActiveViews) {
+            if (v.bitmap == mNextBitmap) {
+                v.pageTag = mCurrentPageTag;
+                break;
+            }
+        }
+    }
+
+    @Override
+    public PageHit hitTest(float x, float y) {
+        // 视图坐标先减去左右留白得到内容 x；y 直接和各 bitmap 的 top/bottom（已含滚动偏移）比较。
+        // 命中的 bitmap 内，页内 y = 触摸点相对该 bitmap 顶部的距离（bitmap 高即内容区高）。
+        float contentX = x - mMarginWidth;
+        if (contentX < 0 || contentX > mViewWidth) return null;
+        int viewY = (int) y - mMarginHeight;
+        for (BitmapView v : mActiveViews) {
+            if (viewY >= v.top && viewY < v.bottom) {
+                return new PageHit(v.pageTag, contentX, viewY - v.top);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void draw(Canvas canvas) {
         //进行布局
         onLayout();
@@ -427,5 +459,7 @@ public class ScrollPageAnim extends PageAnimation {
         Rect destRect;
         int top;
         int bottom;
+        // 该 bitmap 当前承载的页标识，用于长按取词命中测试，
+        long pageTag;
     }
 }

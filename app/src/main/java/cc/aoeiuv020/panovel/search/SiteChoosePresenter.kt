@@ -38,34 +38,4 @@ class SiteChoosePresenter : Presenter<SiteChooseActivity>() {
             }
         }
     }
-
-    fun pinned(site: Site) {
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    DataManager.pinned(site)
-                }
-            } catch (e: Exception) {
-                val message = "置顶网站失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                view?.showError(message, e)
-            }
-        }
-    }
-
-    fun cancelPinned(site: Site) {
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    DataManager.cancelPinned(site)
-                }
-            } catch (e: Exception) {
-                val message = "取消置顶网站失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                view?.showError(message, e)
-            }
-        }
-    }
 }

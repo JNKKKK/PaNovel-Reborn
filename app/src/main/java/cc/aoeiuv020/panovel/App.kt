@@ -50,6 +50,17 @@ class App : MultiDexApplication() {
 
         initJar()
 
+        initAvailabilityProbe()
+
+    }
+
+    /**
+     * 书源可用性面板的每日采样：只在主进程触发一次，内部自带"今天已探测则跳过"和
+     * "无网络则不采样"两道闸，探测在后台线程进行，不阻塞启动，
+     */
+    private fun initAvailabilityProbe() {
+        if (!isMainProcess) return
+        DataManager.availability.probeOnStartAsync()
     }
 
     /**

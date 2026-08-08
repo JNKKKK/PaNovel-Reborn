@@ -9,10 +9,14 @@ import cc.aoeiuv020.panovel.data.entity.Site
 import android.content.Intent
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.databinding.ActivitySiteChooseBinding
 import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 import cc.aoeiuv020.panovel.util.showWithNeutralSurface
-import java.util.*
+import kotlinx.coroutines.launch
 
 class SiteChooseActivity : AppCompatActivity(), MvpView {
     companion object {
@@ -23,6 +27,7 @@ class SiteChooseActivity : AppCompatActivity(), MvpView {
 
     private lateinit var binding: ActivitySiteChooseBinding
     private lateinit var presenter: SiteChoosePresenter
+    private var adapter: SiteListAdapter? = null
 
     private val itemListener = object : SiteListAdapter.ItemListener {
         override fun onEnabledChanged(site: Site) {
@@ -43,15 +48,6 @@ class SiteChooseActivity : AppCompatActivity(), MvpView {
                         vh.site.enabled = !vh.site.enabled
                         vh.cbEnabled.isChecked = vh.site.enabled
                         presenter.enabledChange(vh.site)
-                    },
-                    R.string.pinned to {
-                        vh.site.pinnedTime = Date()
-                        (binding.rvSiteList.adapter as SiteListAdapter).move(vh.layoutPosition, 0)
-                        presenter.pinned(vh.site)
-                    },
-                    R.string.cancel_pinned to {
-                        vh.site.pinnedTime = Date(0)
-                        presenter.cancelPinned(vh.site)
                     }
             )
             AlertDialog.Builder(this@SiteChooseActivity)
@@ -62,9 +58,6 @@ class SiteChooseActivity : AppCompatActivity(), MvpView {
             return true
         }
 
-        override fun onSettingsClick(site: Site) {
-            SiteSettingsActivity.start(this@SiteChooseActivity, site.name)
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,11 +76,36 @@ class SiteChooseActivity : AppCompatActivity(), MvpView {
         presenter.attach(this)
 
         presenter.start()
+        observeAvailability()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // 每次打开/回到书源页，给当天为红的书源再探一次机会（成功则转黄），
+        // 已在探测中的书源会被 AvailabilityManager 去重跳过，
+        DataManager.availability.reprobeFailuresAsync()
     }
 
     fun showSiteList(siteList: List<Site>) {
-        val adapter = SiteListAdapter(siteList, itemListener)
+        val adapter = SiteListAdapter(siteList, itemListener).also {
+            it.updateHistory(DataManager.availability.history.value)
+        }
+        this.adapter = adapter
         binding.rvSiteList.adapter = adapter
+    }
+
+    /**
+     * 观察可用性探测结果：若面板打开时当天的探测刚好完成，状态条会实时刷新，
+     * 否则也会用已有历史立即渲染，
+     */
+    private fun observeAvailability() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                DataManager.availability.history.collect { history ->
+                    adapter?.updateHistory(history)
+                }
+            }
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

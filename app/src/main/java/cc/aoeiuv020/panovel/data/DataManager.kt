@@ -7,6 +7,7 @@ import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.api.NovelContext
+import cc.aoeiuv020.panovel.data.availability.AvailabilityManager
 import cc.aoeiuv020.panovel.data.entity.*
 import cc.aoeiuv020.panovel.localbook.ImportRequireValue
 import cc.aoeiuv020.panovel.util.notNullOrReport
@@ -38,6 +39,9 @@ object DataManager {
     @SuppressLint("StaticFieldLeak")
     lateinit var dictionary: DictionaryManager
         private set
+    @SuppressLint("StaticFieldLeak")
+    lateinit var availability: AvailabilityManager
+        private set
     private lateinit var appContext: Context
 
     @Synchronized
@@ -51,6 +55,7 @@ object DataManager {
         local = LocalManager(context)
         download = DownloadManager(context)
         dictionary = DictionaryManager(context)
+        availability = AvailabilityManager(context) { api.contexts }
     }
 
     fun listBookshelf(): List<NovelManager> = app.listBookshelf().map { it.toManager() }
@@ -177,15 +182,6 @@ object DataManager {
     fun removeWebViewCookies() = cookie.removeCookies()
 
     fun removeNovelContextCookies(site: String) = api.removeCookies(getNovelContextByName(site))
-    fun pinned(site: Site) {
-        site.pinnedTime = Date()
-        app.updatePinnedTime(site)
-    }
-
-    fun cancelPinned(site: Site) {
-        site.pinnedTime = Date(0)
-        app.updatePinnedTime(site)
-    }
 
     fun updateReadStatus(novel: Novel) = app.updateReadStatus(novel)
 

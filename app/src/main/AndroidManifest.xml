@@ -27,9 +27,6 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
         tools:targetApi="q">
         <activity
-            android:name=".search.SiteSettingsActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".localbook.CreateDocumentActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 

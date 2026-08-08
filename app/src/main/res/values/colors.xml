@@ -383,4 +383,11 @@
     <color name="gray_color">#4b4b58</color>
     <color name="textWarning">#ba1b1b</color>
 
+    <!-- 书源可用性面板的状态条颜色，DayNight-aware (see values-night/colors.xml)：
+         绿=首探可用，黄=红后当天重试恢复，红=不可用（含 CF 拦截），灰=当天未采样。 -->
+    <color name="availabilityOk">@color/md_green_600</color>
+    <color name="availabilityRecovered">@color/md_amber_600</color>
+    <color name="availabilityFail">@color/md_red_600</color>
+    <color name="availabilityUnknown">@color/md_grey_300</color>
+
 </resources>

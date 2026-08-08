@@ -359,4 +359,11 @@ abstract class NovelContext {
      */
     open fun getImage(extra: String): URL = toURL(toURL(site.baseUrl), extra)
 
+    /**
+     * 探测网站首页是否可达，供书源可用性面板每日采样，
+     * 只做一次轻量请求并返回原始信号，判定交给上层，
+     * 默认返回不可达，具体实现见 [cc.aoeiuv020.panovel.api.base.OkHttpNovelContext],
+     */
+    open fun probeHomePage(): HomePageProbe = HomePageProbe(reachable = false)
+
 }

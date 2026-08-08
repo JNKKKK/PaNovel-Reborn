@@ -1,5 +1,6 @@
 package cc.aoeiuv020.panovel.api.base
 
+import cc.aoeiuv020.panovel.api.HomePageProbe
 import cc.aoeiuv020.panovel.api.LoggerInputStream
 import cc.aoeiuv020.panovel.api.NovelContext
 import okhttp3.*
@@ -16,6 +17,9 @@ import javax.net.ssl.X509TrustManager
 
 abstract class OkHttpNovelContext : NovelContext() {
     companion object {
+        // 探测首页时只窥探这么多字节的正文，够识别 Cloudflare 挑战页即可，
+        private const val PROBE_BODY_PEEK_BYTES = 64L * 1024
+
         val sharedClient: OkHttpClient = OkHttpClient()
 
         fun OkHttpClient.Builder.sslAllowAll(): OkHttpClient.Builder {
@@ -151,6 +155,32 @@ abstract class OkHttpNovelContext : NovelContext() {
     protected fun responseBody(call: Call): ResponseBody {
         // okhttp5起Response.body非空，
         return response(call).body
+    }
+
+    /**
+     * 探测首页可达性：一次 GET，复用本站的 client（UA/SSL/cookie 与真实抓取一致），
+     * 只取原始信号返回，判定（可用/被 Cloudflare 拦截/失败）交给 app 层，
+     * 任何网络异常都归为不可达而不抛出，方便批量并发探测，
+     */
+    override fun probeHomePage(): HomePageProbe = try {
+        connect(homePage).execute().use { response ->
+            // 只读一小段正文用于识别 Cloudflare 挑战页，避免整页下载，
+            val snippet = try {
+                response.peekBody(PROBE_BODY_PEEK_BYTES).string()
+            } catch (e: Exception) {
+                ""
+            }
+            HomePageProbe(
+                reachable = true,
+                code = response.code,
+                server = response.header("server"),
+                cfMitigated = response.header("cf-mitigated"),
+                bodySnippet = snippet
+            )
+        }
+    } catch (e: Exception) {
+        logger.debug("probe home page failed", e)
+        HomePageProbe(reachable = false)
     }
 
     private inner class LogInterceptor : Interceptor {

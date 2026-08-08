@@ -4,9 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
     android:background="?android:attr/selectableItemBackground">
+
+    <CheckBox
+        android:id="@+id/cbEnabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <TextView
         android:id="@+id/tvName"
@@ -18,10 +28,11 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:ellipsize="end"
-        app:layout_constraintEnd_toStartOf="@+id/ivSettings"
+        android:maxLines="1"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/cbEnabled"
-        app:layout_constraintTop_toTopOf="@+id/cbEnabled"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="@string/app_name" />
 
     <TextView
@@ -33,7 +44,7 @@
         android:layout_marginLeft="8dp"
         android:ellipsize="end"
         android:maxLines="1"
-        app:layout_constraintEnd_toStartOf="@+id/ivSettings"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/cbEnabled"
         app:layout_constraintTop_toBottomOf="@+id/tvName"
@@ -41,7 +52,7 @@
 
     <TextView
         android:id="@+id/tvStopUpkeep"
-        style="@style/TextBody1"
+        style="@style/TextSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -51,7 +62,7 @@
         android:layout_marginRight="8dp"
         android:ellipsize="end"
         android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@+id/ivSettings"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/cbEnabled"
         android:textColor="@color/textWarning"
@@ -59,24 +70,16 @@
         android:text="@string/tip_stop_upkeep"
         tools:visibility="visible" />
 
-    <CheckBox
-        android:id="@+id/cbEnabled"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <cc.aoeiuv020.panovel.search.AvailabilityBarsView
+        android:id="@+id/availabilityBars"
+        android:layout_width="0dp"
+        android:layout_height="16dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/ivSettings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:tint="@color/gray_color"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/cbEnabled"
-        app:srcCompat="@drawable/ic_settings"
-        tools:ignore="ContentDescription" />
+        app:layout_constraintStart_toEndOf="@+id/cbEnabled"
+        app:layout_constraintTop_toBottomOf="@+id/tvStopUpkeep" />
 </androidx.constraintlayout.widget.ConstraintLayout>

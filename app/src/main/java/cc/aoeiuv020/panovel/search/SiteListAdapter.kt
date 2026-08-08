@@ -4,10 +4,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.ImageView
 import android.widget.TextView
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
+import cc.aoeiuv020.panovel.data.availability.AvailabilityManager
+import cc.aoeiuv020.panovel.data.availability.ProbeRecord
 import cc.aoeiuv020.panovel.data.entity.Site
 import cc.aoeiuv020.panovel.util.hide
 import cc.aoeiuv020.panovel.util.show
@@ -18,8 +19,18 @@ class SiteListAdapter(
         private val itemListener: ItemListener
 ) : androidx.recyclerview.widget.RecyclerView.Adapter<SiteListAdapter.ViewHolder>() {
     private val data: MutableList<Site> = siteList.toMutableList()
+
+    // 书源名 -> 可用性历史，随探测完成刷新，
+    private var history: Map<String, List<ProbeRecord>> = emptyMap()
+
     override fun getItemCount(): Int {
         return data.size
+    }
+
+    /** 探测数据更新后整表重绑状态条， */
+    fun updateHistory(history: Map<String, List<ProbeRecord>>) {
+        this.history = history
+        notifyItemRangeChanged(0, data.size)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -31,22 +42,12 @@ class SiteListAdapter(
         holder.bind(data[position])
     }
 
-    fun move(from: Int, to: Int) {
-        if (from == to || from !in data.indices || to !in data.indices) {
-            // 位置不正确就直接返回，
-            return
-        }
-        // ArrayList直接删除插入的话性能不行，但是无所谓了，
-        val novel = data.removeAt(from)
-        data.add(to, novel)
-        notifyItemMoved(from, to)
-    }
-
     inner class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
         private val tvStopUpkeep: TextView = itemView.findViewById(R.id.tvStopUpkeep)
         private val tvName: TextView = itemView.findViewById(R.id.tvName)
         private val tvUrl: TextView = itemView.findViewById(R.id.tvUrl)
-        private val ivSettings: ImageView = itemView.findViewById(R.id.ivSettings)
+        private val availabilityBars: AvailabilityBarsView =
+            itemView.findViewById(R.id.availabilityBars)
         val cbEnabled: CheckBox = itemView.findViewById(R.id.cbEnabled)
         lateinit var site: Site
 
@@ -63,9 +64,6 @@ class SiteListAdapter(
             }
             itemView.setOnLongClickListener {
                 itemListener.onItemLongClick(this)
-            }
-            ivSettings.setOnClickListener {
-                itemListener.onSettingsClick(site)
             }
         }
 
@@ -84,6 +82,9 @@ class SiteListAdapter(
                         ?: v.context.getString(R.string.tip_stop_upkeep_reason_default))
                 }
             }
+            availabilityBars.setStatuses(
+                AvailabilityManager.barsFor(history[data.name], BAR_SLOTS)
+            )
         }
     }
 
@@ -91,7 +92,11 @@ class SiteListAdapter(
         fun onEnabledChanged(site: Site)
         fun onSiteSelect(site: Site)
         fun onItemLongClick(vh: ViewHolder): Boolean
-        fun onSettingsClick(site: Site)
+    }
+
+    companion object {
+        // 面板展示最近多少天的状态条，
+        private const val BAR_SLOTS = 14
     }
 
 }

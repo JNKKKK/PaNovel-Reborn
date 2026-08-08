@@ -2,7 +2,6 @@ package cc.aoeiuv020.panovel.data.dao
 
 import androidx.room.*
 import cc.aoeiuv020.panovel.data.entity.Site
-import java.util.*
 
 @Dao
 abstract class SiteDao {
@@ -35,9 +34,6 @@ abstract class SiteDao {
 
     @Query("update Site set baseUrl = :baseUrl where name = :name")
     abstract fun updateBaseUrl(name: String, baseUrl: String)
-
-    @Query("update Site set pinnedTime = :pinnedTime where name = :name")
-    abstract fun updatePinnedTime(name: String, pinnedTime: Date)
 
     @Query("update Site set hide = :hide where name = :name")
     abstract fun updateHide(name: String, hide: Boolean)

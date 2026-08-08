@@ -36,4 +36,10 @@
 
     <!-- Downloaded-chapter green: a lighter shade for legibility on the dark list. -->
     <color name="chapterDownloaded">@color/md_green_300</color>
+
+    <!-- 可用性状态条：暗色列表上用更亮的色阶，灰条用高于 #121212 内容面的抬升色。 -->
+    <color name="availabilityOk">@color/md_green_400</color>
+    <color name="availabilityRecovered">@color/md_amber_400</color>
+    <color name="availabilityFail">@color/md_red_400</color>
+    <color name="availabilityUnknown">#3a3a3a</color>
 </resources>

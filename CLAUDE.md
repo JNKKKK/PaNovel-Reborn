@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PaNovel is an Android novel reader app being revived. Goals: **run again, easy to maintain, live longer**.
 
-It supports local TXT/EPUB files, backup/restore to local files (via SAF; books in the chosen 书架/书单/历史 collections are backed up together with their chapter lists and cached chapter content), reading progress sync, a pluggable site scraper system with 24 active scrapers (the original 68 were removed because the sites died; all current scrapers are new implementations), and an in-reader Chinese dictionary: long-press a character to look up its pinyin and definition from a bundled MDX dictionary (greedy multi-character/proverb matching).
+It supports local TXT/EPUB files, backup/restore to local files (via SAF; books in the chosen 书架/书单/历史 collections are backed up together with their chapter lists and cached chapter content), reading progress sync, a pluggable site scraper system with 24 active scrapers (the original 68 were removed because the sites died; all current scrapers are new implementations), an in-reader Chinese dictionary (long-press a character to look up its pinyin and definition from a bundled MDX dictionary — greedy multi-character/proverb matching), and a **book-source availability dashboard** (the 书源 screen shows each source's recent reachability as a row of colored bars from local daily probes).
 
 Deferred work and future improvements (with rationale) are tracked in [ROADMAP.md](ROADMAP.md).
 
@@ -46,6 +46,7 @@ Requires JDK 17+. Uses Gradle 9.6.1, AGP 9.3.0, Kotlin 2.4.10, KSP 2.3.11, compi
 - `CacheManager` – Content caching (IronDB + kotlinx-serialization)
 - `LocalManager` – Local file novel support
 - `DownloadManager` – Download management
+- `AvailabilityManager` – Book-source availability probing (see [Book-Source Availability Dashboard](#book-source-availability-dashboard-书源-screen))
 
 **Dependency management:**
 - `AppContainer` (in `App.kt`) holds app-scoped dependencies
@@ -85,6 +86,21 @@ Long-pressing a character in the reader shows a bottom sheet with its pinyin and
 - **Asset packaging:** the `.mdx` is a `noCompress` asset under `app/src/main/assets/dict/`; on first use it's copied to `filesDir` (so `RandomAccessFile` works). The copy is guarded by a sibling `.version` marker file — **bump `BuiltinDictionary.version` whenever the `.mdx` asset content changes** to force a re-copy of stale user copies (`assets.openFd`-based size checks fail on compressed assets, hence the marker).
 - **Reader plumbing:** `Pager` uses a `GestureDetector` long-press with strict gesture separation (long-press never toggles bars or turns the page). Hit-testing maps a touch to a character via `PageHit` (opaque page tag + page-local content coords), resolved per animation family (`ReaderDrawer.hitTest` replays the typesetting geometry) — works in both paged and scroll modes.
 - **Tests:** `mdict/src/test` splits `MdxDictionaryTest` (format-level only) from `XinhuaDictionaryTest` (dictionary semantics via the public API); both skip via `assumeTrue` if the bundled `.mdx` asset is absent.
+
+## Book-Source Availability Dashboard (书源 screen)
+
+The 书源 (source) screen is an availability dashboard: each source shows its recent reachability as a row of colored bars (a **14-sample rolling window**, newest on the right). There is intentionally **no** per-source user settings screen — cookie/header/charset overrides were removed (users shouldn't touch scraper internals; a correct scraper bakes those in). The scraper library still has `NovelContext.replaceCookies`/`replaceHeaders`/`forceCharset`, just no UI.
+
+- **Bar colors** (`ProbeStatus`, DayNight-aware in `values*/colors.xml` as `availabilityOk/Recovered/Fail/Unknown`): 🟩 `OK` = reachable with valid content on first probe; 🟨 `RECOVERED` = was red, then recovered on a same-day re-probe (frozen — never re-probed again that day); 🟥 `FAIL` = unreachable/error/**Cloudflare-blocked** (CF is unsupported in the scraper, so a CF challenge page counts as unavailable); ⬜ `UNKNOWN` = no sample that slot (only the left-padding before 14 samples accumulate).
+- **Sampling model** — one sample per **calendar day the app is opened** (not per calendar day; skipped days leave no bar, no gap-filling). Epoch-day is computed arithmetically (minSdk 24, no `java.time` desugaring).
+- **`AvailabilityManager`** (in `data/availability/`, owned by `DataManager`) is the whole engine:
+  - **Probe hook:** `NovelContext.probeHomePage()` (implemented in `OkHttpNovelContext`) does one lightweight GET reusing the site's own OkHttp client (correct UA/SSL/cookies) and returns raw `HomePageProbe` signals; **classification stays in the app layer** (`AvailabilityManager.classify`) — the scraper interprets nothing.
+  - **Retry in place:** each probe attempts up to `PROBE_ATTEMPTS` (retry only on non-OK) before recording red.
+  - **Two triggers:** `probeOnStartAsync` (from `App.onCreate`, main process only) runs the full probe once per day, else re-probes only today's reds; `reprobeFailuresAsync` (from `SiteChooseActivity.onStart`) re-probes only today's reds on every screen open. A red→OK on re-probe upgrades to `RECOVERED` (yellow).
+  - **Guards:** skips entirely when offline (`ConnectivityManager`, `ACCESS_NETWORK_STATE` already granted) so an offline launch doesn't paint everything red; a per-source `inProgress` set (`ConcurrentHashMap.newKeySet()`) dedupes overlapping triggers so **no two probes run for the same source at once**; bounded concurrency via a `Semaphore`.
+  - **Live UI:** exposes a `StateFlow<Map<siteName, List<ProbeRecord>>>`; `SiteChooseActivity` collects it (`repeatOnLifecycle`) so bars refresh live as a probe round finishes. `AvailabilityBarsView` is a pure custom `View` that renders `AvailabilityManager.barsFor(records, slots)`.
+- **Storage:** `AvailabilityStore` uses **IronDB** (not Room) — probe history is regenerable telemetry, so it's a single serialized blob under `filesDir/availability/` (site names can't be IronDB keys — the key serializer mangles `/`, `:`, `.` and `keysContainer()` can't iterate), capped at 30 records/site, not included in backup. Using Room would have meant a schema-version bump + migration for throwaway data; IronDB matches how `CacheManager`/`LocalManager` treat regenerable data.
+- **Tests:** `AvailabilityManagerTest` (app `src/test`, pure — no Android) covers `classify` (strict success + CF→FAIL) and `barsFor`/`upsertToday` (padding, newest-kept, red→yellow same-day replacement without adding a slot).
 
 ## Key Patterns
 

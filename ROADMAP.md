@@ -39,8 +39,67 @@ Migrated in three phases, each verified on-device before the next:
 - **Dark-mode content text** works because nearly all text routes through
   `@color/textBlack` / `@color/textDefault`, overridden in `values-night/colors.xml`.
 
-**Future (not done):** dynamic color (Material You / `DynamicColors`), a
-user-facing Light/Dark/System toggle (currently follow-system only), and
-optionally migrating the many `AlertDialog.Builder` sites to
-`MaterialAlertDialogBuilder` (they already pick up Material dialog styling from
-the theme, so this is cosmetic).
+**Dialog/surface polish (also done):** dialogs, popups, the snackbar, and
+preference screens were pushed onto a neutral grey-scale surface
+(`colorDialogSurface`, a touch lighter than the content surface in dark) with
+M3's pink elevation overlay disabled. Key gotcha for future work: an AppCompat
+dialog's window background is a shape drawable whose color re-resolves from a
+theme attribute, so theme-level `colorSurface` overrides and `setTint()` don't
+stick — `View.kt#applyNeutralSurface()` replaces the drawable on show(), and all
+dialogs route through it (`showWithNeutralSurface()` / on-show listeners). Text
+tints (`android:textColorPrimary/Secondary`, `colorOnSurfaceVariant`) are pinned
+because M3's on-surface literals carry a lavender cast.
+
+**Future (not done):** dynamic color (Material You / `DynamicColors`) and a
+user-facing Light/Dark/System toggle (currently follow-system only).
+
+## Jetpack Compose UI migration (assessment — not started)
+
+**Status:** not planned yet — captured so the trade-off is on record. This is a
+reflection prompted by how much on-device back-and-forth the DayNight styling
+took; the question was whether a modern Compose rewrite would have avoided it.
+
+**Why the theming took many rounds (root causes):**
+1. *Inherent to visual migration, not code quality.* Theme changes compile but
+   only reveal problems at runtime — often only in dark mode, on a specific
+   device, while scrolling. There's no static check for "this dialog renders
+   pink at night." The change → look → fix loop is structural to UI work; it was
+   slow here mainly because verification was remote (no local emulator in the
+   loop).
+2. *The app fights M3's defaults by design.* Dark-grey bars + a single pink
+   accent + neutral surfaces is a custom look layered on M3, which wants
+   accent-colored bars, primary-tinted elevated surfaces, and a merged
+   primary/accent role. Much effort went into opting out (`elevationOverlayEnabled=false`,
+   resource-vs-attr bar colors, pinned on-surface text). A from-scratch app that
+   *embraced* M3 would hit almost none of this — but the same custom look would
+   cost the same in any codebase, new or old.
+3. *Genuinely dated View-system patterns — the real "old code" tax.* The
+   multi-round dialog-surface chase (InsetDrawable → GradientDrawable → theme-attr
+   re-resolution; `textColorAlertDialogListItem` vs `colorOnSurfaceVariant`; the
+   deprecated preference `setTargetFragment`) and the edge-to-edge +
+   nested-CoordinatorLayout + CollapsingToolbar overlap fight are artifacts of
+   XML Views + theme-attribute indirection + AlertDialog/PreferenceFragmentCompat.
+
+**What Compose would change:** one `MaterialTheme { ColorScheme }` that every
+component reads directly — change a surface color once and dialogs, menus,
+snackbar, sheets all update. No `?attr` resolution, no `values-night/` parallel
+tree (`isSystemInDarkTheme()` picks the scheme), no runtime-drawable-vs-theme
+mismatch. Most of this session's multi-round chases would have been single theme
+values. Category (3) largely disappears; categories (1) and (2) do **not** — the
+per-screen on-device verification loop and any fight against M3 defaults remain.
+
+**Costs / caveats (why it's not obviously worth it):**
+- It's a real rewrite of every non-reader screen (main, detail, search, backup,
+  settings, download, book list), plus MVP→state and ViewBinding→Compose.
+- **The reader is the hard, app-specific part** and does *not* map cleanly:
+  custom canvas pagination/animations (`pager` module, `NovelTextActivity`).
+  Realistically it stays a View hosted in Compose (`AndroidView`), which is its
+  own interop seam.
+- Trades this set of papercuts for Compose's own (state hoisting, recomposition
+  perf, View interop for the reader, less mature preference tooling).
+
+**Recommendation:** only worth it if the UI will keep evolving (aligns with the
+project's "easy to maintain, live longer" goal). If the app is now in
+"works/leave it alone" mode, the current theming is complete and a rewrite won't
+pay back. If undertaken, migrate screen-by-screen and leave the reader as a
+hosted View initially.

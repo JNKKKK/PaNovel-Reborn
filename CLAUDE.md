@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PaNovel is an Android novel reader app being revived. Goals: **run again, easy to maintain, live longer**.
 
-It supports local TXT/EPUB files, backup/restore to local files (via SAF; books in the chosen 书架/书单/历史 collections are backed up together with their chapter lists and cached chapter content), reading progress sync, and a pluggable site scraper system with 24 active scrapers (the original 68 were removed because the sites died; all current scrapers are new implementations).
+It supports local TXT/EPUB files, backup/restore to local files (via SAF; books in the chosen 书架/书单/历史 collections are backed up together with their chapter lists and cached chapter content), reading progress sync, a pluggable site scraper system with 24 active scrapers (the original 68 were removed because the sites died; all current scrapers are new implementations), and an in-reader Chinese dictionary: long-press a character to look up its pinyin and definition from a bundled MDX dictionary (greedy multi-character/proverb matching).
 
 Deferred work and future improvements (with rationale) are tracked in [ROADMAP.md](ROADMAP.md).
 
@@ -64,12 +64,27 @@ Base classes: `MvpView` interface + `Presenter<T : MvpView>` abstract class. Pre
 | shared | Java | Shared utilities (`shared.jsoup` DOM helpers, `shared.json`, `shared.regex`, `shared.ssl`, `shared.util`) |
 | IronDB | Java | File-based NoSQL key-value store (kotlinx-serialization) |
 | bookfile | Java | Book file formats: TXT/EPUB parsing and export (epub4j-core) |
+| mdict | Java | MDX (MDict) dictionary reader for the in-reader lookup feature |
 | pager | Android | Pagination library |
 | reader | Android | Novel reader UI |
 
 ## Writing Scrapers
 
 See [WRITING_SCRAPERS.md](WRITING_SCRAPERS.md) for the full guide — creating a scraper, chapter-list pagination, content parsing, code conventions, and integration-test requirements (including anti-patterns to avoid).
+
+## Dictionary Lookup (long-press in reader)
+
+Long-pressing a character in the reader shows a bottom sheet with its pinyin and definition. The layer is split **generic vs. dictionary-specific** so new built-in dictionaries (and a future settings toggle to switch between them) only need a new `Dictionary` implementation:
+
+- **`mdict` module (generic MDX):**
+  - `MdxDictionary` — pure MDX (MDict) file format only: parses the container (v1.2 layout; none/LZO1X/zlib block compression; GBK/UTF-8/UTF-16/Big5), builds an in-memory key→offset index, decompresses record blocks on demand (LRU). Exposes `keys` and `lookup(key)` returning raw record text — it interprets **no** content conventions.
+  - `DictEntry` — plain, dictionary-agnostic data model (headword, pinyin?, definitionHtml).
+  - `Dictionary` — the app-facing interface (`senses(word)` / `contains(word)`). Upper layers depend only on this.
+  - `XinhuaDictionary` — implements `Dictionary` and owns **all** `超级新华字典.mdx` quirks (documented in its header): the `` `1`词`2`拼音<br>释义 `` record markup, numeric-suffix polyphones (`的1/的2/的3`, `义/义1/义2`), and comma/semicolon variant merge-keys (`蹬腿,蹬腿儿`; `堤岸，堤坝`) with their comma-joined pinyin. **Add a new dictionary by writing another `Dictionary` implementation here — do not push a dictionary's quirks into the generic classes.**
+- **App side:** `DictionaryManager` (in `DataManager`) is dictionary-agnostic — depends on `Dictionary`, does the greedy multi-character walk, and manages the asset. Built-in dictionaries are declared in the `BuiltinDictionary` enum (asset name + version + opener lambda); `current` is fixed to the default for now, and a settings-driven selection would just flip it.
+- **Asset packaging:** the `.mdx` is a `noCompress` asset under `app/src/main/assets/dict/`; on first use it's copied to `filesDir` (so `RandomAccessFile` works). The copy is guarded by a sibling `.version` marker file — **bump `BuiltinDictionary.version` whenever the `.mdx` asset content changes** to force a re-copy of stale user copies (`assets.openFd`-based size checks fail on compressed assets, hence the marker).
+- **Reader plumbing:** `Pager` uses a `GestureDetector` long-press with strict gesture separation (long-press never toggles bars or turns the page). Hit-testing maps a touch to a character via `PageHit` (opaque page tag + page-local content coords), resolved per animation family (`ReaderDrawer.hitTest` replays the typesetting geometry) — works in both paged and scroll modes.
+- **Tests:** `mdict/src/test` splits `MdxDictionaryTest` (format-level only) from `XinhuaDictionaryTest` (dictionary semantics via the public API); both skip via `assumeTrue` if the bundled `.mdx` asset is absent.
 
 ## Key Patterns
 

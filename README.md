@@ -13,6 +13,7 @@
 - 书架管理、书单、搜索
 - 自定义阅读界面（字体、背景、边距、翻页动画等）
 - 下载章节离线阅读
+- 阅读时长按查词：弹出内置词典（超级新华字典）的拼音与释义，支持贪婪匹配多字词/成语
 
 ## 构建
 
@@ -34,6 +35,7 @@ Kotlin 2.4 · Gradle 9.6 · AGP 9.3 · compileSdk 36 · Room · Coroutines · ko
 | scraper | 小说网站爬虫（JSoup） |
 | shared | 共享工具库（JSoup 辅助、JSON、正则、SSL） |
 | bookfile | 本地文件格式（TXT、EPUB 解析与导出） |
+| mdict | MDX（MDict）词典读取（长按查词） |
 | reader | 阅读器 UI |
 | pager | 翻页库 |
 | IronDB | 文件型键值存储（kotlinx-serialization） |

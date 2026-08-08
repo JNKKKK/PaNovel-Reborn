@@ -30,6 +30,9 @@ class MdxDictionary(private val file: File) : Closeable {
     /** 词 → 该词所有记录在「拼接后的解压记录空间」中的起始偏移；一个词可能有多个义项。 */
     private val index: HashMap<String, LongArray>
 
+    /** 变体别名 → 其合并键的记录偏移（如「蹬腿」→「蹬腿,蹬腿儿」的记录）；仅在无同名真实键时登记。 */
+    private val aliasIndex: HashMap<String, LongArray>
+
     /** 记录块目录，按解压后的累计起点排序，便于二分定位。 */
     private val recordBlocks: Array<RecordBlock>
 
@@ -100,6 +103,22 @@ class MdxDictionary(private val file: File) : Closeable {
         index = HashMap(builder.size * 4 / 3 + 1)
         for ((k, v) in builder) index[k] = v.toLongArray()
 
+        // 别名索引：本词典把异形词/儿化写法用逗号、分号合并进一个键（如「蹬腿,蹬腿儿」「堤岸，堤坝」
+        // 「料头；料头儿」），使得精确查「蹬腿」查不到。把这类键拆成各变体，指向同一条记录，
+        // 真实键优先——只有当某变体本身不是真实键时才登记为别名。（顿号、多用于成语/并列内容，
+        // 不当作变体分隔，避免误拆。）
+        aliasIndex = HashMap()
+        for ((k, offsets) in index) {
+            if (!VARIANT_SEPARATOR.containsMatchIn(k)) continue
+            for (part in k.split(VARIANT_SEPARATOR)) {
+                val variant = part.trim()
+                if (variant.isEmpty() || variant == k) continue
+                if (index.containsKey(variant)) continue // 真实键优先，
+                // 多个合并键可能落到同一变体，保留先见到的即可，
+                aliasIndex.putIfAbsent(variant, offsets)
+            }
+        }
+
         // ---- record section ----
         val numRecordBlocks = readIntBE()
         readIntBE() // numEntries, unused
@@ -130,12 +149,12 @@ class MdxDictionary(private val file: File) : Closeable {
      * 词不存在时返回空列表。查询线程安全由调用方保证（同一实例串行使用）。
      */
     fun lookup(word: String): List<String> {
-        val offsets = index[word] ?: return emptyList()
+        val offsets = index[word] ?: aliasIndex[word] ?: return emptyList()
         return offsets.map { readRecord(it) }
     }
 
-    /** 词是否存在（用于长按取词时贪婪扩展匹配）。 */
-    fun contains(word: String): Boolean = index.containsKey(word)
+    /** 词是否存在（用于长按取词时贪婪扩展匹配）。含逗号/分号合并键拆出的变体别名。 */
+    fun contains(word: String): Boolean = index.containsKey(word) || aliasIndex.containsKey(word)
 
     private fun readRecord(offset: Long): String {
         // 二分定位所在记录块，
@@ -230,6 +249,8 @@ class MdxDictionary(private val file: File) : Closeable {
         private const val RECORD_BLOCK_CACHE_SIZE = 16
         private val ATTR_ENCODING = Regex("""Encoding="([^"]*)"""")
         private val ATTR_VERSION = Regex("""RequiredEngineVersion="([^"]*)"""")
+        // 合并键里的变体分隔符：半角/全角逗号与分号。顿号、不算（多为成语/并列内容）。
+        private val VARIANT_SEPARATOR = Regex("[,，;；]")
         private val lzo = LzoLibrary.getInstance().newDecompressor(LzoAlgorithm.LZO1X, null)
 
         private fun readIntBE(b: ByteArray, off: Int): Int =

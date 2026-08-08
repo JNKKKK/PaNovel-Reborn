@@ -30,6 +30,15 @@ class DictEntryTest {
     }
 
     @Test
+    fun commaJoinedVariantPinyin() {
+        // 异形词合并键：词头与拼音都用逗号连写，拼音仍应识别并提取，
+        val e = DictEntry.parse("`1`蹬腿,蹬腿儿`2`dēngtuǐ，dēngtuǐr<br>伸腿", "蹬腿")
+        assertEquals("蹬腿,蹬腿儿", e.headword)
+        assertEquals("dēngtuǐ，dēngtuǐr", e.pinyin)
+        assertEquals("伸腿", e.definitionHtml)
+    }
+
+    @Test
     fun structuredBodyKeepsAllAsDefinition() {
         // 几：首段是 "(1)" 而非拼音，pinyin 置空，正文保留完整，
         val raw = "`1`几`2`(1)<br>幾<br>jī<br>苗头"

@@ -14,8 +14,9 @@ data class DictEntry(
         // 这时拼音置空，该段文字仍留在释义里。
         private val RECORD = Regex("""^`1`([\s\S]*?)`2`([\s\S]*)$""")
         private val FIRST_BR = Regex("""<br\s*/?>""", RegexOption.IGNORE_CASE)
-        // 拼音字符集：拉丁字母、带声调的元音、ü/ê 及空格与隔音号，不含数字/括号/汉字，
-        private val PINYIN = Regex("""^[a-zA-ZüÜêÊÀ-ɏḀ-ỿ·'\- ]+$""")
+        // 拼音字符集：拉丁字母、带声调的元音、ü/ê、空格与隔音号，以及异形词合并时的逗号/分号
+        // （如「dēngtuǐ，dēngtuǐr」「dī àn，dībà」），不含数字/括号/汉字，
+        private val PINYIN = Regex("""^[a-zA-ZüÜêÊÀ-ɏḀ-ỿ·'\-,，;； ]+$""")
 
         /**
          * 把一条原始记录解析成 [DictEntry]。无法识别 `` `1``/`` `2`` 标记时，

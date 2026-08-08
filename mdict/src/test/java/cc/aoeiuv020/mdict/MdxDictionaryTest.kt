@@ -64,6 +64,27 @@ class MdxDictionaryTest {
     }
 
     @Test
+    fun variantAliasKeys() = withDict { mdx ->
+        // 异形词/儿化写法被合并进一个键（逗号/全角逗号/分号分隔），各变体都应能查到，
+        // 半角逗号：蹬腿,蹬腿儿
+        assertTrue(mdx.contains("蹬腿"))
+        assertTrue(mdx.contains("蹬腿儿"))
+        assertTrue(mdx.lookup("蹬腿").isNotEmpty())
+        // 全角逗号：堤岸，堤坝
+        assertTrue(mdx.contains("堤岸"))
+        assertTrue(mdx.contains("堤坝"))
+        // 查任一变体拿到的应是同一条合并记录，
+        assertEquals(mdx.lookup("堤岸"), mdx.lookup("堤坝"))
+    }
+
+    @Test
+    fun variantPinyinLifted() = withDict { mdx ->
+        // 合并键的拼音也是逗号连写，应能识别并提到词头，
+        val e = DictEntry.parse(mdx.lookup("蹬腿").first(), "蹬腿")
+        assertEquals("dēngtuǐ，dēngtuǐr", e.pinyin)
+    }
+
+    @Test
     fun numericSuffixSenses() = withDict { mdx ->
         // 多音/多义字被拆成数字后缀键，两种形态都要能查到：
         // 的：没有裸键，只有 的1/的2/的3，

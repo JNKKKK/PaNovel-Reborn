@@ -11,14 +11,16 @@ import java.nio.charset.Charset
 import java.util.zip.Inflater
 
 /**
- * 只读的 MDX（MDict）词典读取器。
+ * 只读的 MDX（MDict）词典读取器 —— **通用**，只负责 MDX 文件格式本身，不理解任何具体
+ * 词典的正文/键名约定。它把「键 → 该键的原始记录文本」暴露出来，具体记录里的标记、
+ * 多音字拆分、异形词合并等约定由各词典自己的 [Dictionary] 实现去解释
+ * （见 [XinhuaDictionary]）。
  *
- * 目标词典 `超级新华字典.mdx` 已经过实测确认：未加密、GBK 编码、Html 正文、
- * MDict 1.2 版布局（长度字段为 4 字节，键索引未压缩，记录偏移为 4 字节），
- * 键块/记录块均使用 LZO1X 压缩。本类完整支持 1.2 版；遇到 2.0 及以上版本会
- * 抛出明确异常（当前打包的词典不会触发）。
+ * 已支持并实测的格式：未加密、GBK/UTF-8/UTF-16/Big5 编码、MDict **1.2 版**布局
+ * （长度字段 4 字节，键索引未压缩，记录偏移 4 字节），块压缩 none/LZO1X/zlib 均可。
+ * 遇到 2.0 及以上版本会抛出明确异常。
  *
- * 构造时把「词 → 记录偏移」索引整体读入内存（键块很小），记录块则按需解压并用
+ * 构造时把「键 → 记录偏移」索引整体读入内存（键块很小），记录块则按需解压并用
  * LRU 缓存，避免把十几 MB 的正文全部驻留内存。实例持有文件句柄，用完需 [close]。
  */
 class MdxDictionary(private val file: File) : Closeable {
@@ -27,11 +29,11 @@ class MdxDictionary(private val file: File) : Closeable {
     private val raf = RandomAccessFile(file, "r")
     private val charset: Charset
 
-    /** 词 → 该词所有记录在「拼接后的解压记录空间」中的起始偏移；一个词可能有多个义项。 */
+    /** 键 → 该键所有记录在「拼接后的解压记录空间」中的起始偏移；一个键可能对应多条记录。 */
     private val index: HashMap<String, LongArray>
 
-    /** 变体别名 → 其合并键的记录偏移（如「蹬腿」→「蹬腿,蹬腿儿」的记录）；仅在无同名真实键时登记。 */
-    private val aliasIndex: HashMap<String, LongArray>
+    /** 词典中的全部原始键（未经任何拆分/归一），供 [Dictionary] 实现构建自己的别名/索引。 */
+    val keys: Set<String> get() = index.keys
 
     /** 记录块目录，按解压后的累计起点排序，便于二分定位。 */
     private val recordBlocks: Array<RecordBlock>
@@ -103,22 +105,6 @@ class MdxDictionary(private val file: File) : Closeable {
         index = HashMap(builder.size * 4 / 3 + 1)
         for ((k, v) in builder) index[k] = v.toLongArray()
 
-        // 别名索引：本词典把异形词/儿化写法用逗号、分号合并进一个键（如「蹬腿,蹬腿儿」「堤岸，堤坝」
-        // 「料头；料头儿」），使得精确查「蹬腿」查不到。把这类键拆成各变体，指向同一条记录，
-        // 真实键优先——只有当某变体本身不是真实键时才登记为别名。（顿号、多用于成语/并列内容，
-        // 不当作变体分隔，避免误拆。）
-        aliasIndex = HashMap()
-        for ((k, offsets) in index) {
-            if (!VARIANT_SEPARATOR.containsMatchIn(k)) continue
-            for (part in k.split(VARIANT_SEPARATOR)) {
-                val variant = part.trim()
-                if (variant.isEmpty() || variant == k) continue
-                if (index.containsKey(variant)) continue // 真实键优先，
-                // 多个合并键可能落到同一变体，保留先见到的即可，
-                aliasIndex.putIfAbsent(variant, offsets)
-            }
-        }
-
         // ---- record section ----
         val numRecordBlocks = readIntBE()
         readIntBE() // numEntries, unused
@@ -145,16 +131,17 @@ class MdxDictionary(private val file: File) : Closeable {
     }
 
     /**
-     * 查询一个词的全部义项原始正文（形如 `` `1`词`2`拼音<br>释义 ``）。
-     * 词不存在时返回空列表。查询线程安全由调用方保证（同一实例串行使用）。
+     * 精确查询一个键对应的全部原始记录文本（不解释内容，形如超级新华字典的
+     * `` `1`词`2`拼音<br>释义 ``；其它词典可能是别的格式）。
+     * 键不存在时返回空列表。查询线程安全由调用方保证（同一实例串行使用）。
      */
     fun lookup(word: String): List<String> {
-        val offsets = index[word] ?: aliasIndex[word] ?: return emptyList()
+        val offsets = index[word] ?: return emptyList()
         return offsets.map { readRecord(it) }
     }
 
-    /** 词是否存在（用于长按取词时贪婪扩展匹配）。含逗号/分号合并键拆出的变体别名。 */
-    fun contains(word: String): Boolean = index.containsKey(word) || aliasIndex.containsKey(word)
+    /** 键是否存在（精确匹配，不做任何拆分/归一）。 */
+    fun contains(word: String): Boolean = index.containsKey(word)
 
     private fun readRecord(offset: Long): String {
         // 二分定位所在记录块，
@@ -249,8 +236,6 @@ class MdxDictionary(private val file: File) : Closeable {
         private const val RECORD_BLOCK_CACHE_SIZE = 16
         private val ATTR_ENCODING = Regex("""Encoding="([^"]*)"""")
         private val ATTR_VERSION = Regex("""RequiredEngineVersion="([^"]*)"""")
-        // 合并键里的变体分隔符：半角/全角逗号与分号。顿号、不算（多为成语/并列内容）。
-        private val VARIANT_SEPARATOR = Regex("[,，;；]")
         private val lzo = LzoLibrary.getInstance().newDecompressor(LzoAlgorithm.LZO1X, null)
 
         private fun readIntBE(b: ByteArray, off: Int): Int =

@@ -34,6 +34,11 @@
         <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="android:colorBackground">@color/colorSurface</item>
         <item name="elevationOverlayEnabled">false</item>
+        <!-- Route all AlertDialogs (AppCompat and MaterialAlertDialogBuilder) through
+             AppTheme.Dialog so their surfaces stay neutral grey-scale (M3's pink elevation
+             overlay is neutralized there) instead of pink-tinted. -->
+        <item name="alertDialogTheme">@style/AppTheme.Dialog</item>
+        <item name="materialAlertDialogTheme">@style/AppTheme.Dialog</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

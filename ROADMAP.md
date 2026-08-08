@@ -98,8 +98,41 @@ per-screen on-device verification loop and any fight against M3 defaults remain.
 - Trades this set of papercuts for Compose's own (state hoisting, recomposition
   perf, View interop for the reader, less mature preference tooling).
 
+**Scope of work (non-reader screens).** Measured surface: 10 activities, 8
+fragments, ~12 MVP presenter/view pairs, 30 layout XML files, 13 adapters. The
+work per screen is *not* just layout translation (that's roughly a third of it):
+
+1. **Layout XML → composables.** The mechanical part.
+2. **MVP `Presenter<View>` → state holder** (`ViewModel` + `StateFlow`/state).
+   The bulk of the work: the `MvpView` callbacks (`showX` / `showError` /
+   `showMessage`) become observed state, and the presenter's coroutine logic
+   moves into the ViewModel. ~12 presenters.
+3. **RecyclerView `Adapter` → `LazyColumn`.** The shared novel-item adapter
+   (`list/NovelViewHolder` + `NovelListAdapter`, reused by bookshelf / history /
+   book list / search) becomes one `NovelItem` composable — high leverage, do it
+   first.
+4. **Cross-cutting:** a `MaterialTheme`/`ColorScheme` built from the current
+   palette; navigation (Intent-based today — either keep Intents between
+   Activities or adopt Compose navigation); dialogs (the `applyNeutralSurface`
+   machinery goes away — dialogs read the theme); a dark-mode pass on every
+   screen.
+
+Screens by difficulty:
+- *Simple* (toolbar + list/form): bookshelf, history, download, site choose,
+  site settings.
+- *Moderate* (real state/interaction): main (tabs + pager + FAB + edge-to-edge),
+  detail (collapsing header), book list, backup (many dialogs + SAF flows),
+  settings.
+- *Trickiest:* the search cluster (fuzzy / single / site, WebView-based) and the
+  shared `list` package.
+
+Known long-poles: **settings** — Compose has no first-party preference library,
+so preference screens are hand-built or use a third-party lib; and the **search
+WebView** flows need `AndroidView` interop.
+
 **Recommendation:** only worth it if the UI will keep evolving (aligns with the
 project's "easy to maintain, live longer" goal). If the app is now in
 "works/leave it alone" mode, the current theming is complete and a rewrite won't
-pay back. If undertaken, migrate screen-by-screen and leave the reader as a
-hosted View initially.
+pay back. If undertaken, migrate screen-by-screen (shared `NovelItem` and the
+theme first, then simple → moderate → search) and leave the reader as a hosted
+View initially.

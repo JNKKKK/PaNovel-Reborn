@@ -28,6 +28,7 @@ import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.text.NovelTextActivity
 import cc.aoeiuv020.panovel.databinding.ActivityNovelDetailBinding
 import cc.aoeiuv020.panovel.util.alert
+import cc.aoeiuv020.panovel.util.applyNeutralSurface
 import cc.aoeiuv020.panovel.util.alertError
 import cc.aoeiuv020.panovel.util.noCover
 import com.bumptech.glide.Glide
@@ -55,7 +56,9 @@ class NovelDetailActivity : AppCompatActivity(), MvpView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        alertDialog = AlertDialog.Builder(this).create()
+        alertDialog = AlertDialog.Builder(this).create().apply {
+            setOnShowListener { applyNeutralSurface() }
+        }
 
         binding = ActivityNovelDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)

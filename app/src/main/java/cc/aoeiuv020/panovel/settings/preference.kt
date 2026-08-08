@@ -14,6 +14,13 @@ open class EditTextPreference @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : AndroidXEditTextPreference(context, attrs) {
+    // Captured from android:inputType in XML so our custom edit dialog (see
+    // BasePreferenceFragment) can apply it, since we no longer use the framework's dialog.
+    val editInputType: Int = attrs?.getAttributeIntValue(
+        "http://schemas.android.com/apk/res/android", "inputType",
+        android.text.InputType.TYPE_CLASS_TEXT
+    ) ?: android.text.InputType.TYPE_CLASS_TEXT
+
     override fun onGetDefaultValue(a: TypedArray, index: Int): Any? {
         return super.onGetDefaultValue(a, index)?.also {
             text = it.toString()

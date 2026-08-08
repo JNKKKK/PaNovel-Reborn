@@ -34,11 +34,54 @@
         <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="android:colorBackground">@color/colorSurface</item>
         <item name="elevationOverlayEnabled">false</item>
+        <!-- Secondary/variant on-surface text (e.g. preference summaries) defaults to M3's
+             colorOnSurfaceVariant (#CAC4D0 dark, a lavender-grey that reads pinkish); pin it
+             to the neutral DayNight secondary text color so it's plain grey, not tinted. -->
+        <item name="colorOnSurfaceVariant">@color/textDefault</item>
+        <!-- Material3 sets android:textColorPrimary/Secondary to its own literal on-surface
+             colors (dark #E6E0E9 / #CAC4D0, a lavender cast), independent of colorOnSurface.
+             Views that read these — notably preference titles/summaries via
+             textAppearanceListItem — show that tint. Pin them to the neutral DayNight text
+             colors so all primary/secondary text is plain grey-scale. -->
+        <item name="android:textColorPrimary">@color/textBlack</item>
+        <item name="android:textColorSecondary">@color/textDefault</item>
         <!-- Route all AlertDialogs (AppCompat and MaterialAlertDialogBuilder) through
              AppTheme.Dialog so their surfaces stay neutral grey-scale (M3's pink elevation
              overlay is neutralized there) instead of pink-tinted. -->
         <item name="alertDialogTheme">@style/AppTheme.Dialog</item>
         <item name="materialAlertDialogTheme">@style/AppTheme.Dialog</item>
+        <!-- The AndroidX preference library applies its own PreferenceThemeOverlay, which
+             carries M3's default on-surface colors (a slightly lavender off-white that reads
+             pinkish), shadowing ours. Point it at a custom overlay that re-pins the neutral
+             surface colors. -->
+        <item name="preferenceTheme">@style/AppTheme.Preference</item>
+        <!-- M3 Snackbar defaults to the INVERSE surface (a light bar in dark mode) with a
+             colorPrimary-tinted action, so it reads white-with-pink. Pin it to the neutral
+             dialog surface with on-surface text and the pink accent action. -->
+        <item name="snackbarStyle">@style/AppTheme.Snackbar</item>
+        <item name="snackbarTextViewStyle">@style/AppTheme.Snackbar.TextView</item>
+        <item name="snackbarButtonStyle">@style/AppTheme.Snackbar.Button</item>
+    </style>
+
+    <style name="AppTheme.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="backgroundTint">@color/colorDialogSurface</item>
+    </style>
+
+    <style name="AppTheme.Snackbar.TextView" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textColor">@color/colorOnSurface</item>
+    </style>
+
+    <style name="AppTheme.Snackbar.Button" parent="Widget.Material3.Button.TextButton.Snackbar">
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <!-- Preference-screen theme: keep the library's layouts (PreferenceThemeOverlay) but
+         re-pin the neutral on-surface colors so preference titles/summaries aren't tinted. -->
+    <style name="AppTheme.Preference" parent="PreferenceThemeOverlay">
+        <item name="android:textColorPrimary">@color/colorOnSurface</item>
+        <item name="android:textColorSecondary">@color/textDefault</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <item name="colorOnSurfaceVariant">@color/textDefault</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -81,30 +124,34 @@
          are DayNight, so this one definition covers both modes) instead of the default
          light/dark popup. Rounded Material3 popup shape. -->
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.Material3">
-        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorSurface">@color/colorDialogSurface</item>
         <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="android:textColorPrimary">@color/colorOnSurface</item>
-        <item name="android:colorBackground">@color/colorSurface</item>
+        <item name="android:colorBackground">@color/colorDialogSurface</item>
         <!-- Popups sit at elevation; M3 tints elevated surfaces with colorPrimary (pink),
              which tints the menu background pinkish. Neutralize the elevation overlay (as the
              base theme does) so the popup stays plain grey-scale. colorSurfaceContainer is the
              role M3 menus actually use for their background, so pin it too. -->
         <item name="elevationOverlayEnabled">false</item>
         <item name="elevationOverlayColor">@color/colorOnSurface</item>
-        <item name="colorSurfaceContainer">@color/colorSurface</item>
+        <item name="colorSurfaceContainer">@color/colorDialogSurface</item>
     </style>
 
     <!-- AlertDialog theme matching the app's content surface (DayNight via colorSurface/
          colorOnSurface), with M3's pink elevation overlay neutralized so dialog backgrounds
          stay plain grey-scale. Buttons stay the pink accent. -->
     <style name="AppTheme.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorSurface">@color/colorDialogSurface</item>
         <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="colorPrimary">@color/colorAccent</item>
         <item name="android:textColorPrimary">@color/colorOnSurface</item>
+        <!-- M3 MaterialAlertDialog setItems() rows take their color from colorOnSurfaceVariant
+             (default dark #CAC4D0, a lavender-grey that reads pinkish), not textColorPrimary.
+             Pin it to the neutral on-surface color so rows match the title. -->
+        <item name="colorOnSurfaceVariant">@color/colorOnSurface</item>
         <item name="elevationOverlayEnabled">false</item>
         <item name="elevationOverlayColor">@color/colorOnSurface</item>
-        <item name="colorSurfaceContainerHigh">@color/colorSurface</item>
+        <item name="colorSurfaceContainerHigh">@color/colorDialogSurface</item>
     </style>
 
     <style name="FullscreenTheme" parent="AppTheme.NoActionBar">

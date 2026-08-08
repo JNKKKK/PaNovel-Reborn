@@ -133,7 +133,9 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        alertDialog = AlertDialog.Builder(this).create()
+        alertDialog = AlertDialog.Builder(this).create().apply {
+            setOnShowListener { applyNeutralSurface() }
+        }
         progressDialog = ProgressDialogCompat(this)
         progressDialog.setOnCancelListener { finish() }
 
@@ -686,11 +688,11 @@ class NovelTextActivity : NovelTextBaseFullScreenActivity(), MvpView {
                     dialog.dismiss()
                 }.create().apply {
                     listView.isFastScrollEnabled = true
-                    // Match the app-wide content surface instead of the default dialog surface,
+                    // Match the app-wide dialog surface instead of the default dialog surface,
                     // including the "目录" title panel. Color the list and the title panel (not
                     // the window background — replacing that drops the dialog's inset/shape and
                     // widens it); tint the title text with colorOnSurface.
-                    val surface = ContextCompat.getColor(context, R.color.colorSurface)
+                    val surface = ContextCompat.getColor(context, R.color.colorDialogSurface)
                     val onSurface = ContextCompat.getColor(context, R.color.colorOnSurface)
                     listView.setBackgroundColor(surface)
                     setOnShowListener {

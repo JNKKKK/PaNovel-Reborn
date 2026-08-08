@@ -8,6 +8,7 @@ import cc.aoeiuv020.panovel.download.DownloadService
 import cc.aoeiuv020.panovel.download.DownloadingNotificationManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.settings.DownloadSettings
+import cc.aoeiuv020.panovel.util.applyNeutralSurface
 import cc.aoeiuv020.panovel.util.safelyShow
 import android.widget.EditText
 import android.widget.RadioGroup
@@ -194,7 +195,7 @@ class DownloadManager(
                 download(novelManager, fromIndex, realCount)
             }
             .setNegativeButton(R.string.cancel, null)
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
         return true
     }
 

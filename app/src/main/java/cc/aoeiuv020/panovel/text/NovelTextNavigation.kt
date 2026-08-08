@@ -92,6 +92,11 @@ class NovelTextNavigation(val view: NovelTextActivity, val novel: Novel, navigat
             .setView(dialogView)
             .create().apply {
                 window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                // The AppTheme.Dialog surface override doesn't reach this AppCompat dialog's
+                // window background (it renders M3's default dark dialog surface, #424242), so
+                // recolor it to the app's content surface (shape-preserving). Must run after
+                // show(): the window background drawable isn't installed until then.
+                setOnShowListener { applyNeutralSurface() }
             }
 
         dialogView.findViewById<Button>(R.id.btnApply).setOnClickListener {

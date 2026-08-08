@@ -35,6 +35,14 @@
     <color name="colorSurface">@android:color/white</color>
     <color name="colorOnSurface">#de000000</color>
 
+    <!-- Dialog/popup surface, DayNight-aware (see values-night). Slightly lighter than the
+         content colorSurface in dark mode so popups stand out from the screen behind them. -->
+    <color name="colorDialogSurface">@android:color/white</color>
+
+    <!-- Pinned-item highlight in lists, DayNight-aware (see values-night): a subtle tint
+         above the content surface marking pinned books. -->
+    <color name="pinnedItemBackground">#efefef</color>
+
     <!-- Reader chapter-list states: current chapter = the pink accent; downloaded chapter =
          a clear Material green (DayNight, see values-night); default name = colorOnSurface. -->
     <color name="chapterDownloaded">@color/md_green_600</color>

@@ -28,6 +28,12 @@
     <color name="colorSurface">#121212</color>
     <color name="colorOnSurface">#deffffff</color>
 
+    <!-- Dialog/popup surface: a little lighter than the #121212 content so popups stand out. -->
+    <color name="colorDialogSurface">#242424</color>
+
+    <!-- Pinned-item highlight: a subtle lift above the #121212 content, not a light band. -->
+    <color name="pinnedItemBackground">#2a2a2a</color>
+
     <!-- Downloaded-chapter green: a lighter shade for legibility on the dark list. -->
     <color name="chapterDownloaded">@color/md_green_300</color>
 </resources>

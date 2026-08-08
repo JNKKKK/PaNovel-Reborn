@@ -13,6 +13,11 @@ class ProgressDialogCompat(context: Context) {
         .setView(view)
         .setCancelable(true)
         .create()
+        .apply {
+            // Theme-level surface attrs don't recolor an AppCompat dialog's window background
+            // (see applyNeutralSurface), so pin it to the app's dialog surface once shown.
+            setOnShowListener { applyNeutralSurface() }
+        }
     private var onCancelListener: (() -> Unit)? = null
 
     fun setOnCancelListener(listener: () -> Unit) {

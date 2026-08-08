@@ -13,6 +13,7 @@ import cc.aoeiuv020.panovel.settings.ItemAction
 import cc.aoeiuv020.panovel.settings.ItemAction.*
 import cc.aoeiuv020.panovel.text.NovelTextActivity
 import cc.aoeiuv020.panovel.util.uiInput
+import cc.aoeiuv020.panovel.util.showWithNeutralSurface
 import cc.aoeiuv020.panovel.util.uiSelect
 import java.nio.charset.UnsupportedCharsetException
 import java.util.concurrent.TimeUnit
@@ -73,7 +74,7 @@ class DefaultNovelItemActionListener(
                     .setItems(items) { _, i ->
                         on(list[i].second, vh)
                     }
-                    .show()
+                    .showWithNeutralSurface()
 
             }
             // 返回false不消费长按事件，

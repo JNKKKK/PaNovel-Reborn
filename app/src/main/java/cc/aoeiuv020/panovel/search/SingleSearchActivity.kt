@@ -18,6 +18,7 @@ import cc.aoeiuv020.panovel.detail.NovelDetailActivity
 import cc.aoeiuv020.panovel.databinding.ActivitySingleSearchBinding
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.ProgressDialogCompat
+import cc.aoeiuv020.panovel.util.applyNeutralSurface
 import cc.aoeiuv020.panovel.util.onActivityDestroy
 import cc.aoeiuv020.panovel.util.safelyShow
 import timber.log.Timber
@@ -153,7 +154,7 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
                 .setTitle(getString(R.string.success))
                 .setMessage(getString(R.string.message_cookies_removed))
                 .setPositiveButton(android.R.string.ok, null)
-                .create().safelyShow()
+                .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
     }
 
     fun getCurrentUrl(): String? = binding.wvSite.url
@@ -189,7 +190,7 @@ class SingleSearchActivity : AppCompatActivity(), MvpView {
                 .setTitle(getString(R.string.error))
                 .setMessage(message + e.message)
                 .setPositiveButton(android.R.string.ok, null)
-                .create().safelyShow()
+                .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
     }
 
     override fun onSupportNavigateUp(): Boolean {

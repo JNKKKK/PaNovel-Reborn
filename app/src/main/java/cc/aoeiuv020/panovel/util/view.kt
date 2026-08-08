@@ -150,6 +150,43 @@ fun Activity.setBrightnessFollowSystem() {
 val noCover: String get() = "https://www.snwx8.com/modules/article/images/nocover.jpg"
 
 /**
+ * Recolor an AlertDialog's surface to the app's content surface (@color/colorSurface,
+ * DayNight-aware) so it matches the rest of the app instead of M3's default dialog surface
+ * (colorSurfaceContainerHigh, which reads darker/lighter than the app's lists).
+ *
+ * The default background's shape re-resolves its color from a theme attribute, so
+ * setColor()/tint on it don't stick; we replace the window background with our own
+ * rounded-rect shape in the surface color (kept inside an InsetDrawable so the dialog keeps
+ * its edge margins). Must run after the window exists — call from setOnShowListener, or use
+ * [showWithNeutralSurface].
+ */
+fun AlertDialog.applyNeutralSurface(): AlertDialog {
+    val w = window ?: return this
+    val color = ContextCompat.getColor(context, R.color.colorDialogSurface)
+    // The default dialog background's shape resolves its color from a theme attribute
+    // (M3 colorSurfaceContainerHigh) that re-applies over any setColor()/tint, so recoloring
+    // it in place doesn't stick. Replace it with our own rounded-rect shape in the surface
+    // color, wrapped in an InsetDrawable so the dialog keeps its edge margins.
+    val radius = 28f * context.resources.displayMetrics.density
+    val shape = android.graphics.drawable.GradientDrawable().apply {
+        this.cornerRadius = radius
+        setColor(color)
+    }
+    val margin = (16f * context.resources.displayMetrics.density).toInt()
+    w.setBackgroundDrawable(android.graphics.drawable.InsetDrawable(shape, margin))
+    return this
+}
+
+/**
+ * Create the dialog, apply the neutral surface once it shows, and show it (via safelyShow).
+ * Convenience for the common `AlertDialog.Builder(...).showWithNeutralSurface()` path.
+ */
+fun AlertDialog.Builder.showWithNeutralSurface(): AlertDialog = create().apply {
+    setOnShowListener { applyNeutralSurface() }
+    safelyShow()
+}
+
+/**
  * 不希望展示对话框失败导致崩溃，
  */
 fun Dialog.safelyShow(): DialogInterface {
@@ -173,7 +210,7 @@ fun Context.tip(
     AlertDialog.Builder(this)
         .setMessage(s)
         .setPositiveButton(android.R.string.ok, null)
-        .show()
+        .showWithNeutralSurface()
 
 }
 
@@ -189,7 +226,7 @@ fun Context.confirm(
         .setMessage(s)
         .setPositiveButton(android.R.string.ok) { _, _ -> onConfirm.run() }
         .setNegativeButton(android.R.string.cancel, null)
-        .show()
+        .showWithNeutralSurface()
 
 }
 
@@ -213,7 +250,7 @@ fun Context.uiSelect(
                     setOnCancelListener {
                         if (cont.isActive) cont.resume(null)
                     }
-                }.create().safelyShow()
+                }.create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
                 cont.invokeOnCancellation {
                     dialog.dismiss()
                 }
@@ -249,7 +286,7 @@ fun Context.uiInput(
                     .setOnCancelListener {
                         if (cont.isActive) cont.resume(null)
                     }
-                    .create().safelyShow()
+                    .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
                 cont.invokeOnCancellation {
                     dialog.dismiss()
                 }

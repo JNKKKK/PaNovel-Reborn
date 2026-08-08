@@ -18,7 +18,9 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog as AndroidXAlertDialog
 import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
+import cc.aoeiuv020.panovel.util.applyNeutralSurface
 import cc.aoeiuv020.panovel.util.safelyShow
+import cc.aoeiuv020.panovel.util.showWithNeutralSurface
 import com.google.android.material.snackbar.Snackbar
 
 class BookListActivity : AppCompatActivity(), MvpView {
@@ -53,7 +55,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
             .setTitle(getString(R.string.action))
             .setItems(list.unzip().first.map { getString(it) }.toTypedArray()) { _, i ->
                 list[i].second.invoke()
-            }.show()
+            }.showWithNeutralSurface()
         return true
     }
 
@@ -152,6 +154,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
                 }
                 .create().apply {
                     listView.isFastScrollEnabled = true
+                    setOnShowListener { applyNeutralSurface() }
                 }.safelyShow()
     }
 
@@ -167,7 +170,7 @@ class BookListActivity : AppCompatActivity(), MvpView {
             .setTitle(getString(R.string.add_from))
             .setItems(list.unzip().first.map { getString(it) }.toTypedArray()) { _, i ->
                 list[i].second.invoke()
-            }.show()
+            }.showWithNeutralSurface()
     }
 
     private val snack: Snackbar by lazy {

@@ -36,6 +36,7 @@ import cc.aoeiuv020.panovel.util.cancelAllNotify
 import cc.aoeiuv020.panovel.util.initNotificationChannel
 import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.safelyShow
+import cc.aoeiuv020.panovel.util.showWithNeutralSurface
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 import com.journeyapps.barcodescanner.ScanContract
@@ -168,7 +169,7 @@ class MainActivity : AppCompatActivity() {
                         .setNeutralButton(R.string.search) { _, _ ->
                             FuzzySearchActivity.start(this@MainActivity)
                         }
-                        .show()
+                        .showWithNeutralSurface()
                 }
             } catch (t: Exception) {
                 Reporter.unreachable(t)

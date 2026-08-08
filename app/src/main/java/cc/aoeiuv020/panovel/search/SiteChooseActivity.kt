@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import cc.aoeiuv020.panovel.databinding.ActivitySiteChooseBinding
 import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
+import cc.aoeiuv020.panovel.util.showWithNeutralSurface
 import java.util.*
 
 class SiteChooseActivity : AppCompatActivity(), MvpView {
@@ -57,7 +58,7 @@ class SiteChooseActivity : AppCompatActivity(), MvpView {
                 .setTitle(getString(R.string.select))
                 .setItems(actions.map { getString(it.first) }.toTypedArray()) { _, i ->
                     actions[i].second()
-                }.show()
+                }.showWithNeutralSurface()
             return true
         }
 

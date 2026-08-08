@@ -14,6 +14,7 @@ import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.databinding.ActivityExportBinding
 import cc.aoeiuv020.panovel.settings.BackupSettings
 import cc.aoeiuv020.panovel.util.ProgressDialogCompat
+import cc.aoeiuv020.panovel.util.applyNeutralSurface
 import cc.aoeiuv020.panovel.util.loading
 import cc.aoeiuv020.panovel.util.safelyShow
 import com.google.android.material.snackbar.Snackbar
@@ -90,7 +91,7 @@ class BackupActivity : AppCompatActivity(), MvpView {
                 presenter.import(uri)
             }
             .setNegativeButton(android.R.string.cancel, null)
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
     }
 
     // ---- 备份 ----
@@ -132,7 +133,7 @@ class BackupActivity : AppCompatActivity(), MvpView {
                 requestExportFile(selected)
             }
             .setNegativeButton(android.R.string.cancel, null)
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
     }
 
     private fun requestExportFile(options: Set<BackupOption>) {
@@ -153,7 +154,7 @@ class BackupActivity : AppCompatActivity(), MvpView {
             .setTitle(R.string.backup_import_done)
             .setMessage(result)
             .setPositiveButton(android.R.string.ok, null)
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
     }
 
     fun showExportSuccess(result: String) {
@@ -162,7 +163,7 @@ class BackupActivity : AppCompatActivity(), MvpView {
             .setTitle(R.string.backup_export_done)
             .setMessage(result)
             .setPositiveButton(android.R.string.ok, null)
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
     }
 
     private val snack: Snackbar by lazy {
@@ -179,7 +180,7 @@ class BackupActivity : AppCompatActivity(), MvpView {
         AlertDialog.Builder(this)
             .setMessage(message + e.message)
             .setPositiveButton(android.R.string.ok, null)
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

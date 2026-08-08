@@ -18,6 +18,8 @@ import cc.aoeiuv020.panovel.share.Share
 import cc.aoeiuv020.panovel.util.applyBottomNavBarInsetPadding
 import cc.aoeiuv020.panovel.util.notNullOrReport
 import cc.aoeiuv020.panovel.util.safelyShow
+import cc.aoeiuv020.panovel.util.applyNeutralSurface
+import cc.aoeiuv020.panovel.util.showWithNeutralSurface
 import cc.aoeiuv020.panovel.util.showKeyboard
 import java.io.File
 
@@ -41,7 +43,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
                 .setTitle(requireContext().getString(R.string.action))
                 .setItems(list.unzip().first.map { requireContext().getString(it) }.toTypedArray()) { _, i ->
                     list[i].second.invoke()
-                }.show()
+                }.showWithNeutralSurface()
             return true
         }
     }
@@ -93,7 +95,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
                     presenter.copyBookList(bookList, name)
                 }
             }
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
         etName.post { etName.showKeyboard() }
     }
 
@@ -112,7 +114,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
                     presenter.renameBookList(bookList, name)
                 }
             }
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
         etName.post { etName.showKeyboard() }
     }
 
@@ -152,7 +154,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
             .setTitle(R.string.share)
             .setView(layout)
             .setPositiveButton(android.R.string.ok, null)
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
     }
 
     private fun shareQrBitmap(bitmap: Bitmap) {
@@ -220,7 +222,7 @@ class BookListFragment : androidx.fragment.app.Fragment(), MvpView {
                     presenter.newBookList(etName.text.toString())
                 }
             }
-            .create().safelyShow()
+            .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
         etName.post { etName.showKeyboard() }
     }
 

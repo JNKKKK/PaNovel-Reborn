@@ -8,6 +8,7 @@ import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.report.Reporter
 import cc.aoeiuv020.panovel.util.ProgressDialogCompat
+import cc.aoeiuv020.panovel.util.showWithNeutralSurface
 import timber.log.Timber
 import kotlinx.coroutines.*
 
@@ -57,7 +58,7 @@ class CacheClearPreferenceFragment : PreferenceFragmentCompat() {
                                 }
                             }
                             setNegativeButton(android.R.string.cancel, null)
-                        }.show()
+                        }.showWithNeutralSurface()
                     }
                     true
                 }

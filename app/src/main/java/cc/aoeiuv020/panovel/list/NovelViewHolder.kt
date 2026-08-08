@@ -32,7 +32,6 @@ class NovelViewHolder(itemView: View,
 ) : NovelListAdapter.BaseViewHolder(itemView) {
     companion object {
         // 列表外观固定使用默认值，不再可配置，
-        private const val PINNED_BACKGROUND_COLOR = 0xffefefef.toInt()
         private const val DOT_SIZE = 16f
     }
 
@@ -123,7 +122,9 @@ class NovelViewHolder(itemView: View,
         this.novelManager = novelManager
         // 历史列表不参与置顶，也不显示置顶高亮背景，
         if (supportPin && novel.pinnedTime.time > TimeUnit.DAYS.toMillis(1)) {
-            itemView.setBackgroundColor(PINNED_BACKGROUND_COLOR)
+            itemView.setBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(itemView.context, R.color.pinnedItemBackground)
+            )
         } else {
             itemView.background = null
         }

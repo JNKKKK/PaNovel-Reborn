@@ -94,7 +94,7 @@ object Check : Pref {
                     .setPositiveButton("Github") { _, _ ->
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_GITHUB)))
                     }
-                    .create().safelyShow()
+                    .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
             } catch (e: Exception) {
                 val message = "检测更新失败，"
                 Reporter.post(message, e)
@@ -156,7 +156,7 @@ object Check : Pref {
                     .setPositiveButton("Github") { _, _ ->
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASE_GITHUB)))
                     }
-                    .create().safelyShow()
+                    .create().apply { setOnShowListener { applyNeutralSurface() } }.safelyShow()
             } catch (e: Exception) {
                 val message = "检查签名出错"
                 Timber.e(e, message)

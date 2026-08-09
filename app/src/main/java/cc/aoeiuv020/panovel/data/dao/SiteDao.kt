@@ -5,7 +5,8 @@ import cc.aoeiuv020.panovel.data.entity.Site
 
 @Dao
 abstract class SiteDao {
-    @Query("select * from Site where hide = 0 order by pinnedTime desc, createTime desc, name asc")
+    // 置顶功能已移除：不再按 pinnedTime 排序，否则升级前置顶过的书源会永久卡在最前且无法取消，
+    @Query("select * from Site where hide = 0 order by createTime desc, name asc")
     abstract fun list(): List<Site>
 
     @Query("select * from Site")

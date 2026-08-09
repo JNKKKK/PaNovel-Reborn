@@ -87,6 +87,30 @@ class AvailabilityManagerTest {
     }
 
     @Test
+    fun `non-cloudflare page containing marker text is OK not FAIL`() {
+        // 正文里恰好含 CF 挑战页字样、但 server 头不是 cloudflare 的正常站点不应被误判为拦截，
+        val probe = HomePageProbe(
+            reachable = true,
+            code = 200,
+            server = "nginx",
+            bodySnippet = "<article>Just a moment... the challenge-platform update is live</article>"
+        )
+        assertEquals(ProbeStatus.OK, classify(probe))
+    }
+
+    @Test
+    fun `cloudflare server with challenge body is FAIL`() {
+        // server 头确为 cloudflare 且 body 带挑战标记，判为拦截，
+        val probe = HomePageProbe(
+            reachable = true,
+            code = 200,
+            server = "cloudflare",
+            bodySnippet = "<div id=\"cf-browser-verification\">"
+        )
+        assertEquals(ProbeStatus.FAIL, classify(probe))
+    }
+
+    @Test
     fun `barsFor pads left with UNKNOWN when history is short`() {
         val records = listOf(
             ProbeRecord(10, ProbeStatus.OK),

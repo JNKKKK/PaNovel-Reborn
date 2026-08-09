@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7b073141e26449572ec48c6c08f378b3",
+    "identityHash": "910fd7a4e7c53f3c6312eeb6b6fa9204",
     "entities": [
       {
         "tableName": "Novel",
@@ -11,8 +11,7 @@
           {
             "fieldPath": "id",
             "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "site",
@@ -77,8 +76,7 @@
           {
             "fieldPath": "chapters",
             "columnName": "chapters",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "lastChapterName",
@@ -150,12 +148,11 @@
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Novel_bookshelf` ON `${TABLE_NAME}` (`bookshelf`)"
           }
-        ],
-        "foreignKeys": []
+        ]
       },
       {
         "tableName": "Site",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `baseUrl` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `pinnedTime` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`name`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `baseUrl` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`name`))",
         "fields": [
           {
             "fieldPath": "name",
@@ -172,12 +169,6 @@
           {
             "fieldPath": "enabled",
             "columnName": "enabled",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "pinnedTime",
-            "columnName": "pinnedTime",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -199,9 +190,7 @@
           "columnNames": [
             "name"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "BookListItem",
@@ -270,8 +259,7 @@
           {
             "fieldPath": "id",
             "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "name",
@@ -308,14 +296,12 @@
             "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_BookList_uuid` ON `${TABLE_NAME}` (`uuid`)"
           }
-        ],
-        "foreignKeys": []
+        ]
       }
     ],
-    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7b073141e26449572ec48c6c08f378b3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '910fd7a4e7c53f3c6312eeb6b6fa9204')"
     ]
   }
 }

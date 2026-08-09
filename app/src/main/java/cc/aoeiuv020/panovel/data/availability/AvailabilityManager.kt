@@ -58,7 +58,13 @@ class AvailabilityManager(
 
     init {
         scope.launch {
-            _history.value = store.loadHistory()
+            val loaded = store.loadHistory()
+            // 只在还没有探测结果发布时才用磁盘快照播种，避免慢速读盘覆盖此间已完成的探测结果，
+            synchronized(probeMutex) {
+                if (_history.value.isEmpty()) {
+                    _history.value = loaded
+                }
+            }
         }
     }
 
@@ -103,14 +109,15 @@ class AvailabilityManager(
         Timber.d("availability: probing ${sites.size} sites for day $today")
 
         val probed = probeSites(sites, asReprobe = false)
-        if (probed.isEmpty()) return
-
-        updateHistory { merged ->
-            probed.forEach { (name, status) ->
-                merged[name] = upsertToday(merged[name], today, status)
+        if (probed.isNotEmpty()) {
+            updateHistory { merged ->
+                probed.forEach { (name, status) ->
+                    merged[name] = upsertToday(merged[name], today, status)
+                }
             }
         }
         // 只有全量采样才推进"今天已采过"的标记，重探不改它，
+        // 即使这轮没探到结果（书源全被并发去重跳过 / 无未隐藏书源）也要推进，否则当天每次启动都重入全量路径，
         store.saveLastProbeDay(today)
         Timber.d("availability: probe done, ${probed.size} results recorded")
     }
@@ -163,15 +170,13 @@ class AvailabilityManager(
                     // 已在探测中就跳过，避免并发触发重复探测同一书源，
                     if (!inProgress.add(name)) return@async null
                     try {
-                        semaphore.withPermit {
-                            val ok = probeReachableWithRetry(site)
-                            val status = when {
-                                !ok -> ProbeStatus.FAIL
-                                asReprobe -> ProbeStatus.RECOVERED
-                                else -> ProbeStatus.OK
-                            }
-                            name to status
+                        val ok = probeReachableWithRetry(site, semaphore)
+                        val status = when {
+                            !ok -> ProbeStatus.FAIL
+                            asReprobe -> ProbeStatus.RECOVERED
+                            else -> ProbeStatus.OK
                         }
+                        name to status
                     } finally {
                         inProgress.remove(name)
                     }
@@ -182,11 +187,16 @@ class AvailabilityManager(
 
     /**
      * 探测一个书源首页是否可用，判为不可用时重试，共尝试 [PROBE_ATTEMPTS] 次，
+     * 每次尝试各自持有一个并发许可，重试前的等待在许可之外进行，避免失败书源在 sleep 期间占着并发槽，
+     * 确定性失败（被 Cloudflare 拦截 / 4xx 客户端错误）不重试——800ms 内不会有不同结果，白白多打一次请求，
      * @return true 表示可用（绿/黄的前提），false 表示重试后仍不可用，
      */
-    private suspend fun probeReachableWithRetry(site: NovelContext): Boolean {
+    private suspend fun probeReachableWithRetry(site: NovelContext, semaphore: Semaphore): Boolean {
         repeat(PROBE_ATTEMPTS) { attempt ->
-            if (classify(site.probeHomePage()) == ProbeStatus.OK) return true
+            val probe = semaphore.withPermit { site.probeHomePage() }
+            if (classify(probe) == ProbeStatus.OK) return true
+            // 确定性失败重试无意义；只对可能是瞬时问题的失败（超时/5xx/空正文）再给一次机会，
+            if (!isRetriable(probe)) return false
             if (attempt < PROBE_ATTEMPTS - 1) delay(RETRY_DELAY_MS)
         }
         return false
@@ -260,17 +270,33 @@ class AvailabilityManager(
         }
 
         private fun isCloudflareChallenge(probe: HomePageProbe): Boolean {
-            // cf-mitigated 头出现即表示被挑战/拦截，
+            // cf-mitigated 头出现即表示被挑战/拦截，最可靠的信号，
             if (!probe.cfMitigated.isNullOrBlank()) return true
+            // 其余启发式仅在 server 头确为 cloudflare 时才考虑：
+            // 否则正常页面正文里恰好含 "Just a moment"/"challenge-platform" 等字样会被误判为拦截，
             val serverIsCf = probe.server?.contains("cloudflare", ignoreCase = true) == true
-            if (serverIsCf && (probe.code == 403 || probe.code == 503)) return true
+            if (!serverIsCf) return false
+            if (probe.code == 403 || probe.code == 503) return true
+            // 挑战页 body 特征——仅在 CF 前置时才作数，且用更专属的标记降低误伤，
             val body = probe.bodySnippet
-            return body.contains("Just a moment") ||
-                body.contains("challenge-platform") ||
-                body.contains("__cf_chl") ||
+            return body.contains("__cf_chl") ||
                 body.contains("cf_chl_opt") ||
                 body.contains("cf-browser-verification") ||
+                body.contains("challenge-platform") ||
+                (body.contains("Just a moment") && body.contains("challenge")) ||
                 body.contains("Attention Required! | Cloudflare")
+        }
+
+        /**
+         * 判断一次失败是否值得重试：只有可能是瞬时的失败才重试，确定性失败重试无意义，
+         * - 不可达（DNS/TCP/TLS/超时）、5xx、2xx 但空正文：可能瞬时，重试，
+         * - 被 Cloudflare 拦截、4xx 客户端错误：确定性失败，不重试，
+         */
+        private fun isRetriable(probe: HomePageProbe): Boolean {
+            if (!probe.reachable) return true
+            if (isCloudflareChallenge(probe)) return false
+            if (probe.code in 400..499) return false
+            return true
         }
 
         /**

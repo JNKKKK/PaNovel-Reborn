@@ -163,7 +163,17 @@ abstract class OkHttpNovelContext : NovelContext() {
      * 任何网络异常都归为不可达而不抛出，方便批量并发探测，
      */
     override fun probeHomePage(): HomePageProbe = try {
-        connect(homePage).execute().use { response ->
+        // 强制走网络绕过本站 20M 磁盘缓存：否则站点已挂仍可能命中此前缓存的 200，把死站误报为绿，
+        val request = Request.Builder()
+                .url(homePage)
+                .apply {
+                    defaultHeaders.forEach { (key, value) ->
+                        header(key, value)
+                    }
+                }
+                .cacheControl(CacheControl.FORCE_NETWORK)
+                .build()
+        client.newCall(request).execute().use { response ->
             // 只读一小段正文用于识别 Cloudflare 挑战页，避免整页下载，
             val snippet = try {
                 response.peekBody(PROBE_BODY_PEEK_BYTES).string()

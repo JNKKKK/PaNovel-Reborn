@@ -8,7 +8,6 @@ class KotlinxSerializer(
     private val json: Json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
-        prettyPrint = true
     }
 ) : DataSerializer {
     override fun <T> serialize(value: T, serializer: KSerializer<T>): String =

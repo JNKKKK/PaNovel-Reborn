@@ -7,10 +7,12 @@ import cc.aoeiuv020.irondb.read
 import cc.aoeiuv020.irondb.write
 import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.data.entity.Novel
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 class CacheManager(context: Context) {
-    private val contentDBMap = WeakHashMap<Long, Database>()
+    // 用强引用缓存已解析的 Database：键是装箱的 nId，没有其他强引用，
+    // 用 WeakHashMap 会立刻被 GC 回收导致缓存形同虚设，每次都要重建 sub() 链并做多次文件系统 syscall，
+    private val contentDBMap = ConcurrentHashMap<Long, Database>()
     // 所有缓存固定保存在应用私有目录 /data/data/cc.aoeiuv020.panovel/cache/novel
     private val root: Database = Iron.db(context.cacheDir.resolve(NAME_FOLDER))
 
@@ -18,7 +20,7 @@ class CacheManager(context: Context) {
         root.sub(novel.site).sub(novel.author).sub(novel.name).sub(KEY_CONTENT)
     }
 
-    private val chaptersDBMap = WeakHashMap<Long, Database>()
+    private val chaptersDBMap = ConcurrentHashMap<Long, Database>()
     private fun getChaptersDB(novel: Novel): Database = chaptersDBMap.getOrPut(novel.nId) {
         root.sub(novel.site).sub(novel.author).sub(novel.name).sub(KEY_CHAPTERS)
     }

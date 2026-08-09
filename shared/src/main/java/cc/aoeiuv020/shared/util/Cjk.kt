@@ -1,4 +1,4 @@
-package cc.aoeiuv020.mdict
+package cc.aoeiuv020.shared.util
 
 /**
  * 判断一个码点是否是汉字（含扩展区），用于长按取词时过滤掉标点、空白、拉丁字母等，

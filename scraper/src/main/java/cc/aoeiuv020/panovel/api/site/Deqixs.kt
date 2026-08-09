@@ -57,7 +57,7 @@ class Deqixs : DslJsoupNovelContext() { init {
         get { url = chapterUrl }
         response { it }
         // fetch the token script
-        val encodedReferrer = java.net.URLEncoder.encode(chapterUrl, "UTF-8")
+        val encodedReferrer = utf8(chapterUrl)
         val tokenUrl = "${site.baseUrl}/scripts/chapter.js.php?aid=$aid&cid=$cid&referrer=$encodedReferrer"
         get {
             url = tokenUrl

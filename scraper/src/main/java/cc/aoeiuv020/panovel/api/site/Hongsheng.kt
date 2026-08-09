@@ -21,7 +21,7 @@ init {
     contentPageTemplate = "/wap/?pbcode/article/%s/"
     search {
         get {
-            url = "/wap/?pbcode/so/${java.net.URLEncoder.encode(it, "UTF-8")}/"
+            url = "/wap/?pbcode/so/${utf8(it)}/"
         }
         document {
             items("li.subject-item", allowEmpty = true) {

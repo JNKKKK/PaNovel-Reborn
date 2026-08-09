@@ -42,7 +42,6 @@ object OpenManager {
                                         when (it) {
                                             LocalNovelType.TEXT -> R.string.select_item_text
                                             LocalNovelType.EPUB -> R.string.select_item_epub
-                                            else -> R.string.select_item_text
                                         }.let { resId -> context.getString(resId) }
                                     }.toTypedArray()
                                     val defaultIndex = types.indexOfFirst {

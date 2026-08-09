@@ -2,11 +2,9 @@ package cc.aoeiuv020.panovel.localbook
 
 import cc.aoeiuv020.shared.util.interrupt
 import cc.aoeiuv020.panovel.api.NovelChapter
-import cc.aoeiuv020.panovel.bookfile.EpubParser
 import cc.aoeiuv020.panovel.bookfile.LocalNovelChapter
 import cc.aoeiuv020.panovel.bookfile.LocalNovelInfo
 import cc.aoeiuv020.panovel.bookfile.LocalNovelType
-import cc.aoeiuv020.panovel.bookfile.TextParser
 import cc.aoeiuv020.panovel.data.NovelProvider
 import cc.aoeiuv020.panovel.data.entity.Novel
 import java.io.File
@@ -21,11 +19,7 @@ class LocalNovelProvider(
     private val type = LocalNovelType.values()
             .firstOrNull { it.suffix == novel.site }
             ?: interrupt("本地小说类型<${novel.site}>不支持")
-    private val parser = when (type) {
-        LocalNovelType.TEXT -> TextParser(file, charset(novel.nChapters))
-        LocalNovelType.EPUB -> EpubParser(file, charset(novel.nChapters))
-        else -> throw IllegalStateException("本地小说类型<${novel.site}>不支持")
-    }
+    private val parser = type.newParser(file, charset(novel.nChapters))
 
     override fun requestNovelChapters(): List<NovelChapter> {
         val info = parser.parse()

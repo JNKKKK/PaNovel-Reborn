@@ -10,6 +10,7 @@ import cc.aoeiuv020.pager.Pager
 import cc.aoeiuv020.pager.BasePagerDrawer
 import cc.aoeiuv020.pager.Size
 import cc.aoeiuv020.reader.ReaderConfigName.*
+import cc.aoeiuv020.shared.util.isHan
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.FileNotFoundException
@@ -75,10 +76,27 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
         })
     }
 
+    // 缓存电量，避免每次渲染都做一次同步的粘性广播 binder 调用（onDraw 在主线程），
+    private var batteryLevel = 0
+    private val batteryReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            intent?.let { batteryLevel = it.getIntExtra("level", batteryLevel) }
+        }
+    }
+
     override fun attach(pager: Pager, backgroundSize: Size, contentSize: Size) {
         super.attach(pager, backgroundSize, contentSize)
 
+        // 注册粘性广播会同步返回当前电量 Intent，先给缓存播种，之后由 onReceive 更新，
+        val sticky = reader.context.registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        batteryLevel = sticky?.getIntExtra("level", batteryLevel) ?: batteryLevel
+
         reset()
+    }
+
+    override fun detach() {
+        runCatching { reader.context.unregisterReceiver(batteryReceiver) }
+        super.detach()
     }
 
     private fun reset() {
@@ -201,9 +219,7 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
     }
 
     private fun drawBattery(canvas: Canvas) {
-        val intent = reader.context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))!!
-        val battery = intent.getIntExtra("level", 0)
-        val text = "$battery"
+        val text = "$batteryLevel"
         val margins = reader.config.batteryMargins
         drawMessage(canvas, text, margins, true)
     }
@@ -358,13 +374,8 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
         for (i in page.lines.indices) {
             val line = page.lines[i]
             when (line) {
-                is Title -> {
-                    val top = y
-                    y += textHeight
-                    if (contentY >= top && contentY < y) { hitLineIndex = i }
-                    y += lineSpacing
-                }
-                is String -> {
+                // 标题和正文行都是一行文字，纵向band算法一致，
+                is Title, is String -> {
                     val top = y
                     y += textHeight
                     if (contentY >= top && contentY < y) { hitLineIndex = i }
@@ -383,7 +394,7 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
 
         val charIndex = charIndexAt(hitLine, contentX, width, textHeight)
                 ?: return null
-        if (!hitLine[charIndex].isHanChar()) return null
+        if (!hitLine[charIndex].isHan()) return null
 
         // 拼接从该字符起、同段落内的后续文字，遇到段落结束(ParagraphSpacing)或标题即止，
         // 段落可能跨页，续到下一页开头的正文行，
@@ -618,9 +629,6 @@ class ReaderDrawer(private val reader: Reader, private val novel: String, privat
         // 不提前清空缓存，刷新失败时request会保留原有内容，成功时会被覆盖，
         return request(chapterIndex, true, onComplete)
     }
-
-    private fun Char.isHanChar(): Boolean =
-            Character.UnicodeScript.of(this.code) == Character.UnicodeScript.HAN
 
     companion object {
         // 长按取词向后取的最大字符数，覆盖词典里最长的词（实测最长20字），

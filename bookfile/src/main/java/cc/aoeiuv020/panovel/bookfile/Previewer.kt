@@ -1,6 +1,5 @@
 package cc.aoeiuv020.panovel.bookfile
 
-import io.documentnode.epub4j.epub.EpubReader
 import java.io.File
 import java.nio.charset.Charset
 
@@ -23,36 +22,19 @@ class Previewer(
      *
      * 不赋值type, 决定文件类型后需要从外面主动赋值type,
      */
-    fun guessType() = LocalNovelType.values().firstOrNull {
-        uri.contains(it.suffix)
-    }
+    fun guessType() = LocalNovelType.fromSuffix(uri)
 
     /**
      * 外面判断是否是txt纯文本小说，是纯文本才需要调用这个猜编码，作为默认值请求用户输入决定编码，
      * @return 返回建议的编码，可能是多个，逗号,分隔，
      */
     fun guessCharset(type: LocalNovelType): String? {
-        return when (type) {
-            LocalNovelType.TEXT -> {
-                file.inputStream()
-            }
-            LocalNovelType.EPUB -> {
-                file.inputStream().use { EpubReader().readEpub(it) }
-                        .opfResource.inputStream
-            }
-        }.use { input ->
+        return type.openCharsetSource(file).use { input ->
             FileCharsetDetector.guessStreamEncoding(input, FileCharsetDetector.SIMPLIFIED_CHINESE)
         }
     }
 
     fun parse(type: LocalNovelType, charset: Charset?): LocalNovelInfo {
-        return when (type) {
-            LocalNovelType.TEXT -> {
-                TextParser(file, charset!!)
-            }
-            LocalNovelType.EPUB -> {
-                EpubParser(file, charset!!)
-            }
-        }.parse()
+        return type.newParser(file, charset!!).parse()
     }
 }

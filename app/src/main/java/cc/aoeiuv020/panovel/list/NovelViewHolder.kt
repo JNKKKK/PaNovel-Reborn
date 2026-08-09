@@ -14,6 +14,7 @@ import cc.aoeiuv020.panovel.data.NovelManager
 import cc.aoeiuv020.panovel.settings.ItemAction
 import cc.aoeiuv020.panovel.text.CheckableImageView
 import cc.aoeiuv020.panovel.util.noCover
+import cc.aoeiuv020.shared.util.notZero
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import timber.log.Timber
@@ -121,7 +122,7 @@ class NovelViewHolder(itemView: View,
     private fun show(novelManager: NovelManager) {
         this.novelManager = novelManager
         // 历史列表不参与置顶，也不显示置顶高亮背景，
-        if (supportPin && novel.pinnedTime.time > TimeUnit.DAYS.toMillis(1)) {
+        if (supportPin && novel.pinnedTime.notZero() != null) {
             itemView.setBackgroundColor(
                 androidx.core.content.ContextCompat.getColor(itemView.context, R.color.pinnedItemBackground)
             )

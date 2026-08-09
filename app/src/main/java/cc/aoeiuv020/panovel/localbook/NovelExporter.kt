@@ -5,11 +5,9 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import cc.aoeiuv020.panovel.bookfile.ContentProvider
-import cc.aoeiuv020.panovel.bookfile.EpubExporter
 import cc.aoeiuv020.panovel.bookfile.LocalNovelChapter
 import cc.aoeiuv020.panovel.bookfile.LocalNovelInfo
 import cc.aoeiuv020.panovel.bookfile.LocalNovelType
-import cc.aoeiuv020.panovel.bookfile.TextExporter
 import cc.aoeiuv020.panovel.util.PrefContext
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
@@ -107,10 +105,7 @@ class NovelExporter(
                 },
                 requester = novel.chapters
         )
-        val exporter = when (type) {
-            LocalNovelType.TEXT -> TextExporter(out, charset)
-            LocalNovelType.EPUB -> EpubExporter(out)
-        }
+        val exporter = type.newExporter(out, charset)
         val contentProvider = object : ContentProvider {
             val container = DataManager.novelContentsCached(novel)
             override fun getNovelContent(chapter: LocalNovelChapter): List<String> {

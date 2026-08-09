@@ -16,6 +16,6 @@ class ReplaceFileSeparator(
         val NOT_SUPPORT_CHARACTER = compileRegex("[/\\:|=?\";\\[\\],^]")
     }
     override fun serialize(from: String): String {
-        return from.replace(compileRegex("[/\\:|=?\";\\[\\],^]"), replaceWith)
+        return from.replace(NOT_SUPPORT_CHARACTER, replaceWith)
     }
 }

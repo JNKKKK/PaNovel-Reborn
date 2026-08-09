@@ -4,13 +4,12 @@ import cc.aoeiuv020.panovel.api.NovelChapter
 import cc.aoeiuv020.panovel.api.NovelDetail
 import cc.aoeiuv020.panovel.api.NovelItem
 import cc.aoeiuv020.panovel.api.base.DslJsoupNovelContext
+import cc.aoeiuv020.shared.json.decodeJson
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.text.SimpleDateFormat
 
 class Snapd : DslJsoupNovelContext() {
     private val apiHost = "https://www.bqg474.cc"
-    private val json = Json { ignoreUnknownKeys = true }
 
     private fun fetchJson(path: String): String {
         return responseBody(connect("$apiHost$path")).string()
@@ -35,8 +34,8 @@ init {
     hostList.add("bqg474.cc")
 
     search {
-        val body = fetchJson("/api/search?q=${java.net.URLEncoder.encode(it, "UTF-8")}")
-        val result = json.decodeFromString<SearchResult>(body)
+        val body = fetchJson("/api/search?q=${utf8(it)}")
+        val result = body.decodeJson<SearchResult>()
         result.data.map { item ->
             NovelItem(
                 site = site.name,
@@ -50,7 +49,7 @@ init {
     detail {
         val apiId = findBookId(extra)
         val body = fetchJson("/api/book?id=$apiId")
-        val book = json.decodeFromString<BookDetail>(body)
+        val book = body.decodeJson<BookDetail>()
         val sdf = SimpleDateFormat("yyyy-MM-dd")
         NovelDetail(
             novel = NovelItem(
@@ -69,7 +68,7 @@ init {
     chapters {
         val apiId = findBookId(extra)
         val body = fetchJson("/api/booklist?id=$apiId")
-        val result = json.decodeFromString<BookList>(body)
+        val result = body.decodeJson<BookList>()
         result.list.mapIndexedNotNull { index, name ->
             runCatching {
                 NovelChapter(
@@ -85,7 +84,7 @@ init {
         val apiId = parts[0]
         val chapterId = parts[1]
         val body = fetchJson("/api/chapter?id=$apiId&chapterid=$chapterId")
-        val chapter = json.decodeFromString<ChapterContent>(body)
+        val chapter = body.decodeJson<ChapterContent>()
         chapter.txt.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
     }
 }}

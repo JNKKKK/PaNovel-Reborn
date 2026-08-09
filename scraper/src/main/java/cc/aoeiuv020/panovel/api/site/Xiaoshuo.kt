@@ -11,8 +11,7 @@ class Xiaoshuo : DslJsoupNovelContext() { init {
     detailPageTemplate = "/%s/"
     contentPageTemplate = "/%s.html"
     search {
-        val searchUrl = absUrl("/modules/article/search.php?searchkey=" +
-            java.net.URLEncoder.encode(it, "GBK"))
+        val searchUrl = absUrl("/modules/article/search.php?searchkey=" + gbk(it))
         // site returns 403 + cookie on first request; retry with the cookie
         get { url = searchUrl }
         response { it }

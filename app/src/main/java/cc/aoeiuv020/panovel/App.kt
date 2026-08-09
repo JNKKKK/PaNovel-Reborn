@@ -8,7 +8,6 @@ import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.util.initNotificationChannel
 import cc.aoeiuv020.shared.ssl.TLSSocketFactory
 import cc.aoeiuv020.shared.ssl.TrustManagerUtils
-import com.bumptech.glide.Glide
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 import kotlin.properties.Delegates
@@ -45,8 +44,6 @@ class App : MultiDexApplication() {
         initVector()
 
         initNightMode()
-
-        initGlide()
 
         initJar()
 
@@ -111,10 +108,6 @@ class App : MultiDexApplication() {
         // 否则jar打开的文件不会被关闭，从而导致文件被覆盖了依然能读到旧文件，
         // 多少会影响性能，
         URL("jar:file:/fake.jar!/fake.file").openConnection().defaultUseCaches = false
-    }
-
-    private fun initGlide() {
-        Glide.get(applicationContext).registry
     }
 
     private fun initDataSources() {

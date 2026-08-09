@@ -33,13 +33,15 @@ class DownloadNotificationManager(
         notificationBuilder
     }
 
+    private fun progress(done: Int, left: Int): Int =
+            (done.toFloat() / (done + left) * 100).toInt()
+
     fun downloadStart(left: Int) {
         val exists = 0
         val downloads = 0
         val errors = 0
-        val progress = ((exists + downloads + errors).toFloat() / ((exists + downloads + errors) + left) * 100).toInt()
         notificationBuilder.setContentText(context.getString(R.string.downloading_placeholder, exists, downloads, errors, left))
-                .setProgress(100, progress, false)
+                .setProgress(100, progress(exists + downloads + errors, left), false)
         if (enable) {
             proxy.start(notificationBuilder.build())
         } else {
@@ -49,9 +51,8 @@ class DownloadNotificationManager(
     }
 
     fun downloading(exists: Int, downloads: Int, errors: Int, left: Int) {
-        val progress = ((exists + downloads + errors).toFloat() / ((exists + downloads + errors) + left) * 100).toInt()
         notificationBuilder.setContentText(context.getString(R.string.downloading_placeholder, exists, downloads, errors, left))
-                .setProgress(100, progress, false)
+                .setProgress(100, progress(exists + downloads + errors, left), false)
         if (enable) {
             proxy.modify(notificationBuilder.build())
         } else {
@@ -74,12 +75,6 @@ class DownloadNotificationManager(
 
     fun cancelNotification(cancelDelay: Long = NotifyLoopProxy.DEFAULT_CANCEL_DELAY) {
         proxy.cancel(cancelDelay)
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    fun error(message: String, t: Throwable) {
-        // 出意外了直接停止通知循环，
-        proxy.error()
     }
 
 }

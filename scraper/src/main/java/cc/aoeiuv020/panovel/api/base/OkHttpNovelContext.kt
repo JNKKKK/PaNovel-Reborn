@@ -3,17 +3,15 @@ package cc.aoeiuv020.panovel.api.base
 import cc.aoeiuv020.panovel.api.HomePageProbe
 import cc.aoeiuv020.panovel.api.LoggerInputStream
 import cc.aoeiuv020.panovel.api.NovelContext
+import cc.aoeiuv020.shared.ssl.TrustManagerUtils
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
 import java.io.InputStream
 import java.security.SecureRandom
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 abstract class OkHttpNovelContext : NovelContext() {
     companion object {
@@ -23,14 +21,10 @@ abstract class OkHttpNovelContext : NovelContext() {
         val sharedClient: OkHttpClient = OkHttpClient()
 
         fun OkHttpClient.Builder.sslAllowAll(): OkHttpClient.Builder {
-            val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-                override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
-                override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
-                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-            })
+            val trustAll = TrustManagerUtils.include(emptySet())
             val sslContext = SSLContext.getInstance("TLS")
-            sslContext.init(null, trustAllCerts, SecureRandom())
-            return sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
+            sslContext.init(null, arrayOf(trustAll), SecureRandom())
+            return sslSocketFactory(sslContext.socketFactory, trustAll)
                 .hostnameVerifier { _, _ -> true }
         }
     }

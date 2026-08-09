@@ -1,6 +1,7 @@
 package cc.aoeiuv020.panovel.list
 
 import cc.aoeiuv020.shared.util.interrupt
+import cc.aoeiuv020.shared.util.notZero
 import cc.aoeiuv020.panovel.R
 import cc.aoeiuv020.panovel.data.DataManager
 import cc.aoeiuv020.panovel.detail.NovelDetailActivity
@@ -16,7 +17,6 @@ import cc.aoeiuv020.panovel.util.uiInput
 import cc.aoeiuv020.panovel.util.showWithNeutralSurface
 import cc.aoeiuv020.panovel.util.uiSelect
 import java.nio.charset.UnsupportedCharsetException
-import java.util.concurrent.TimeUnit
 import timber.log.Timber
 import kotlinx.coroutines.*
 import androidx.appcompat.app.AlertDialog
@@ -55,7 +55,7 @@ class DefaultNovelItemActionListener(
                         // 置顶/取消置顶互斥，只显示当前状态对应的操作，历史列表不显示，
                         if (!supportPin) {
                             null
-                        } else if (vh.novel.pinnedTime.time > TimeUnit.DAYS.toMillis(1)) {
+                        } else if (vh.novel.pinnedTime.notZero() != null) {
                             R.string.cancel_pinned to CancelPinned
                         } else {
                             R.string.pinned to Pinned
@@ -124,19 +124,32 @@ class DefaultNovelItemActionListener(
         persistBookshelf(vh, star)
     }
 
-    private fun persistBookshelf(vh: NovelViewHolder, star: Boolean) {
-        val novelManager = vh.novelManager
+    /**
+     * 统一的异步操作外壳：IO 线程执行 [work]，成功后回调 [onDone]，出错统一上报 [errorMessage]，
+     */
+    private fun runAction(
+        errorMessage: String,
+        onDone: () -> Unit = {},
+        work: suspend () -> Unit,
+    ) {
         scope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    novelManager.updateBookshelf(star)
+                    work()
                 }
+                onDone()
             } catch (e: Exception) {
-                val message = "${if (star) "添加" else "删除"}书架《${vh.novel.name}》失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                onError(message, e)
+                Reporter.post(errorMessage, e)
+                Timber.e(e, errorMessage)
+                onError(errorMessage, e)
             }
+        }
+    }
+
+    private fun persistBookshelf(vh: NovelViewHolder, star: Boolean) {
+        val novelManager = vh.novelManager
+        runAction("${if (star) "添加" else "删除"}书架《${vh.novel.name}》失败，") {
+            novelManager.updateBookshelf(star)
         }
     }
 
@@ -164,65 +177,27 @@ class DefaultNovelItemActionListener(
     }
 
     private fun pinned(vh: NovelViewHolder) {
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    vh.novelManager.pinned()
-                }
-                // 写库完成后再刷新列表，此时内存中的pinnedTime已更新，
-                actionDoneListener(Pinned, vh)
-            } catch (e: Exception) {
-                val message = "置顶小说《${vh.novel.name}》失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                onError(message, e)
-            }
+        // 写库完成后再刷新列表，此时内存中的pinnedTime已更新，
+        runAction("置顶小说《${vh.novel.name}》失败，", onDone = { actionDoneListener(Pinned, vh) }) {
+            vh.novelManager.pinned()
         }
     }
 
     private fun cancelPinned(vh: NovelViewHolder) {
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    vh.novelManager.cancelPinned()
-                }
-                actionDoneListener(CancelPinned, vh)
-            } catch (e: Exception) {
-                val message = "取消置顶小说《${vh.novel.name}》失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                onError(message, e)
-            }
+        runAction("取消置顶小说《${vh.novel.name}》失败，", onDone = { actionDoneListener(CancelPinned, vh) }) {
+            vh.novelManager.cancelPinned()
         }
     }
 
     private fun cleanCache(vh: NovelViewHolder) {
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    vh.novelManager.cleanCache()
-                }
-            } catch (e: Exception) {
-                val message = "清除小说缓存<${vh.novel.bookId}>失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                onError(message, e)
-            }
+        runAction("清除小说缓存<${vh.novel.bookId}>失败，") {
+            vh.novelManager.cleanCache()
         }
     }
 
     private fun cleanData(vh: NovelViewHolder) {
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    vh.novelManager.cleanData()
-                }
-            } catch (e: Exception) {
-                val message = "清除小说数据<${vh.novel.bookId}>失败，"
-                Reporter.post(message, e)
-                Timber.e(e, message)
-                onError(message, e)
-            }
+        runAction("清除小说数据<${vh.novel.bookId}>失败，") {
+            vh.novelManager.cleanData()
         }
     }
 

@@ -9,7 +9,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.os.BaseBundle
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -45,8 +44,6 @@ fun Context.alertError(dialog: AlertDialog, str: String, e: Throwable) =
     alert(dialog, str + "\n" + e.message)
 
 fun Context.alert(dialog: AlertDialog, messageId: Int) = alert(dialog, getString(messageId))
-fun Context.alert(dialog: AlertDialog, messageId: Int, titleId: Int) =
-    alert(dialog, getString(messageId), getString(titleId))
 
 fun Context.alert(dialog: AlertDialog, message: String, title: String? = null) = dialog.apply {
     setMessage(message)
@@ -69,10 +66,6 @@ fun View.setSize(size: Int) {
         it.height = size
         it.width = size
     }
-}
-
-fun View.setHeight(height: Int) {
-    layoutParams = layoutParams.also { it.height = height }
 }
 
 fun Context.alertColorPicker(initial: Int, callback: (color: Int) -> Unit) =
@@ -116,11 +109,6 @@ fun EditText.showKeyboard() {
     val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     imm.showSoftInput(this, 0)
 }
-
-@Suppress("UNCHECKED_CAST")
-fun Bundle.toMap(): Map<String, Any?> =
-    BaseBundle::class.java.getDeclaredField("mMap").apply { isAccessible = true }
-        .get(this) as Map<String, *>
 
 // 从保存的状态或者传入的intent中拿String,
 fun Activity.getStringExtra(key: String, savedInstanceState: Bundle? = null): String? =

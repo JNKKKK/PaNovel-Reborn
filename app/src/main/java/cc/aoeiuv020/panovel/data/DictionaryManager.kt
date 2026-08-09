@@ -4,7 +4,7 @@ import android.content.Context
 import cc.aoeiuv020.mdict.DictEntry
 import cc.aoeiuv020.mdict.Dictionary
 import cc.aoeiuv020.mdict.XinhuaDictionary
-import cc.aoeiuv020.mdict.isHan
+import cc.aoeiuv020.shared.util.isHan
 import cc.aoeiuv020.shared.util.ChineseNormalizer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex

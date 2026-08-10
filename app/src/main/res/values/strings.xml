@@ -45,6 +45,8 @@
     <string name="title_activity_settings">设置</string>
 
     <string name="pref_header_read">阅读设置</string>
+    <string name="pref_header_dictionary">词典设置</string>
+    <string name="pref_dict_select">选择词典</string>
     <string name="pref_backup">备份</string>
     <string name="pref_cache_clear">清除缓存</string>
     <string name="pref_clear">清除</string>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 选项（entries/values）在 DictionaryPreferenceFragment 里按 BuiltinDictionary 动态填充；
+         summary 用 %s 显示当前所选词典名作为副标题。 -->
+    <ListPreference
+        android:key="selectedName"
+        android:summary="%s"
+        android:title="@string/pref_dict_select" />
+
+</PreferenceScreen>

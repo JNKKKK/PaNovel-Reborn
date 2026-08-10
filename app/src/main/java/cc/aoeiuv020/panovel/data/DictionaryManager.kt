@@ -3,7 +3,9 @@ package cc.aoeiuv020.panovel.data
 import android.content.Context
 import cc.aoeiuv020.mdict.DictEntry
 import cc.aoeiuv020.mdict.Dictionary
+import cc.aoeiuv020.mdict.XiandaiDictionary
 import cc.aoeiuv020.mdict.XinhuaDictionary
+import cc.aoeiuv020.panovel.settings.DictionarySettings
 import cc.aoeiuv020.shared.util.isHan
 import cc.aoeiuv020.shared.util.ChineseNormalizer
 import kotlinx.coroutines.Dispatchers
@@ -25,24 +27,27 @@ data class DictResult(val words: List<DictWord>) {
 data class DictWord(val word: String, val entries: List<DictEntry>)
 
 /**
- * 一部内置词典的描述：asset 路径 + 构造方式。
+ * 一部内置词典的描述：显示名 + asset 路径 + 构造方式。
  *
- * 新增内置词典时在 [BuiltinDictionary.ALL] 里加一项即可；将来在设置里做「切换词典」时，
- * [DictionaryManager] 只需按用户所选的 [BuiltinDictionary] 打开对应实现。asset 内容更新时
- * 提升 [version] 触发重新复制到 filesDir。
+ * 新增内置词典时在这里加一项即可：设置里的「选择词典」直接列 [ALL]，[DictionaryManager]
+ * 按用户所选的 [BuiltinDictionary] 打开对应实现。asset 内容更新时提升 [version] 触发
+ * 重新复制到 filesDir。
  *
+ * @param displayName 设置界面展示的词典名。
  * @param open 把复制到本地的文件构造成通用的 [Dictionary]；不同词典有各自的实现
- *             （超级新华字典是 [XinhuaDictionary]）。
+ *             （超级新华字典是 [XinhuaDictionary]，现代汉语词典是 [XiandaiDictionary]）。
  */
 enum class BuiltinDictionary(
+    val displayName: String,
     val assetName: String,
     val version: String,
     val open: (File) -> Dictionary,
 ) {
-    XINHUA("超级新华字典.mdx", version = "1", open = ::XinhuaDictionary);
+    XINHUA("超级新华字典", "超级新华字典.mdx", version = "1", open = ::XinhuaDictionary),
+    XIANDAI("现代汉语词典第5版", "现代汉语词典第5版.mdx", version = "1", open = ::XiandaiDictionary);
 
     companion object {
-        /** 当前默认（且目前唯一）内置词典。将来设置项就从 [entries] 里选。 */
+        /** 默认内置词典（用户未选择时用它）。 */
         val DEFAULT = XINHUA
         val ALL: List<BuiltinDictionary> get() = entries
     }
@@ -59,16 +64,25 @@ class DictionaryManager(private val context: Context) {
     private val mutex = Mutex()
     @Volatile
     private var dictionary: Dictionary? = null
+    // 已打开词典对应的内置词典；用户切换设置后与 [DictionarySettings.selected] 不符时重开，
+    @Volatile
+    private var openedDict: BuiltinDictionary? = null
 
-    // 当前使用的内置词典；目前固定为默认词典，将来可由设置项决定，
-    private val current: BuiltinDictionary = BuiltinDictionary.DEFAULT
+    /** 当前应使用的内置词典，由设置决定，用户切换后立即生效。 */
+    private val current: BuiltinDictionary get() = DictionarySettings.selected
 
     private suspend fun getDictionary(): Dictionary {
-        dictionary?.let { return it }
+        val want = current
+        dictionary?.let { if (openedDict == want) return it }
         return mutex.withLock {
-            dictionary ?: withContext(Dispatchers.IO) {
-                val file = ensureDictFile(current)
-                current.open(file).also { dictionary = it }
+            dictionary?.let { if (openedDict == want) return it }
+            withContext(Dispatchers.IO) {
+                dictionary?.let { runCatching { it.close() } } // 换词典时关掉旧的文件句柄，
+                val file = ensureDictFile(want)
+                want.open(file).also {
+                    dictionary = it
+                    openedDict = want
+                }
             }
         }
     }
